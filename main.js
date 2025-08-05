@@ -24,16 +24,39 @@ map.on('load', () => {
 
 
 
+// --- DEBUG HELPER ---
+function dbg(tag, obj) {
+  console.log(tag, JSON.stringify(obj));
+}
+
+// --- NAVIGATION CONTROLLER ---
+let navState = {
+  targetCenter: [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat],
+  targetZoom: 14,
+  targetPitch: 45,
+  targetBearing: 0,
+  spinning: true
+};
+
 // --- orbit ----
 let bearing = 0, spinning = true;
 let orbitCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
 let targetOrbitCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
-let orbitTransitionSpeed = 0.02; // How fast to transition between orbit centers
+let orbitTransitionSpeed = 0.015; // Normal speed
 
-function orbit() {
+// --- NAVIGATION CONTROLLER ---
+function updateCamera() {
+  const currentState = {
+    center: [map.getCenter().lng, map.getCenter().lat],
+    orbitCenter: orbitCenter,
+    targetOrbitCenter: targetOrbitCenter,
+    isEasing: map.isEasing && map.isEasing()
+  };
+  
+  // dbg("CAMERA_TICK", currentState); // Debug disabled for production
+  
   if (spinning) {
     bearing = (bearing + 0.05125) % 360;
-    map.setBearing(bearing);
     
     // Smoothly interpolate toward target orbit center
     const lngDiff = targetOrbitCenter[0] - orbitCenter[0];
@@ -44,30 +67,70 @@ function orbit() {
       orbitCenter[1] += latDiff * orbitTransitionSpeed;
     }
     
-    // Keep the camera centered on the current orbit point
-    const currentCenter = map.getCenter();
-    if (Math.abs(currentCenter.lng - orbitCenter[0]) > 0.001 || 
-        Math.abs(currentCenter.lat - orbitCenter[1]) > 0.001) {
-      map.setCenter(orbitCenter);
-    }
+    // NAVIGATION CONTROLLER: Set camera state
+    map.easeTo({
+      center: orbitCenter,
+      bearing: bearing,
+      zoom: navState.targetZoom,
+      pitch: navState.targetPitch,
+      duration: 0 // Immediate for orbit
+    });
   }
-  requestAnimationFrame(orbit);
+  requestAnimationFrame(updateCamera);
 }
-orbit();
+
+// Legacy orbit function - now handled by updateCamera
+function orbit() {
+  // Deprecated - keeping for compatibility
+}
+
+updateCamera();
+
+// --- Style Controls ---
+document.getElementById('style-controls').addEventListener('click', (e) => {
+  if (e.target.dataset.style) {
+    dbg("STYLE_CHANGE", {style: e.target.dataset.style});
+    map.setStyle(e.target.dataset.style);
+  }
+});
 
 // --- Orange markers removed - using legend navigation instead ---
 
 // Utility function to update legend info
 function updateLegend(title = '', blurb = '') {
   const infoDiv = document.getElementById('info');
-  if (title && blurb) {
-    infoDiv.innerHTML = `<strong>${title}</strong><br>${blurb}`;
+  
+  // Clear previous selection highlights
+  document.querySelectorAll('#legend .button-group button').forEach(btn => {
+    btn.classList.remove('selected');
+  });
+  
+  if (title) {
+    // Show "Click here to learn more about [site]" in the info area
+    infoDiv.innerHTML = `Click here to learn more about ${title}`;
+    
+    // Highlight the selected button
+    const selectedBtn = document.querySelector(`#legend .button-group button[data-key="${getCurrentKey(title)}"]`);
+    if (selectedBtn) {
+      selectedBtn.classList.add('selected');
+    }
   } else {
     infoDiv.innerHTML = '';
   }
 }
 
-function flyToLocation(key) {
+// Helper function to get key from title
+function getCurrentKey(title) {
+  if (title === 'Michigan Central') return 'michiganCentral';
+  if (title === 'The Factory') return 'newlab';
+  if (title === 'Home') return 'home';
+  return '';
+}
+
+// --- STANDARDIZED NAVIGATION CONTROLLER ---
+function navigateToLocation(key) {
+  dbg("NAV_CLICK", {key: key});
+  
   // Clear any existing popups first
   const existingPopups = document.querySelectorAll('.mapboxgl-popup');
   existingPopups.forEach(popup => popup.remove());
@@ -75,48 +138,115 @@ function flyToLocation(key) {
   if (key === 'home') {
     // Resume orbit with wider city view
     spinning = true;
+    navState.spinning = true;
+    
+    // Ensure smooth transition from current position
+    const currentCenter = map.getCenter();
+    orbitCenter = [currentCenter.lng, currentCenter.lat];
     targetOrbitCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
+    
+    navState.targetCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
+    navState.targetZoom = 14;
+    navState.targetPitch = 45;
+    navState.targetBearing = map.getBearing(); // Preserve current bearing
     updateLegend();
-    map.flyTo({
-      center: [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat],
-      bearing: 0,
-      essential: true,
-      duration: 3000,
-      zoom: 14,    // Much wider view (was 17.5)
-      pitch: 45    // Lower angle for broader perspective (was 60)
+    
+    // SINGLE CAMERA CONTROLLER: Use easeTo for everything
+    map.easeTo({
+      center: navState.targetCenter,
+      bearing: navState.targetBearing,
+      zoom: navState.targetZoom,
+      pitch: navState.targetPitch,
+      duration: 2000
     });
+    
+    // Ensure orbiting continues after transition
+    setTimeout(() => {
+      spinning = true;
+      navState.spinning = true;
+      dbg("ORBIT_RESUMED", {location: "home"});
+    }, 2100); // Slightly after easeTo duration
+    
   } else {
     const {lng, lat, label} = LOCATIONS[key];
     
-    // Set orbit behavior and center based on location
     if (key === 'michiganCentral') {
-      spinning = false;  // Pause orbit for focused view
+      spinning = true;  // ALWAYS ORBIT - even at Michigan Central
+      navState.spinning = true;
+      
+      // Ensure smooth transition from current position
+      const currentCenter = map.getCenter();
+      orbitCenter = [currentCenter.lng, currentCenter.lat];
       targetOrbitCenter = [lng, lat];
+      
+      navState.targetCenter = [lng, lat];
+      navState.targetZoom = 18;
+      navState.targetPitch = 60;
+      navState.targetBearing = map.getBearing(); // Preserve current bearing
+      
+      // SINGLE CAMERA CONTROLLER: Use easeTo for initial positioning, then let orbit take over
+      map.easeTo({
+        center: navState.targetCenter,
+        zoom: navState.targetZoom,
+        pitch: navState.targetPitch,
+        bearing: navState.targetBearing,
+        duration: 2000
+      });
+      
+      // After transition completes, ensure orbiting is active
+      setTimeout(() => {
+        spinning = true;
+        navState.spinning = true;
+        dbg("ORBIT_RESUMED", {location: "michiganCentral"});
+      }, 2100); // Slightly after easeTo duration
+      
     } else if (key === 'newlab') {
       spinning = true;   // Keep orbiting for dynamic view around The Factory
-      targetOrbitCenter = [lng, lat];  // Smoothly transition orbit center to The Factory coordinates
+      navState.spinning = true;
+      
+      // CRITICAL FIX: Always start orbit interpolation from current map position
+      const currentCenter = map.getCenter();
+      orbitCenter = [currentCenter.lng, currentCenter.lat];
+      targetOrbitCenter = [lng, lat];  // Now we have a proper distance to interpolate
+      
+      navState.targetCenter = [lng, lat]; 
+      navState.targetZoom = 18;
+      navState.targetPitch = 60;
+      navState.targetBearing = map.getBearing(); // Preserve current bearing
+      
+      dbg("FACTORY_NAV", {
+        from: orbitCenter,
+        to: targetOrbitCenter,
+        distance: Math.sqrt(Math.pow(lng - currentCenter.lng, 2) + Math.pow(lat - currentCenter.lat, 2))
+      });
+      
+      // SINGLE CAMERA CONTROLLER: Use easeTo but let orbit handle center interpolation
+      map.easeTo({
+        zoom: navState.targetZoom,
+        pitch: navState.targetPitch,
+        bearing: navState.targetBearing,
+        duration: 2000
+      });
+      
+      // Ensure orbiting continues after transition
+      setTimeout(() => {
+        spinning = true;
+        navState.spinning = true;
+        dbg("ORBIT_RESUMED", {location: "factory"});
+      }, 2100); // Slightly after easeTo duration
     }
-    
-    map.flyTo({
-      center: [lng, lat],
-      bearing: 45,                           // face southeast-ish
-      essential: true,
-      duration: 3000,
-      zoom: 18,
-      pitch: 60
-    });
     
     // Update legend with site info
     let blurb = '';
     if (key === 'michiganCentral') {
-      blurb = 'Historic train station, now a technology and mobility innovation hub. Focused view with paused orbit for detailed examination.';
+      blurb = 'Historic train station, now a technology and mobility innovation hub. Camera orbits around the station for comprehensive viewing.';
     } else if (key === 'newlab') {
       blurb = 'Manufacturing and innovation facility in Detroit. Camera orbits continuously around The Factory location for dynamic exploration.';
     } else {
       blurb = 'Lorem ipsum placeholder text for this location.';
     }
     
-    updateLegend(label, blurb);
+    updateLegend(label); // Remove blurb from bottom menu
     
     // Show popup with site information
     new mapboxgl.Popup({offset:25})
@@ -124,6 +254,11 @@ function flyToLocation(key) {
       .setHTML(`<h3>${label}</h3><p>${blurb}</p>`)
       .addTo(map);
   }
+}
+
+// Legacy function - redirect to new controller
+function flyToLocation(key) {
+  navigateToLocation(key);
 }
 
 // Legend toggle functionality
@@ -134,25 +269,31 @@ document.getElementById('legend-toggle').addEventListener('click', () => {
 
 // Legend click handler
 document.getElementById('legend').addEventListener('click', (e) => {
-  if (e.target.tagName === 'BUTTON' && e.target.id !== 'learn-more-btn') {
+  if (e.target.tagName === 'BUTTON') {
     const key = e.target.dataset.key;
-    flyToLocation(key);
+    navigateToLocation(key);  // Use new controller
     // Don't auto-close legend - only toggle with lupe
   }
 });
 
 // resume orbit on map click (outside popup)
 map.on('click', () => { 
-  spinning = true; 
-  updateLegend();
-  
-  // Update target orbit center to current map center when resuming orbit
-  const currentCenter = map.getCenter();
-  targetOrbitCenter = [currentCenter.lng, currentCenter.lat];
-  
-  // Clear any existing popups when resuming orbit
-  const existingPopups = document.querySelectorAll('.mapboxgl-popup');
-  existingPopups.forEach(popup => popup.remove());
+  dbg("MAP_CLICK", {action: "resume_orbit"});
+  navigateToLocation('home');  // Use new controller
+});
+
+// Add moveend logging
+map.on('moveend', () => {
+  const state = {
+    center: [map.getCenter().lng, map.getCenter().lat],
+    orbitCenter: orbitCenter,
+    targetOrbitCenter: targetOrbitCenter,
+    isEasing: map.isEasing && map.isEasing(),
+    zoom: map.getZoom(),
+    pitch: map.getPitch(),
+    bearing: map.getBearing()
+  };
+  dbg("MOVEEND", state);
 });
 
 // Current selected location for detail view
@@ -187,10 +328,12 @@ const DETAIL_DATA = {
   }
 };
 
-// Learn More functionality
-document.getElementById('learn-more-btn').addEventListener('click', () => {
+// Info area click functionality - opens detail panel
+document.getElementById('info').addEventListener('click', () => {
   currentDetailLocation = getSelectedLocation();
-  showDetailPanel(currentDetailLocation);
+  if (currentDetailLocation) {
+    showDetailPanel(currentDetailLocation);
+  }
 });
 
 // Close detail panel
@@ -204,7 +347,7 @@ document.querySelector('.button-group-fullscreen').addEventListener('click', (e)
     const key = e.target.dataset.key;
     currentDetailLocation = key;
     showDetailPanel(key);
-    flyToLocation(key);
+    navigateToLocation(key);  // Use new controller
   }
 });
 

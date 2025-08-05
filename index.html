@@ -12,25 +12,31 @@
   <!-- Legend Toggle Button -->
   <button id="legend-toggle">🔍</button>
   
+  <!-- Style Toggle Buttons -->
+  <div id="style-controls">
+    <button id="light-style" data-style="mapbox://styles/mapbox/light-v11">☀️</button>
+    <button id="dark-style" data-style="mapbox://styles/mapbox/dark-v11">🌙</button>
+    <button id="standard-style" data-style="mapbox://styles/mapbox/standard">🗺️</button>
+    <button id="satellite-style" data-style="mapbox://styles/mapbox/satellite-streets-v12">🌍</button>
+  </div>
+
   <!-- Collapsible Legend Panel -->
   <div id="legend">
-    <h3>Navigate</h3>
     <div class="button-group">
-      <button data-key="home">🏠 Home</button>
-      <button data-key="michiganCentral">🚂 Michigan Central</button>
-      <button data-key="newlab">🏭 The Factory</button>
+      <button data-key="home">Home</button>
+      <button data-key="michiganCentral">Michigan Central</button>
+      <button data-key="newlab">The Factory</button>
     </div>
-    <div id="info"></div>
-    <button id="learn-more-btn">Learn More</button>
+    <div id="info" class="clickable-info"></div>
   </div>
 
   <!-- Full Screen Detail Panel -->
   <div id="detail-panel" class="detail-hidden">
     <div class="detail-header">
       <div class="button-group-fullscreen">
-        <button data-key="home">🏠 Home</button>
-        <button data-key="michiganCentral">🚂 Michigan Central</button>
-        <button data-key="newlab">🏭 The Factory</button>
+        <button data-key="home">Home</button>
+        <button data-key="michiganCentral">Michigan Central</button>
+        <button data-key="newlab">The Factory</button>
       </div>
       <button id="close-detail-btn">✕</button>
     </div>
