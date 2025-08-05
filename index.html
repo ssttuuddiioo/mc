@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Detroit Orbit Demo</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css">
+</head>
+<body>
+  <div id="map"></div>
+  
+  <!-- Legend Toggle Button -->
+  <button id="legend-toggle">🔍</button>
+  
+  <!-- Collapsible Legend Panel -->
+  <div id="legend">
+    <h3>Navigate</h3>
+    <div class="button-group">
+      <button data-key="home">🏠 Home</button>
+      <button data-key="michiganCentral">🚂 Michigan Central</button>
+      <button data-key="newlab">🏭 The Factory</button>
+    </div>
+    <div id="info"></div>
+    <button id="learn-more-btn">Learn More</button>
+  </div>
+
+  <!-- Full Screen Detail Panel -->
+  <div id="detail-panel" class="detail-hidden">
+    <div class="detail-header">
+      <div class="button-group-fullscreen">
+        <button data-key="home">🏠 Home</button>
+        <button data-key="michiganCentral">🚂 Michigan Central</button>
+        <button data-key="newlab">🏭 The Factory</button>
+      </div>
+      <button id="close-detail-btn">✕</button>
+    </div>
+    <div class="detail-content">
+      <div class="detail-images">
+        <div id="detail-image-container"></div>
+      </div>
+      <div class="detail-text">
+        <h1 id="detail-title"></h1>
+        <div id="detail-description"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
