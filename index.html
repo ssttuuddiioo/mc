@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Detroit Orbit Demo</title>
+  <title>Atlanta Orbit Demo</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css">
 </head>
@@ -23,9 +23,8 @@
   <!-- Collapsible Legend Panel -->
   <div id="legend">
     <div class="button-group">
-      <button data-key="home">Home</button>
-      <button data-key="michiganCentral">Michigan Central</button>
-      <button data-key="newlab">The Factory</button>
+      <button data-key="proposal">Our Proposal</button>
+      <button data-key="team">Learn more about the team</button>
     </div>
     <div id="info" class="clickable-info"></div>
   </div>
@@ -34,23 +33,31 @@
   <div id="detail-panel" class="detail-hidden">
     <div class="detail-header">
       <div class="button-group-fullscreen">
-        <button data-key="home">Home</button>
-        <button data-key="michiganCentral">Michigan Central</button>
-        <button data-key="newlab">The Factory</button>
+        <button data-key="proposal">Our Proposal</button>
+        <button data-key="team">Learn more about the team</button>
       </div>
       <button id="close-detail-btn">✕</button>
     </div>
     <div class="detail-content">
-      <div class="detail-images">
-        <div id="detail-image-container"></div>
+      <div id="proposal-content" class="detail-grid">
+        <div class="detail-images">
+          <div id="detail-image-container"></div>
+        </div>
+        <div class="detail-text">
+          <h1 id="detail-title"></h1>
+          <div id="detail-description"></div>
+        </div>
       </div>
-      <div class="detail-text">
-        <h1 id="detail-title"></h1>
-        <div id="detail-description"></div>
+      <div id="team-content" class="detail-grid" style="display: none;">
+        <div id="slideshow-container"></div>
+        <div id="team-members-container" class="detail-text"></div>
       </div>
     </div>
   </div>
   
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.17"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js"></script>
   <script src="main.js"></script>
 </body>

@@ -256,6 +256,10 @@ html, body, #map {
 
 .detail-content {
   flex: 1;
+  height: calc(100vh - 80px);
+}
+
+.detail-grid {
   display: grid;
   grid-template-columns: 40% 60%;
   height: calc(100vh - 80px);
@@ -301,4 +305,79 @@ html, body, #map {
   letter-spacing: 1px;
   text-transform: none;
   font-weight: normal;
+}
+
+.team-left-panel {
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 80px);
+}
+
+#team-members-container {
+  overflow-y: auto;
+}
+
+.team-member {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+#team-intro {
+  padding-bottom: 40px;
+  border-bottom: 4px solid #fff;
+  margin-bottom: 40px;
+}
+
+.team-member img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
+/* Slideshow container */
+#slideshow-container {
+  max-width: 100%;
+  position: relative;
+  margin: auto;
+  height: 100%;
+}
+
+.slide {
+  display: none;
+  height: 100%;
+}
+
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Next & previous buttons */
+.prev, .next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  width: auto;
+  padding: 16px;
+  margin-top: -22px;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  transition: 0.6s ease;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+}
+
+/* Position the "next button" to the right */
+.next {
+  right: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+/* On hover, add a black background color with a little bit see-through */
+.prev:hover, .next:hover {
+  background-color: rgba(0,0,0,0.8);
 }

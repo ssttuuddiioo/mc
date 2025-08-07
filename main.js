@@ -1,25 +1,105 @@
 mapboxgl.accessToken = 'pk.eyJ1Ijoic3N0dHV1ZGRpaW9vIiwiYSI6ImNtZHhveWU4bDI5djIyam9kY2I3M3pwbHcifQ.ck8h3apHSNVAmTwjz-Oc7w';
 
 const LOCATIONS = {
-  rooseveltPark:    {lng: -83.0755, lat: 42.3235, label: 'Roosevelt Park'},
-  michiganCentral:  {lng: -83.0776, lat: 42.3289, label: 'Michigan Central'},
-  campusMartius:    {lng: -83.0466, lat: 42.3317, label: 'Campus Martius'},
-  newlab:           {lng: -83.07242451005243, lat: 42.33118076021261, label: 'The Factory'}
+  centennialPark:   {lng: -84.3880, lat: 33.7879, label: 'Centennial Olympic Park'},
+  michiganCentral:  {lng: -84.38587349098589, lat: 33.787164594671104, label: 'Downtown Atlanta'},
+  campusMartius:    {lng: -84.3963, lat: 33.7490, label: 'Atlanta BeltLine'},
+  newlab:           {lng: -84.3902, lat: 33.7756, label: 'Tech Square'}
 };
+
+
 
 const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/mapbox/standard',
   center: [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat],
-  zoom: 17.5,
+  zoom: 16,
   pitch: 60,
-  antialias: true
+  antialias: true,
+  dragRotate: true
 });
 
 // Building interactions removed for cleaner map experience
 map.on('load', () => {
   // Map loaded and ready for navigation
   console.log('Map loaded successfully');
+
+  const modelOrigin = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
+  const modelAltitude = 0;
+  const modelRotate = [Math.PI / 2, 0, 0];
+
+  const modelAsMercator = mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude);
+
+  const modelTransform = {
+      translateX: modelAsMercator.x,
+      translateY: modelAsMercator.y,
+      translateZ: modelAsMercator.z,
+      rotateX: modelRotate[0],
+      rotateY: modelRotate[1],
+      rotateZ: modelRotate[2],
+      scale: modelAsMercator.meterInMercatorCoordinateUnits() * 100
+  };
+
+  const customLayer = {
+      id: '3d-model',
+      type: 'custom',
+      renderingMode: '3d',
+      onAdd: function (map, gl) {
+          this.camera = new THREE.Camera();
+          this.scene = new THREE.Scene();
+
+          const directionalLight = new THREE.DirectionalLight(0xffffff);
+          directionalLight.position.set(0, -70, 100).normalize();
+          this.scene.add(directionalLight);
+
+          const directionalLight2 = new THREE.DirectionalLight(0xffffff);
+          directionalLight2.position.set(0, 70, 100).normalize();
+          this.scene.add(directionalLight2);
+
+          const loader = new THREE.FBXLoader();
+          loader.load(
+              'public/tubes.fbx',
+              (object) => {
+                  this.scene.add(object);
+              }
+          );
+          this.map = map;
+
+          this.renderer = new THREE.WebGLRenderer({
+              canvas: map.getCanvas(),
+              context: gl,
+              antialias: true,
+          });
+
+          this.renderer.autoClear = false;
+
+          // Simple controls for debugging
+          const gui = new lil.GUI();
+          gui.add(modelTransform, 'scale', 1, 1000).name('Scale');
+          gui.add(modelTransform, 'rotateX', -Math.PI, Math.PI).name('Rotate X');
+          gui.add(modelTransform, 'rotateY', -Math.PI, Math.PI).name('Rotate Y');
+          gui.add(modelTransform, 'rotateZ', -Math.PI, Math.PI).name('Rotate Z');
+      },
+      render: function (gl, matrix) {
+          const rotationX = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), modelTransform.rotateX);
+          const rotationY = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), modelTransform.rotateY);
+          const rotationZ = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), modelTransform.rotateZ);
+
+          const m = new THREE.Matrix4().fromArray(matrix);
+          const l = new THREE.Matrix4().makeTranslation(modelTransform.translateX, modelTransform.translateY, modelTransform.translateZ)
+              .scale(new THREE.Vector3(modelTransform.scale, -modelTransform.scale, modelTransform.scale))
+              .multiply(rotationX)
+              .multiply(rotationY)
+              .multiply(rotationZ);
+
+          this.camera.projectionMatrix = m.multiply(l);
+          this.renderer.resetState();
+          this.renderer.render(this.scene, this.camera);
+          this.map.triggerRepaint();
+      }
+  };
+
+  map.addLayer(customLayer);
 });
 
 
@@ -32,7 +112,7 @@ function dbg(tag, obj) {
 // --- NAVIGATION CONTROLLER ---
 let navState = {
   targetCenter: [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat],
-  targetZoom: 14,
+  targetZoom: 16,
   targetPitch: 45,
   targetBearing: 0,
   spinning: true
@@ -121,9 +201,9 @@ function updateLegend(title = '', blurb = '') {
 
 // Helper function to get key from title
 function getCurrentKey(title) {
-  if (title === 'Michigan Central') return 'michiganCentral';
-  if (title === 'The Factory') return 'newlab';
-  if (title === 'Home') return 'home';
+  if (title === 'Downtown Atlanta') return 'michiganCentral';
+  if (title === 'Tech Square') return 'newlab';
+  if (title === 'Proposal') return 'home';
   return '';
 }
 
@@ -135,124 +215,66 @@ function navigateToLocation(key) {
   const existingPopups = document.querySelectorAll('.mapboxgl-popup');
   existingPopups.forEach(popup => popup.remove());
   
-  if (key === 'home') {
-    // Resume orbit with wider city view
-    spinning = true;
-    navState.spinning = true;
+  if (key === 'proposal') {
+    // Zoom in on the proposal location
+    const {lng, lat} = LOCATIONS.michiganCentral;
     
-    // Ensure smooth transition from current position
-    const currentCenter = map.getCenter();
-    orbitCenter = [currentCenter.lng, currentCenter.lat];
-    targetOrbitCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
+    spinning = false;
     
-    navState.targetCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
-    navState.targetZoom = 14;
-    navState.targetPitch = 45;
-    navState.targetBearing = map.getBearing(); // Preserve current bearing
-    updateLegend();
-    
-    // SINGLE CAMERA CONTROLLER: Use easeTo for everything
     map.easeTo({
-      center: navState.targetCenter,
-      bearing: navState.targetBearing,
-      zoom: navState.targetZoom,
-      pitch: navState.targetPitch,
+      center: [lng, lat],
+      zoom: 20,
+      pitch: 60,
+      bearing: map.getBearing(),
       duration: 2000
     });
     
-    // Ensure orbiting continues after transition
+    setTimeout(() => {
+      // Synchronize the orbit camera state with the map's final flight position
+      const finalCenter = map.getCenter();
+      orbitCenter = [finalCenter.lng, finalCenter.lat]; // Sync center to prevent jump
+      targetOrbitCenter = [lng, lat]; // Set the target for the orbit
+      bearing = map.getBearing(); // Sync bearing to prevent rotation jump
+      navState.targetZoom = 20;
+      
+      // Now it's safe to start the orbit animation
+      spinning = true;
+      
+      dbg("ORBIT_RESUMED", {location: "proposal"});
+    }, 2100);
+    
+  } else if (key === 'team') {
+    // Show the detail panel with team information
+    showDetailPanel('team');
+  } else {
+    // Default behavior for other locations (if any)
+    const {lng, lat, label} = LOCATIONS[key];
+    
+    spinning = true;
+    navState.spinning = true;
+    
+    const currentCenter = map.getCenter();
+    orbitCenter = [currentCenter.lng, currentCenter.lat];
+    targetOrbitCenter = [lng, lat];
+    
+    navState.targetCenter = [lng, lat];
+    navState.targetZoom = 16;
+    navState.targetPitch = 45;
+    navState.targetBearing = map.getBearing();
+    
+    map.easeTo({
+      center: navState.targetCenter,
+      zoom: navState.targetZoom,
+      pitch: navState.targetPitch,
+      bearing: navState.targetBearing,
+      duration: 2000
+    });
+    
     setTimeout(() => {
       spinning = true;
       navState.spinning = true;
-      dbg("ORBIT_RESUMED", {location: "home"});
-    }, 2100); // Slightly after easeTo duration
-    
-  } else {
-    const {lng, lat, label} = LOCATIONS[key];
-    
-    if (key === 'michiganCentral') {
-      spinning = true;  // ALWAYS ORBIT - even at Michigan Central
-      navState.spinning = true;
-      
-      // Ensure smooth transition from current position
-      const currentCenter = map.getCenter();
-      orbitCenter = [currentCenter.lng, currentCenter.lat];
-      targetOrbitCenter = [lng, lat];
-      
-      navState.targetCenter = [lng, lat];
-      navState.targetZoom = 18;
-      navState.targetPitch = 60;
-      navState.targetBearing = map.getBearing(); // Preserve current bearing
-      
-      // SINGLE CAMERA CONTROLLER: Use easeTo for initial positioning, then let orbit take over
-      map.easeTo({
-        center: navState.targetCenter,
-        zoom: navState.targetZoom,
-        pitch: navState.targetPitch,
-        bearing: navState.targetBearing,
-        duration: 2000
-      });
-      
-      // After transition completes, ensure orbiting is active
-      setTimeout(() => {
-        spinning = true;
-        navState.spinning = true;
-        dbg("ORBIT_RESUMED", {location: "michiganCentral"});
-      }, 2100); // Slightly after easeTo duration
-      
-    } else if (key === 'newlab') {
-      spinning = true;   // Keep orbiting for dynamic view around The Factory
-      navState.spinning = true;
-      
-      // CRITICAL FIX: Always start orbit interpolation from current map position
-      const currentCenter = map.getCenter();
-      orbitCenter = [currentCenter.lng, currentCenter.lat];
-      targetOrbitCenter = [lng, lat];  // Now we have a proper distance to interpolate
-      
-      navState.targetCenter = [lng, lat]; 
-      navState.targetZoom = 18;
-      navState.targetPitch = 60;
-      navState.targetBearing = map.getBearing(); // Preserve current bearing
-      
-      dbg("FACTORY_NAV", {
-        from: orbitCenter,
-        to: targetOrbitCenter,
-        distance: Math.sqrt(Math.pow(lng - currentCenter.lng, 2) + Math.pow(lat - currentCenter.lat, 2))
-      });
-      
-      // SINGLE CAMERA CONTROLLER: Use easeTo but let orbit handle center interpolation
-      map.easeTo({
-        zoom: navState.targetZoom,
-        pitch: navState.targetPitch,
-        bearing: navState.targetBearing,
-        duration: 2000
-      });
-      
-      // Ensure orbiting continues after transition
-      setTimeout(() => {
-        spinning = true;
-        navState.spinning = true;
-        dbg("ORBIT_RESUMED", {location: "factory"});
-      }, 2100); // Slightly after easeTo duration
-    }
-    
-    // Update legend with site info
-    let blurb = '';
-    if (key === 'michiganCentral') {
-      blurb = 'Historic train station, now a technology and mobility innovation hub. Camera orbits around the station for comprehensive viewing.';
-    } else if (key === 'newlab') {
-      blurb = 'Manufacturing and innovation facility in Detroit. Camera orbits continuously around The Factory location for dynamic exploration.';
-    } else {
-      blurb = 'Lorem ipsum placeholder text for this location.';
-    }
-    
-    updateLegend(label); // Remove blurb from bottom menu
-    
-    // Show popup with site information
-    new mapboxgl.Popup({offset:25})
-      .setLngLat([lng, lat])
-      .setHTML(`<h3>${label}</h3><p>${blurb}</p>`)
-      .addTo(map);
+      dbg("ORBIT_RESUMED", {location: key});
+    }, 2100);
   }
 }
 
@@ -276,10 +298,21 @@ document.getElementById('legend').addEventListener('click', (e) => {
   }
 });
 
-// resume orbit on map click (outside popup)
-map.on('click', () => { 
-  dbg("MAP_CLICK", {action: "resume_orbit"});
-  navigateToLocation('home');  // Use new controller
+map.on('dragstart', () => {
+  spinning = false;
+});
+
+map.on('click', () => {
+  spinning = true;
+  targetOrbitCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
+  navState.targetZoom = 16;
+  map.easeTo({
+    center: targetOrbitCenter,
+    zoom: navState.targetZoom,
+    pitch: 45,
+    bearing: 0,
+    duration: 2000
+  });
 });
 
 // Add moveend logging
@@ -301,30 +334,40 @@ let currentDetailLocation = null;
 
 // Detail content data
 const DETAIL_DATA = {
-  home: {
-    title: 'Detroit Overview',
+  proposal: {
+    title: 'Proposal Overview',
     image: 'public/mc.jpg',
-    description: `Detroit, the Motor City, stands as a testament to American industrial innovation and urban resilience. From its historic neighborhoods to modern innovation districts, Detroit continues to evolve as a center for technology, manufacturing, and cultural renaissance. The city's transformation from industrial powerhouse to innovation hub represents one of the most compelling urban renewal stories in modern America.
+    description: `This proposal showcases Atlanta as an ideal location for innovation and development. Centered at the coordinates 33.787164594671104, -84.38587349098589, this strategic position offers unparalleled access to Atlanta's business district, technology corridors, and cultural landmarks.
 
-    Key features include the historic downtown core, the emerging technology corridor, and the revitalized riverfront districts. Each area tells a unique story of Detroit's past, present, and future vision.`
+    The proposed location benefits from Atlanta's position as a major hub for commerce, technology, and culture in the southeastern United States. From its historic roots as a railroad junction to its emergence as a modern metropolis, Atlanta continues to evolve as a center for innovation, finance, and international business.`
   },
-  michiganCentral: {
-    title: 'Michigan Central Station',
-    image: 'public/mc.jpg',
-    description: `Michigan Central Station, an architectural masterpiece built in 1913, stands as Detroit's most iconic landmark. This Beaux-Arts monument, designed by the same architects who created Grand Central Terminal in New York, represents the golden age of American railroad travel.
-
-    After decades of abandonment, the station has been meticulously restored as Ford's innovation campus, housing thousands of employees working on autonomous vehicles, electric mobility, and smart city technologies. The restoration preserved the building's historic grandeur while adding cutting-edge facilities for the future of transportation.
-
-    The 18-story building features soaring archways, intricate stonework, and panoramic views of the Detroit River. Today, it serves as a beacon of Detroit's technological renaissance and a symbol of the city's commitment to innovation and sustainability.`
-  },
-  newlab: {
-    title: 'The Factory',
-    image: 'public/mc.jpg',
-    description: `The Factory represents Detroit's manufacturing heritage reimagined for the modern era. This adaptive reuse facility transforms traditional industrial spaces into cutting-edge innovation labs, maker spaces, and collaborative work environments.
-
-    Featuring state-of-the-art fabrication equipment, 3D printing facilities, and advanced prototyping labs, The Factory serves as an incubator for Detroit's next generation of manufacturers and makers. The facility bridges the gap between traditional craftsmanship and digital manufacturing, embodying Detroit's evolution from mass production to mass customization.
-
-    Programs at The Factory include workforce development, startup incubation, and community maker spaces. The facility hosts regular workshops, technology demonstrations, and collaborative projects that bring together established manufacturers with emerging entrepreneurs.`
+  team: {
+    slideshow: [
+      'public/about/slide1.jpg',
+      'public/about/slide2.jpg',
+      'public/about/slide3.jpg'
+    ],
+    teamIntro: {
+      title: 'Our Team',
+      description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniamLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam`
+    },
+    members: [
+      {
+        name: 'Name - Title',
+        image: 'public/about/team1.jpg',
+        description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniamLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam`,
+        website: 'Website'
+      },
+      {
+        name: 'Name - Title',
+        image: 'public/about/team2.jpg',
+        description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniamLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam`,
+        website: 'Website'
+      }
+    ]
   }
 };
 
@@ -352,26 +395,93 @@ document.querySelector('.button-group-fullscreen').addEventListener('click', (e)
 });
 
 function getSelectedLocation() {
-  // Return current location based on legend state or default to home
-  const infoDiv = document.getElementById('info');
-  if (infoDiv.innerHTML.includes('Michigan Central')) return 'michiganCentral';
-  if (infoDiv.innerHTML.includes('Factory')) return 'newlab';
-  return 'home';
+  const selectedBtn = document.querySelector('#legend .button-group button.selected');
+  if (selectedBtn) {
+    return selectedBtn.dataset.key;
+  }
+  return 'proposal';
 }
 
 function showDetailPanel(key) {
   const panel = document.getElementById('detail-panel');
+  const proposalContent = document.getElementById('proposal-content');
+  const teamContent = document.getElementById('team-content');
   const data = DETAIL_DATA[key];
-  
-  // Update content
-  document.getElementById('detail-title').textContent = data.title;
-  document.getElementById('detail-description').innerHTML = data.description;
-  document.getElementById('detail-image-container').style.backgroundImage = `url('${data.image}')`;
-  
-  // Show panel
+
+  if (key === 'team') {
+    proposalContent.style.display = 'none';
+    teamContent.style.display = 'grid';
+
+    const slideshowContainer = document.getElementById('slideshow-container');
+    slideshowContainer.innerHTML = '';
+    data.slideshow.forEach(image => {
+      const slide = document.createElement('div');
+      slide.className = 'slide';
+      const img = document.createElement('img');
+      img.src = image;
+      slide.appendChild(img);
+      slideshowContainer.appendChild(slide);
+    });
+
+    const prev = document.createElement('a');
+    prev.className = 'prev';
+    prev.innerHTML = '&#10094;';
+    prev.onclick = () => plusSlides(-1);
+    slideshowContainer.appendChild(prev);
+
+    const next = document.createElement('a');
+    next.className = 'next';
+    next.innerHTML = '&#10095;';
+    next.onclick = () => plusSlides(1);
+    slideshowContainer.appendChild(next);
+
+    const teamMembersContainer = document.getElementById('team-members-container');
+    teamMembersContainer.innerHTML = `<div id="team-intro"><h1>${data.teamIntro.title}</h1><p>${data.teamIntro.description}</p></div>`;
+    data.members.forEach(member => {
+      teamMembersContainer.innerHTML += `
+        <div class="team-member">
+          <img src="${member.image}" alt="${member.name}">
+          <div>
+            <h2>${member.name}</h2>
+            <p>${member.description}</p>
+            <a href="${member.website}" target="_blank">Website</a>
+          </div>
+        </div>
+      `;
+    });
+
+    showSlides(1);
+  } else {
+    proposalContent.style.display = 'grid';
+    teamContent.style.display = 'none';
+    
+    document.getElementById('detail-title').textContent = data.title;
+    document.getElementById('detail-description').innerHTML = data.description;
+    document.getElementById('detail-image-container').style.backgroundImage = `url('${data.image}')`;
+  }
+
   panel.classList.remove('detail-hidden');
   panel.classList.add('detail-visible');
 }
+
+let slideIndex = 1;
+
+function plusSlides(n) {
+  showSlides(slideIndex += n);
+}
+
+function showSlides(n) {
+  let i;
+  let slides = document.getElementsByClassName("slide");
+  if (n > slides.length) {slideIndex = 1}
+  if (n < 1) {slideIndex = slides.length}
+  for (i = 0; i < slides.length; i++) {
+      slides[i].style.display = "none";
+  }
+  slides[slideIndex-1].style.display = "block";
+}
+
+
 
 function hideDetailPanel() {
   const panel = document.getElementById('detail-panel');
