@@ -1,57 +1,229 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Detroit Orbit Demo</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orbit Demo - SVG Placement Tool</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
 </head>
 <body>
   <div id="map"></div>
   
-  <!-- Legend Toggle Button -->
-  <button id="legend-toggle">🔍</button>
-  
-  <!-- Style Toggle Buttons -->
+  <!-- PRECISION CROSSHAIR OVERLAY -->
+  <div id="precision-crosshair" style="display: none;">
+    <div class="crosshair-h"></div>
+    <div class="crosshair-v"></div>
+    <div class="precision-coords">
+      <span id="live-coords">0.000000, 0.000000</span>
+      <span id="precision-mode">NORMAL</span>
+    </div>
+  </div>
+
+  <!-- Style Controls in Top-Left -->
   <div id="style-controls">
-    <button id="light-style" data-style="mapbox://styles/mapbox/light-v11">☀️</button>
-    <button id="dark-style" data-style="mapbox://styles/mapbox/dark-v11">🌙</button>
-    <button id="standard-style" data-style="mapbox://styles/mapbox/standard">🗺️</button>
-    <button id="satellite-style" data-style="mapbox://styles/mapbox/satellite-streets-v12">🌍</button>
-  </div>
-
-  <!-- Collapsible Legend Panel -->
-  <div id="legend">
-    <div class="button-group">
-      <button data-key="home">Home</button>
-      <button data-key="michiganCentral">Michigan Central</button>
-      <button data-key="newlab">The Factory</button>
-    </div>
-    <div id="info" class="clickable-info"></div>
-  </div>
-
-  <!-- Full Screen Detail Panel -->
-  <div id="detail-panel" class="detail-hidden">
-    <div class="detail-header">
-      <div class="button-group-fullscreen">
-        <button data-key="home">Home</button>
-        <button data-key="michiganCentral">Michigan Central</button>
-        <button data-key="newlab">The Factory</button>
-      </div>
-      <button id="close-detail-btn">✕</button>
-    </div>
-    <div class="detail-content">
-      <div class="detail-images">
-        <div id="detail-image-container"></div>
-      </div>
-      <div class="detail-text">
-        <h1 id="detail-title"></h1>
-        <div id="detail-description"></div>
-      </div>
-    </div>
+    <button data-style="mapbox://styles/mapbox/light-v11" title="Light Mode">☀️</button>
+    <button data-style="mapbox://styles/mapbox/standard" title="Standard Mode">🗺️</button>
+    <button id="svg-editor-toggle" title="SVG Placement Tool">⚙️</button>
   </div>
   
-  <script src="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js"></script>
+  <!-- Precision Mode Status -->
+  <div id="precision-status" style="position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 12px; z-index: 1000; display: none;">
+    <div id="mode-indicator">NORMAL MODE</div>
+    <div id="controls-hint" style="font-size: 10px; opacity: 0.7; margin-top: 4px;">Press C for crosshair, Ctrl+P for help</div>
+  </div>
+
+  <!-- Legend Toggle Button -->
+  <button id="legend-toggle">📍</button>
+
+  <!-- Legend Panel -->
+  <div id="legend" class="legend-hidden">
+    <div class="legend-header">
+      <h3>Locations</h3>
+      <button id="close-legend-btn">✕</button>
+    </div>
+    <div class="legend-content">
+      <button class="legend-item" data-location="rooseveltPark">Roosevelt Park</button>
+      <button class="legend-item" data-location="michiganCentral">Michigan Central</button>
+      <button class="legend-item" data-location="campusMartius">Campus Martius</button>
+      <button class="legend-item" data-location="newlab">The Factory</button>
+    </div>
+  </div>
+
+  <!-- Building Settings Panel (Hidden) -->
+  <div id="building-settings" class="editor-hidden">
+    <div class="editor-header">
+      <h3>Building Highlight Settings</h3>
+      <div id="building-mode-indicator">🏢 Light Mode Only</div>
+      <button id="close-building-settings-btn">✕</button>
+    </div>
+    <div class="editor-content">
+      <div class="editor-section">
+        <label>Target Building:</label>
+        <select id="building-target-select">
+          <option value="michiganCentral">Michigan Central Station</option>
+        </select>
+      </div>
+      <div class="editor-section">
+        <label>Highlight Color:</label>
+        <input type="color" id="building-color" value="#0066ff">
+        <div class="color-preview" id="color-preview"></div>
+      </div>
+      <div class="editor-section">
+        <label>Opacity: <span id="building-opacity-value">0.8</span></label>
+        <input type="range" id="building-opacity" min="0.1" max="1.0" step="0.1" value="0.8">
+      </div>
+      <div class="editor-section">
+        <label>Enable Highlighting:</label>
+        <input type="checkbox" id="building-highlight-enabled" checked>
+        <span>Only works in Light Mode</span>
+      </div>
+      <div class="editor-actions">
+        <button id="apply-building-settings">Apply Settings</button>
+        <button id="reset-building-settings">Reset to Default</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SVG Editor Panel - Redesigned for Logical Workflow -->
+  <div id="svg-editor" class="editor-hidden">
+    <div class="editor-header">
+      <h3>SVG Placement Tool</h3>
+      <div id="edit-mode-indicator">
+        <span id="current-svg-indicator">No SVG Selected</span>
+      </div>
+      <button id="close-editor-btn">✕</button>
+    </div>
+    <div class="editor-content">
+      
+      <!-- Step 1: File Selection -->
+      <div class="workflow-step">
+        <div class="step-header">
+          <span class="step-number">1</span>
+          <h4>Select SVG File</h4>
+        </div>
+        <div class="file-grid">
+          <select id="svg-file-select" class="file-selector">
+            <option value="">Loading SVG files...</option>
+          </select>
+          <button id="load-svg-btn" class="primary-btn" disabled>Load SVG</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Position & Transform -->
+      <div class="workflow-step" id="placement-step" style="display: none;">
+        <div class="step-header">
+          <span class="step-number">2</span>
+          <h4>Position & Transform</h4>
+        </div>
+        
+        <!-- Quick Coordinate Input -->
+        <div class="quick-coords">
+          <label>Quick Coordinates (Google Maps format):</label>
+          <div class="coord-input-row">
+            <input type="text" id="google-coords" placeholder="42.3289, -83.0776">
+            <button id="apply-coords-btn" class="secondary-btn">Apply</button>
+          </div>
+        </div>
+
+        <!-- Precise Controls -->
+        <div class="control-group">
+          <div class="control-row">
+            <label>Latitude <span id="lat-value" class="value-display">42.3289</span></label>
+            <div class="input-group">
+              <input type="number" id="lat-input" step="0.0000001" class="coord-input" value="42.3289" placeholder="42.3289">
+              <input type="range" id="lat-slider" min="42.25" max="42.45" step="0.0000001" value="42.3289" class="coord-slider">
+            </div>
+          </div>
+          
+          <div class="control-row">
+            <label>Longitude <span id="lng-value" class="value-display">-83.0776</span></label>
+            <div class="input-group">
+              <input type="number" id="lng-input" step="0.0000001" class="coord-input" value="-83.0776" placeholder="-83.0776">
+              <input type="range" id="lng-slider" min="-83.15" max="-83.00" step="0.0000001" value="-83.0776" class="coord-slider">
+            </div>
+          </div>
+          
+          <div class="control-row">
+            <label>Scale <span id="scale-value" class="value-display">1.0</span></label>
+            <div class="input-group">
+              <input type="number" id="scale-input" step="0.00001" min="0.00001" max="10" class="coord-input" value="1.0" placeholder="1.0">
+              <input type="range" id="scale-slider" min="0.00001" max="10" step="0.00001" value="1.0" class="coord-slider">
+            </div>
+          </div>
+          
+          <div class="control-row">
+            <label>Rotation <span id="rotation-value" class="value-display">0°</span></label>
+            <div class="input-group">
+              <input type="number" id="rotation-input" step="0.00001" min="0" max="360" class="coord-input" value="0" placeholder="0">
+              <input type="range" id="rotation-slider" min="0" max="360" step="0.00001" value="0" class="coord-slider">
+            </div>
+          </div>
+        </div>
+
+        <!-- Visual Controls -->
+        <div class="visual-controls">
+          <div class="control-row">
+            <label>Color</label>
+            <div class="input-group">
+              <input type="color" id="color-input" class="color-picker-modern">
+            </div>
+          </div>
+          <div class="control-row">
+            <label>Opacity <span id="opacity-value" class="value-display">0.8</span></label>
+            <div class="input-group">
+              <input type="number" id="opacity-input" step="0.1" min="0" max="1" class="coord-input" value="0.8" placeholder="0.8">
+              <input type="range" id="opacity-slider" min="0" max="1" step="0.1" value="0.8" class="coord-slider">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Save & Continue -->
+      <div class="workflow-step save-section" id="save-step" style="display: none;">
+        <div class="step-header save-header">
+          <span class="step-number">💾</span>
+          <div class="header-text">
+            <h4>Save & Continue</h4>
+            <p class="step-description">Finalize your SVG placement or continue with another</p>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button id="save-svg-btn" class="success-btn">
+            <span class="btn-icon">💾</span>
+            <span class="btn-text">Save This SVG</span>
+          </button>
+          <button id="make-permanent-btn" class="permanent-btn">
+            <span class="btn-icon">🌐</span>
+            <span class="btn-text">Make Permanent</span>
+          </button>
+          <button id="save-and-next-btn" class="primary-btn">
+            <span class="btn-icon">💾➡️</span>
+            <span class="btn-text">Save & Add Next</span>
+          </button>
+          <button id="discard-btn" class="danger-btn">
+            <span class="btn-icon">🗑️</span>
+            <span class="btn-text">Discard Changes</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Placed SVGs List -->
+      <div class="workflow-step">
+        <div class="step-header">
+          <span class="step-number">📋</span>
+          <h4>Placed SVGs (<span id="svg-count">0</span>)</h4>
+        </div>
+        <div id="placed-svgs-list" class="svg-list">
+          <div class="no-svgs-message">No SVGs placed yet</div>
+        </div>
+        <button id="clear-all-svgs" class="danger-btn">Clear All SVGs</button>
+      </div>
+      
+    </div>
+  </div>
+
   <script src="main.js"></script>
 </body>
 </html>

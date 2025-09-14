@@ -1,3 +1,513 @@
+/* SVG Editor v4.0 - CLIENT-FACING PROFESSIONAL DESIGN */
+
+/* Workflow Steps - Enhanced Client-Facing Design */
+.workflow-step {
+  margin-bottom: 20px;
+  background: #ffffff;
+  border: 2px solid #f1f5f9;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.workflow-step:hover {
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.step-header h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.025em;
+}
+
+/* File Selection */
+.file-grid {
+  padding: 20px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.file-selector {
+  flex: 1;
+  min-height: 44px;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+}
+
+/* Quick Coordinates */
+.quick-coords {
+  padding: 20px;
+  background: #f0f9ff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.coord-input-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.coord-input-row input {
+  flex: 1;
+  min-height: 44px;
+  padding: 12px 16px;
+  border: 2px solid #2563eb;
+  border-radius: 8px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 14px;
+}
+
+/* Control Groups */
+.control-group,
+.visual-controls {
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.control-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.control-row label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.value-display {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: #667eea;
+  background: #f0f4ff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #c7d2fe;
+  min-width: 80px;
+  text-align: center;
+}
+
+/* INPUT GROUP LAYOUT - NO OVERLAPS */
+.input-group {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+}
+
+.coord-input {
+  flex: 0 0 140px;
+  min-height: 48px !important;
+  padding: 12px 16px !important;
+  border: 2px solid #d1d5db !important;
+  border-radius: 8px !important;
+  font-size: 16px !important;
+  font-family: 'SF Mono', Monaco, monospace !important;
+  background: #ffffff !important;
+  transition: all 0.2s ease !important;
+}
+
+.coord-input:focus {
+  border-color: #667eea !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+.coord-slider {
+  flex: 1;
+  min-width: 120px;
+  height: 8px !important;
+  background: #e2e8f0 !important;
+  border-radius: 4px !important;
+  outline: none !important;
+  cursor: pointer !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+.coord-slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #667eea;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.coord-slider::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #667eea;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* COLOR PICKER MODERN */
+.color-picker-modern {
+  width: 80px;
+  height: 48px;
+  padding: 4px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.color-picker-modern:hover {
+  border-color: #667eea;
+  transform: scale(1.05);
+}
+
+/* QUICK COORDINATES SECTION */
+.quick-coords {
+  padding: 24px;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 2px solid #e2e8f0;
+}
+
+.quick-coords label {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+/* PRECISION CROSSHAIR OVERLAY */
+#precision-crosshair {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 10000;
+}
+
+.crosshair-h {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: #ff0066;
+  box-shadow: 0 0 4px rgba(255, 0, 102, 0.8);
+  transform: translateY(-50%);
+}
+
+.crosshair-v {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: #ff0066;
+  box-shadow: 0 0 4px rgba(255, 0, 102, 0.8);
+  transform: translateX(-50%);
+}
+
+.precision-coords {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -150%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #ff0066;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #ff0066;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+#live-coords {
+  display: block;
+  color: #ffffff;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+#precision-mode {
+  display: block;
+  font-size: 10px;
+  opacity: 0.8;
+  text-align: center;
+}
+
+.coord-input {
+  min-height: 44px;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+
+.coord-slider {
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Slider Styling - Clean and Functional */
+.coord-slider::-webkit-slider-track {
+  background: #e2e8f0;
+  height: 6px;
+  border-radius: 3px;
+  border: 1px solid #cbd5e1;
+}
+
+.coord-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: #2563eb;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  margin-top: -9px;
+}
+
+.coord-slider::-webkit-slider-thumb:hover {
+  background: #1d4ed8;
+  transform: scale(1.1);
+}
+
+.coord-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+}
+
+/* Firefox Slider Support */
+.coord-slider::-moz-range-track {
+  background: #e2e8f0;
+  height: 6px;
+  border-radius: 3px;
+  border: 1px solid #cbd5e1;
+}
+
+.coord-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: #2563eb;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+/* Color Picker */
+.color-picker {
+  width: 60px;
+  height: 44px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Action Buttons */
+.action-buttons {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #f8fafc;
+  border-radius: 0 0 12px 12px;
+}
+
+/* Button Styles - Professional Client-Facing Design */
+.primary-btn,
+.secondary-btn,
+.success-btn {
+  min-height: 48px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  letter-spacing: -0.025em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.primary-btn {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.primary-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.primary-btn:disabled {
+  background: #9ca3af;
+  border-color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.secondary-btn {
+  background: #f8fafc;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.secondary-btn:hover {
+  background: #f1f5f9;
+  border-color: #9ca3af;
+}
+
+.success-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border-color: #10b981;
+}
+
+.success-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+}
+
+.permanent-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border-color: #3b82f6;
+  position: relative;
+  overflow: hidden;
+}
+
+.permanent-btn:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.permanent-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.permanent-btn:hover::before {
+  left: 100%;
+}
+
+/* Enhanced Save Section */
+.save-section {
+  border: 3px solid #10b981 !important;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%) !important;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15) !important;
+}
+
+.save-header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+}
+
+.save-header .step-number {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  box-shadow: none !important;
+}
+
+.save-header h4 {
+  color: white !important;
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.step-description {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+.btn-icon {
+  font-size: 16px;
+}
+
+.btn-text {
+  font-weight: 600;
+}
 html, body, #map {
   height: 100%;
   margin: 0;
@@ -56,6 +566,39 @@ html, body, #map {
 }
 
 #style-controls button:hover {
+  background: #fff;
+  color: #000;
+}
+
+/* Zoom Controls in Top-Right */
+#zoom-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 1001;
+}
+
+#zoom-controls button {
+  width: 40px;
+  height: 40px;
+  background: #000;
+  color: #fff;
+  border: 2px solid #fff;
+  cursor: pointer;
+  font-size: 20px;
+  font-family: 'Helvetica', Arial, sans-serif;
+  font-weight: bold;
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+#zoom-controls button:hover {
   background: #fff;
   color: #000;
 }
@@ -193,6 +736,316 @@ html, body, #map {
   transform: translateY(0);
 }
 
+/* Building Settings Panel - Hidden but functions preserved */
+#building-settings,
+#building-settings-toggle {
+  display: none !important; /* Hide the panel and toggle button completely */
+}
+
+/* Building Settings Color Preview */
+.color-preview {
+  width: 30px;
+  height: 30px;
+  border: 2px solid #333;
+  border-radius: 4px;
+  margin-left: 10px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* SVG List - Clean, Organized, Accessible */
+.svg-list {
+  max-height: 200px; /* More space for items */
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 8px; /* Consistent border radius */
+  margin: 8px 0; /* Consistent spacing */
+}
+
+.svg-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px; /* Larger touch target */
+  margin: 0; /* Remove margin, use borders */
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 44px; /* Minimum touch target */
+}
+
+.svg-item:last-child {
+  border-bottom: none; /* Remove last border */
+}
+
+.svg-item:hover {
+  background: #f8fafc; /* Subtle hover */
+}
+
+.svg-item.active {
+  background: #2563eb; /* Primary blue (10% accent) */
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+/* SVG Item Content - Clear Hierarchy */
+.svg-item-info {
+  flex: 1;
+  margin-right: 12px; /* Space from actions */
+}
+
+.svg-item-name {
+  font-weight: 600; /* Medium weight */
+  font-size: 14px; /* Clear hierarchy */
+  color: #1e293b;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+
+.svg-item-coords {
+  font-size: 12px;
+  color: #64748b; /* Muted text (30% secondary) */
+  font-family: 'SF Mono', 'Monaco', monospace;
+  line-height: 1.3;
+}
+
+.svg-item.active .svg-item-name {
+  color: #ffffff;
+}
+
+.svg-item.active .svg-item-coords {
+  color: #e0e7ff; /* Light blue for active state */
+}
+
+/* SVG Item Actions - Accessible Buttons */
+.svg-item-actions {
+  display: flex;
+  gap: 8px; /* Consistent spacing */
+}
+
+.svg-item-btn {
+  background: #f1f5f9;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 8px; /* Larger touch target */
+  min-width: 32px; /* Minimum touch target */
+  min-height: 32px; /* Minimum touch target */
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 6px; /* Consistent border radius */
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.svg-item-btn:hover {
+  background: #e2e8f0;
+  border-color: #9ca3af;
+}
+
+.svg-item.active .svg-item-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.svg-item.active .svg-item-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.no-svgs-message {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 20px;
+}
+
+/* Buttons - Following Design Principles */
+.danger-btn {
+  background: #dc2626 !important; /* Consistent red */
+  color: #ffffff !important;
+  border: 1px solid #dc2626 !important;
+  padding: 12px 16px; /* Larger touch target */
+  min-height: 44px; /* Minimum touch target */
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px; /* Consistent border radius */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 8px; /* Consistent spacing */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.danger-btn:hover {
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+  transform: translateY(-1px); /* Subtle lift */
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.danger-btn:active {
+  transform: translateY(0); /* Press down */
+}
+
+/* Coordinate Input Groups - Clean, Organized */
+.coordinate-manual-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Consistent spacing */
+  padding: 16px;
+  background: #f8fafc; /* Subtle background (60% neutral) */
+  border: 1px solid #e2e8f0;
+  border-radius: 8px; /* Consistent border radius */
+}
+
+.coord-input {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Generous spacing */
+}
+
+.coord-input label {
+  min-width: 80px; /* Aligned labels */
+  font-weight: 500; /* Medium weight */
+  font-size: 14px; /* Consistent hierarchy */
+  color: #374151; /* High contrast */
+}
+
+.coord-input input {
+  flex: 1;
+  padding: 12px 16px; /* Larger touch target */
+  min-height: 44px; /* Minimum touch target */
+  border: 1px solid #d1d5db;
+  border-radius: 8px; /* Consistent border radius */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.coord-input input:focus {
+  outline: none;
+  border-color: #2563eb; /* Primary blue focus */
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); /* Focus ring */
+}
+
+/* Google Maps Input - Highlighted, Easy to Use */
+.coord-input-single {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Consistent spacing */
+}
+
+.coord-input-single label {
+  font-weight: 600; /* Medium weight */
+  font-size: 14px; /* Consistent hierarchy */
+  color: #1e293b; /* High contrast */
+}
+
+.coord-input-single input {
+  padding: 12px 16px; /* Larger touch target */
+  min-height: 44px; /* Minimum touch target */
+  border: 2px solid #2563eb; /* Primary blue border */
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  font-size: 14px;
+  background: #f0f9ff; /* Light blue background */
+  border-radius: 8px; /* Consistent border radius */
+  transition: all 0.2s ease;
+}
+
+.coord-input-single input:focus {
+  outline: none;
+  border-color: #1d4ed8; /* Darker blue focus */
+  background: #dbeafe; /* Slightly darker background */
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); /* Focus ring */
+}
+
+.coord-separator {
+  text-align: center;
+  font-weight: 500; /* Medium weight */
+  color: #64748b; /* Muted text (30% secondary) */
+  margin: 16px 0; /* Consistent spacing */
+  font-size: 14px;
+  position: relative;
+}
+
+.coord-separator::before,
+.coord-separator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.coord-separator::before {
+  left: 0;
+}
+
+.coord-separator::after {
+  right: 0;
+}
+
+#parse-google-coords {
+  background: #4ECDC4;
+  color: white;
+  border: 2px solid #333;
+  padding: 6px 12px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 5px;
+  border-radius: 4px;
+}
+
+#parse-google-coords:hover {
+  background: #45b7aa;
+}
+
+/* Primary Action Buttons */
+#apply-manual-coords,
+#add-new-svg,
+#parse-google-coords {
+  background: #2563eb; /* Primary blue (10% accent) */
+  color: #ffffff;
+  border: 1px solid #2563eb;
+  padding: 12px 16px; /* Larger touch target */
+  min-height: 44px; /* Minimum touch target */
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px; /* Consistent border radius */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+#apply-manual-coords:hover,
+#add-new-svg:hover,
+#parse-google-coords:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  transform: translateY(-1px); /* Subtle lift */
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+#apply-manual-coords:active,
+#add-new-svg:active,
+#parse-google-coords:active {
+  transform: translateY(0); /* Press down */
+}
+
+#add-new-svg {
+  margin-left: 8px; /* Consistent spacing */
+}
+
 .detail-header {
   height: 80px;
   background: #000;
@@ -301,4 +1154,349 @@ html, body, #map {
   letter-spacing: 1px;
   text-transform: none;
   font-weight: normal;
+}
+
+/* SVG Editor Panel - Full Height, 30% Wider, Following Design Principles */
+#svg-editor {
+  position: fixed;
+  top: 0;
+  right: -500px; /* Start off-screen */
+  width: 468px; /* 30% wider: 360px * 1.3 = 468px */
+  height: 100vh; /* Full height */
+  background: #ffffff; /* Clean white background (60% neutral) */
+  border-left: 1px solid #e9ecef; /* Subtle left border only */
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08); /* Professional shadow */
+  z-index: 1500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; /* System fonts */
+  transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Smooth slide */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent panel from scrolling */
+}
+
+#svg-editor.editor-visible {
+  right: 0; /* Slide in from right */
+}
+
+#svg-editor.editor-hidden {
+  right: -500px; /* Hide off-screen */
+}
+
+/* Header - Clean, Professional Design */
+.editor-header {
+  flex-shrink: 0; /* Don't shrink */
+  height: 72px; /* Larger touch target */
+  background: #2563eb; /* Primary blue (10% accent) */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px; /* 24px spacing system */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.editor-header h3 {
+  color: #ffffff;
+  font-size: 18px; /* Clear hierarchy */
+  font-weight: 600; /* Medium weight */
+  margin: 0;
+  letter-spacing: -0.025em; /* Tight spacing for readability */
+}
+
+#edit-mode-indicator {
+  color: #e0e7ff; /* Lighter blue for secondary text */
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 12px; /* 8px spacing system */
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Close Button - 44px Minimum Touch Target */
+#close-editor-btn {
+  width: 44px; /* Minimum touch target */
+  height: 44px; /* Minimum touch target */
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px; /* Consistent border radius */
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#close-editor-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px); /* Subtle lift effect */
+}
+
+#close-editor-btn:active {
+  transform: translateY(0); /* Press down effect */
+}
+
+/* Content Area - Flexible, Scrollable - ENHANCED */
+.editor-content {
+  flex: 1 !important; /* Take remaining space */
+  padding: 0; /* Remove padding, add to sections */
+  overflow-y: auto !important; /* Force scroll when needed */
+  overflow-x: hidden !important; /* Prevent horizontal scroll */
+  background: #ffffff;
+  min-height: 0 !important; /* Allow flex shrinking */
+  max-height: calc(100vh - 72px) !important; /* Account for header height */
+  height: calc(100vh - 72px) !important; /* Force specific height */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+  
+  /* Visible scrollbar for debugging */
+  scrollbar-width: auto;
+  scrollbar-color: #ff6b35 #f1f1f1;
+}
+
+/* Custom scrollbar styling */
+.editor-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.editor-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.editor-content::-webkit-scrollbar-thumb {
+  background: #ff6b35;
+  border-radius: 4px;
+}
+
+.editor-content::-webkit-scrollbar-thumb:hover {
+  background: #e55a2b;
+}
+
+/* Sections - Consistent Spacing & Visual Hierarchy */
+.editor-section {
+  padding: 24px; /* Generous white space */
+  border-bottom: 1px solid #f1f5f9; /* Subtle divider */
+  background: #ffffff;
+}
+
+.editor-section:last-child {
+  border-bottom: none; /* Remove last border */
+}
+
+/* Label Typography - Following Design Guidelines */
+.editor-section label {
+  display: block;
+  color: #1e293b; /* High contrast text (4.5:1+ ratio) */
+  font-size: 16px; /* 16px base for readability */
+  font-weight: 600; /* Medium weight for hierarchy */
+  margin-bottom: 8px; /* Consistent 8px spacing */
+  line-height: 1.5; /* Optimal readability */
+  letter-spacing: -0.01em; /* Slight tightening for clarity */
+}
+
+/* Value displays in labels */
+.editor-section label span {
+  color: #2563eb; /* Primary accent for values */
+  font-weight: 500; /* Slightly lighter for distinction */
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace; /* Monospace for precise values */
+  font-size: 14px; /* Slightly smaller for hierarchy */
+  margin-left: 8px; /* Breathing room */
+  padding: 2px 6px; /* Subtle background area */
+  background: rgba(37, 99, 235, 0.1); /* Light accent background */
+  border-radius: 4px; /* Consistent border radius */
+}
+
+
+/* Form Controls - Consistent, Accessible */
+.editor-section select,
+.editor-section input[type="number"],
+.editor-section input[type="color"] {
+  width: 100%;
+  min-height: 44px; /* Minimum touch target */
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px; /* Consistent border radius */
+  color: #374151; /* High contrast */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400; /* Normal weight */
+  font-size: 14px; /* Consistent hierarchy */
+  padding: 12px 16px; /* Larger touch target */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.editor-section select:focus,
+.editor-section input[type="number"]:focus,
+.editor-section input[type="color"]:focus {
+  outline: none;
+  border-color: #2563eb; /* Primary blue focus */
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); /* Focus ring */
+}
+
+/* Range Sliders - Following Design Guidelines - FORCE VISIBLE */
+.editor-section input[type="range"] {
+  width: 100% !important;
+  height: 44px !important; /* Minimum 44px touch target */
+  background: linear-gradient(to right, #e2e8f0 0%, #e2e8f0 100%) !important; /* Fallback background */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  margin: 16px 0 !important; /* Consistent 16px spacing */
+  cursor: pointer !important;
+  outline: none !important;
+  display: block !important; /* Force display */
+  position: relative !important;
+  border: 2px solid #cbd5e1 !important; /* Fallback border */
+  border-radius: 22px !important; /* Rounded fallback */
+}
+
+/* WebKit Browsers (Chrome, Safari, Edge) - FORCE VISIBLE */
+.editor-section input[type="range"]::-webkit-slider-track {
+  background: #e2e8f0 !important; /* More visible gray */
+  height: 8px !important; /* Thicker for visibility */
+  border-radius: 4px !important;
+  border: 2px solid #cbd5e1 !important; /* Stronger border */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1) !important; /* More depth */
+}
+
+.editor-section input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 28px !important; /* Larger for visibility */
+  height: 28px !important;
+  background: #2563eb !important; /* Primary accent (10%) */
+  border: 4px solid #ffffff !important; /* Thicker border */
+  border-radius: 50% !important;
+  cursor: grab !important;
+  box-shadow: 
+    0 4px 8px rgba(37, 99, 235, 0.3) !important,
+    0 2px 4px rgba(0, 0, 0, 0.2) !important; /* Stronger shadows */
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  margin-top: -12px !important; /* Center on thicker track */
+}
+
+.editor-section input[type="range"]::-webkit-slider-thumb:hover {
+  background: #1d4ed8; /* Darker on hover */
+  transform: scale(1.1); /* Subtle growth */
+  box-shadow: 
+    0 4px 8px rgba(37, 99, 235, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.editor-section input[type="range"]::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.05); /* Slight press effect */
+  box-shadow: 
+    0 2px 4px rgba(37, 99, 235, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Firefox */
+.editor-section input[type="range"]::-moz-range-track {
+  background: #f1f5f9; /* Neutral base (60%) */
+  height: 6px;
+  border-radius: 3px;
+  border: 1px solid #e2e8f0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.editor-section input[type="range"]::-moz-range-thumb {
+  width: 24px; /* 24px minimum for easy grabbing */
+  height: 24px;
+  background: #2563eb; /* Primary accent (10%) */
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 
+    0 2px 4px rgba(37, 99, 235, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.editor-section input[type="range"]::-moz-range-thumb:hover {
+  background: #1d4ed8;
+  transform: scale(1.1);
+}
+
+.editor-section input[type="range"]::-moz-range-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.05);
+}
+
+/* Focus states for accessibility */
+.editor-section input[type="range"]:focus {
+  outline: none;
+}
+
+.editor-section input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: 
+    0 0 0 3px rgba(37, 99, 235, 0.2), /* Focus ring */
+    0 2px 4px rgba(37, 99, 235, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.editor-section input[type="range"]:focus::-moz-range-thumb {
+  box-shadow: 
+    0 0 0 3px rgba(37, 99, 235, 0.2), /* Focus ring */
+    0 2px 4px rgba(37, 99, 235, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+}
+
+.input-group input {
+  flex: 1;
+}
+
+.editor-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.editor-actions button {
+  height: 38px;
+  background: #fff;
+  color: #495057;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  font-family: 'Helvetica', Arial, sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editor-actions button:hover {
+  background: #6f42c1;
+  color: #fff;
+  border-color: #6f42c1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(111, 66, 193, 0.2);
+}
+
+.coordinate-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.coordinate-input-group input[type="number"] {
+  flex: 1;
+  height: 32px;
+  font-size: 11px;
+  padding: 0 8px;
 }
