@@ -26,6 +26,7 @@
     <button data-style="mapbox://styles/mapbox/light-v11" title="Light Mode">☀️</button>
     <button data-style="mapbox://styles/mapbox/standard" title="Standard Mode">🗺️</button>
     <button id="svg-editor-toggle" title="SVG Placement Tool">⚙️</button>
+    <button id="admin-panel-toggle" title="Admin Panel">🛠️</button>
   </div>
   
   <!-- Precision Mode Status -->
@@ -221,6 +222,135 @@
         <button id="clear-all-svgs" class="danger-btn">Clear All SVGs</button>
       </div>
       
+    </div>
+  </div>
+
+  <!-- Admin Panel for Marker Management -->
+  <div id="admin-panel" class="editor-hidden">
+    <div class="editor-header">
+      <h3>Admin Panel - Marker Management</h3>
+      <div id="admin-mode-indicator">🛠️ Admin Mode</div>
+      <button id="close-admin-panel-btn">✕</button>
+    </div>
+    <div class="editor-content">
+      
+      <!-- Marker Selection -->
+      <div class="workflow-step">
+        <div class="step-header">
+          <span class="step-number">📍</span>
+          <h4>Select Marker to Edit</h4>
+        </div>
+        <div class="editor-section">
+          <label>Marker ID:</label>
+          <select id="admin-marker-select">
+            <option value="">Select a marker...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Marker Information Editor -->
+      <div class="workflow-step" id="admin-edit-section" style="display: none;">
+        <div class="step-header">
+          <span class="step-number">✏️</span>
+          <h4>Edit Marker Information</h4>
+        </div>
+        
+        <div class="editor-section">
+          <label>Name:</label>
+          <input type="text" id="admin-marker-name" placeholder="Marker name">
+        </div>
+        
+        <div class="editor-section">
+          <label>Category:</label>
+          <select id="admin-marker-category">
+            <option value="transportation">🚂 Transportation/Logistics</option>
+            <option value="manufacturing">🏭 Manufacturing/Workshop</option>
+            <option value="innovation">🚀 Innovation/Technology</option>
+            <option value="infrastructure">🏗️ Infrastructure/Transportation</option>
+            <option value="future">🔮 Future Development</option>
+          </select>
+        </div>
+        
+        <div class="editor-section">
+          <label>Short Description:</label>
+          <input type="text" id="admin-marker-short-desc" placeholder="Brief description">
+        </div>
+        
+        <div class="editor-section">
+          <label>Full Description:</label>
+          <textarea id="admin-marker-description" rows="4" placeholder="Detailed description"></textarea>
+        </div>
+        
+        <div class="editor-section">
+          <label>Size:</label>
+          <input type="text" id="admin-marker-size" placeholder="e.g. 10,000 sq ft">
+        </div>
+        
+        <div class="editor-section">
+          <label>Address:</label>
+          <input type="text" id="admin-marker-address" placeholder="Full address">
+        </div>
+        
+        <div class="editor-section">
+          <label>Image Path:</label>
+          <input type="text" id="admin-marker-image" placeholder="public/about/image.jpg">
+        </div>
+        
+        <div class="editor-section">
+          <label>Features (one per line):</label>
+          <textarea id="admin-marker-features" rows="5" placeholder="Feature 1
+Feature 2
+Feature 3"></textarea>
+        </div>
+        
+        <div class="editor-actions">
+          <button id="admin-save-marker" class="success-btn">Save Changes</button>
+          <button id="admin-reset-marker" class="secondary-btn">Reset</button>
+          <button id="admin-export-data" class="primary-btn">Export All Data</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Side Panel for Label Information -->
+  <div id="label-info-panel" class="side-panel">
+    <button id="close-panel" class="close-btn-overlay">×</button>
+    
+    <!-- Hero Image with Overlay -->
+    <div class="location-hero" id="location-image">
+      <img id="location-photo" src="" alt="" style="display: none;">
+      <div class="image-placeholder">📷 No photo available</div>
+      <div class="hero-overlay">
+        <div class="location-category" id="location-category">LOADING...</div>
+        <h2 class="location-title" id="location-title">Loading Location...</h2>
+        <div class="location-address" id="location-address">
+          <span class="location-icon">📍</span>
+          <span id="location-coordinates">Detroit, Michigan</span>
+        </div>
+        <div class="location-size-badge">
+          <span class="size-icon">📏</span>
+          <span id="location-size">Loading size...</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Content Area -->
+    <div class="panel-content">
+      <div class="info-section">
+        <h3>Description</h3>
+        <p id="location-description">Loading description...</p>
+      </div>
+      
+      <div class="info-section">
+        <h3>Key Features</h3>
+        <div id="location-features" class="features-grid">
+          <div class="feature-item">
+            <span class="feature-icon">⚡</span>
+            <span class="feature-text">Loading features...</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

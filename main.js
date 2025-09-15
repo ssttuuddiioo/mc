@@ -17,6 +17,179 @@ const map = new mapboxgl.Map({
   antialias: true
 });
 
+const newMarkers = [
+    { id: 1, lat: 42.32887642685346, lng: -83.07771868841701, color: '#4A90E2' },
+    { id: 2, lat: 42.3287336553628, lng: -83.07563729423877, color: '#4A90E2' },
+    { id: 3, lat: 42.331049686201276, lng: -83.07221479556428, color: '#4A90E2' },
+    { id: 11, text: "4-11", lat: 42.328154634328776, lng: -83.07535834450363, color: '#E74C3C' },
+    { id: 12, lat: 42.32698343914925, lng: -83.0809899182321, color: '#E74C3C' },
+    { id: 16, lat: 42.326498496839065, lng: -83.07267505001451, color: '#9B59B6' },
+    { id: 17, lat: 42.32933148027947, lng: -83.07537518116047, color: '#9B59B6' },
+    { id: 18, lat: 42.32846502089401, lng: -83.0778396126792, color: '#9B59B6' },
+    { id: 19, lat: 42.32872406892148, lng: -83.08228330495663, color: '#9B59B6' },
+    { id: 20, lat: 42.32828839662688, lng: -83.07564165737065, color: '#9B59B6' },
+    { id: 22, lat: 42.32706378807067, lng: -83.06791695933897, color: '#9B59B6' },
+    { id: 23, lat: 42.3263690476279, lng: -83.07403300892324, color: '#9B59B6' },
+    { id: 24, lat: 42.32698033777906, lng: -83.06843791965021, color: '#27AE60' },
+    { id: 25, lat: 42.32787627141858, lng: -83.07998978637444, color: '#27AE60' },
+    { id: 26, lat: 42.315049168497396, lng: -83.06827804205345, color: '#27AE60' },
+    { id: 27, lat: 42.31732332003473, lng: -83.06413034764108, color: '#27AE60' },
+    { id: 28, text: "28", lat: 42.32904224480186, lng: -83.08086956713913, color: '#5DADE2' },
+    { id: 28, text: "28", lat: 42.33016060731937, lng: -83.07923878407165, color: '#5DADE2' },
+    { id: 28, text: "28", lat: 42.331914452617156, lng: -83.0736844064228, color: '#5DADE2' },
+    { id: 28, text: "28", lat: 42.330176499429875, lng: -83.07198087929577, color: '#5DADE2' },
+    { id: 28, text: "28", lat: 42.33030901969737, lng: -83.0707049920504, color: '#5DADE2' }
+];
+
+// ENHANCED MARKER DATA - Admin Configurable Information
+const ENHANCED_MARKER_DATA = {
+    // Blue - Transportation/Logistics  
+    1: {
+        category: "🏢 MAIN BUILDINGS & WORKSPACES",
+        title: "The Station",
+        description: "The heart of Michigan Central, this beautifully restored historic train station is now a modern innovation hub. Home to offices, meeting spaces, events, and programs that bring together entrepreneurs, students, and established companies.",
+        features: [
+            {icon: "🚗", text: "Ford's innovation teams working on autonomous driving"},
+            {icon: "💻", text: "Google Code Next computer science programs for high school students"},
+            {icon: "🏢", text: "Flexible workspace and meeting rooms"},
+            {icon: "🎪", text: "Event spaces and community programming"},
+            {icon: "🎓", text: "Youth education programs (23,000 sq ft dedicated space)"}
+        ],
+        size: "18 floors",
+        address: "Central campus",
+        categoryColor: "#4A90E2",
+        image: "public/about/team1.jpg"
+    },
+    2: {
+        category: "🚂 TRANSPORTATION/LOGISTICS",
+        title: "Newlab at Michigan Central", 
+        description: "Newlab at Michigan Central is a collaborative workspace and platform for technology development, focusing on connected and autonomous vehicles, smart cities, and advanced manufacturing.",
+        features: [
+            {icon: "🔬", text: "R&D Facilities"},
+            {icon: "🤝", text: "Collaboration Spaces"},
+            {icon: "🧪", text: "Testing Labs"},
+            {icon: "🚀", text: "Startup Incubator"}
+        ],
+        size: "30,000 sq ft",
+        address: "2001 15th St, Detroit, MI 48216",
+        categoryColor: "#4A90E2",
+        image: "public/about/team2.jpg"
+    },
+    3: {
+        category: "🚂 TRANSPORTATION/LOGISTICS",
+        title: "The Factory",
+        description: "The Factory is a state-of-the-art manufacturing facility that bridges the gap between prototype and production, offering advanced manufacturing capabilities for mobility and technology companies.",
+        features: [
+            {icon: "🏭", text: "Advanced Manufacturing"},
+            {icon: "🛠️", text: "Prototyping"},
+            {icon: "📈", text: "Scale Production"},
+            {icon: "⚙️", text: "Equipment Access"}
+        ],
+        size: "45,000 sq ft",
+        address: "19 Vernor Hwy, Detroit, MI 48216",
+        categoryColor: "#4A90E2",
+        image: "public/about/slide1.jpg"
+    },
+    
+    // Red/Orange - Manufacturing/Workshop Facilities
+    4: {
+        category: "🏭 MANUFACTURING/WORKSHOP",
+        title: "Digital Fabrication Shop",
+        description: "Our Digital Fabrication Shop features the latest in 3D printing, CNC machining, and digital design tools, enabling rapid prototyping and small-batch production.",
+        features: [
+            {icon: "🖨️", text: "3D Printing"},
+            {icon: "⚙️", text: "CNC Machining"}, 
+            {icon: "⚡", text: "Laser Cutting"},
+            {icon: "💻", text: "Digital Design"}
+        ],
+        size: "5,000 sq ft",
+        address: "Building A, Michigan Central Campus",
+        categoryColor: "#E74C3C",
+        image: "public/about/slide2.jpg"
+    },
+    5: {
+        category: "🏭 MANUFACTURING/WORKSHOP",
+        title: "Wood Shop",
+        description: "A fully equipped woodworking shop combining traditional craftsmanship with modern CNC capabilities for furniture, prototypes, and architectural elements.",
+        features: [
+            {icon: "🪚", text: "Traditional Tools"},
+            {icon: "🤖", text: "CNC Router"},
+            {icon: "💨", text: "Dust Collection"},
+            {icon: "🎨", text: "Finishing Booth"}
+        ],
+        size: "3,500 sq ft",
+        address: "Building A, Michigan Central Campus",
+        categoryColor: "#E74C3C", 
+        image: "public/about/slide3.jpg"
+    },
+    6: {
+        category: "🏭 MANUFACTURING/WORKSHOP",
+        title: "Metal Shop",
+        description: "Professional metalworking shop with welding, machining, and forming capabilities for automotive prototypes and industrial applications.",
+        features: [
+            {icon: "🔥", text: "TIG/MIG Welding"},
+            {icon: "⚙️", text: "Metal Lathe"},
+            {icon: "🔧", text: "Mill"},
+            {icon: "⚡", text: "Plasma Cutting"}
+        ],
+        size: "4,000 sq ft",
+        address: "Building A, Michigan Central Campus",
+        categoryColor: "#E74C3C",
+        image: "public/about/slideshow1.jpg"
+    }
+};
+
+map.on('load', () => {
+    newMarkers.forEach(markerData => {
+        const el = document.createElement('div');
+        el.className = 'marker';
+        el.style.backgroundColor = markerData.color;
+        el.style.border = '2px solid white';
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+        el.style.color = 'white';
+        el.style.fontWeight = 'bold';
+        el.style.fontSize = '12px';
+        
+        // Use custom text if provided, otherwise use ID
+        const displayText = markerData.text || markerData.id.toString();
+        el.textContent = displayText;
+        
+        // Make rectangular for longer text, circular for single numbers
+        if (markerData.text && markerData.text.length > 2) {
+            // Rectangular for longer text
+            el.style.minWidth = '40px';
+            el.style.height = '25px';
+            el.style.borderRadius = '12px';
+            el.style.padding = '0 8px';
+        } else {
+            // Circular for single numbers
+            el.style.width = '30px';
+            el.style.height = '30px';
+            el.style.borderRadius = '50%';
+        }
+
+        // Make marker clickable
+        el.addEventListener('click', () => {
+            openSidePanel(markerData.id, displayText);
+        });
+        
+        // Add cursor pointer to indicate clickability
+        el.style.cursor = 'pointer';
+
+        new mapboxgl.Marker(el)
+            .setLngLat([markerData.lng, markerData.lat])
+            .addTo(map);
+    });
+    
+    // Setup side panel close functionality
+    setupSidePanel();
+    
+    // Initialize admin-configurable marker data
+    initializeMarkerData();
+});
+
 // NEW SVG Editor State Variables
 let currentWorkingSVG = null;
 let placedSVGs = new Map();
@@ -46,33 +219,33 @@ document.addEventListener('DOMContentLoaded', () => {
   if (panel) {
     console.log('✅ SVG Editor panel found');
     
-    // METHOD 1: Keyboard shortcut (E key)
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'e' || e.key === 'E') {
-        console.log('⌨️ E key pressed - toggling SVG editor');
-        toggleSVGPanel();
-      }
-    });
+    // METHOD 1: Keyboard shortcut (E key) - DISABLED
+    // document.addEventListener('keydown', (e) => {
+    //   if (e.key === 'e' || e.key === 'E') {
+    //     console.log('⌨️ E key pressed - toggling SVG editor');
+    //     toggleSVGPanel();
+    //   }
+    // });
     
-    // METHOD 2: Double-click anywhere on map
-    setTimeout(() => {
-      const mapContainer = document.getElementById('map');
-      if (mapContainer) {
-        mapContainer.addEventListener('dblclick', (e) => {
-          console.log('🖱️ Double-click detected - opening SVG editor');
-          openSVGPanel();
-        });
-      }
-    }, 1000);
+    // METHOD 2: Double-click anywhere on map - DISABLED
+    // setTimeout(() => {
+    //   const mapContainer = document.getElementById('map');
+    //   if (mapContainer) {
+    //     mapContainer.addEventListener('dblclick', (e) => {
+    //       console.log('🖱️ Double-click detected - opening SVG editor');
+    //       openSVGPanel();
+    //     });
+    //   }
+    // }, 1000);
     
-    // METHOD 3: Right-click context menu
-    document.addEventListener('contextmenu', (e) => {
-      if (e.target.id === 'map' || e.target.closest('#map')) {
-        e.preventDefault();
-        console.log('🖱️ Right-click on map - opening SVG editor');
-        openSVGPanel();
-      }
-    });
+    // METHOD 3: Right-click context menu - DISABLED
+    // document.addEventListener('contextmenu', (e) => {
+    //   if (e.target.id === 'map' || e.target.closest('#map')) {
+    //     e.preventDefault();
+    //     console.log('🖱️ Right-click on map - opening SVG editor');
+    //     openSVGPanel();
+    //   }
+    // });
     
     // METHOD 4: Console commands
     window.openSVGEditor = function() {
@@ -85,11 +258,11 @@ document.addEventListener('DOMContentLoaded', () => {
       clearAllSVGsNow();
     };
     
-    // METHOD 5: URL hash trigger
-    if (window.location.hash === '#svg-editor') {
-      console.log('🔗 URL hash detected - opening SVG editor');
-      openSVGPanel();
-    }
+    // METHOD 5: URL hash trigger - DISABLED
+    // if (window.location.hash === '#svg-editor') {
+    //   console.log('🔗 URL hash detected - opening SVG editor');
+    //   openSVGPanel();
+    // }
     
     // METHOD 6: Close button handler
     setTimeout(() => {
@@ -109,11 +282,11 @@ document.addEventListener('DOMContentLoaded', () => {
       clearAllSVGsNow();
     }, 1000);
     
-    // METHOD 8: Auto-open after 4 seconds (for testing)
-    setTimeout(() => {
-      console.log('⏰ Auto-opening SVG editor for testing...');
-      openSVGPanel();
-    }, 4000);
+    // METHOD 8: Auto-open DISABLED
+    // setTimeout(() => {
+    //   console.log('⏰ Auto-opening SVG editor for testing...');
+    //   openSVGPanel();
+    // }, 4000);
     
     console.log('✅ Multiple SVG editor triggers set up:');
     console.log('   - Press E key');
@@ -4210,3 +4383,418 @@ function hideDetailPanel() {
   panel.classList.remove('detail-visible');
   panel.classList.add('detail-hidden');
 }
+
+// Label data with information for each marker
+const labelData = {
+    1: {
+        category: "TRANSPORTATION HUB",
+        title: "Bagley Mobility Hub",
+        description: "Public EV charging; e-bike & e-scooter station; home to the Michigan Central Info Center.",
+        features: [
+            { icon: "🔌", text: "Electric Vehicle Charging Stations" },
+            { icon: "🚴", text: "E-bike & E-scooter Rental" },
+            { icon: "ℹ️", text: "Information Center" },
+            { icon: "🚗", text: "Public Transportation Access" },
+            { icon: "🌱", text: "Sustainable Design" }
+        ],
+        size: "15,000 sq ft",
+        image: "public/about/slideshow1.jpg"
+    },
+    2: {
+        category: "MAIN BUILDINGS & WORKSPACES",
+        title: "Innovation Laboratory",
+        description: "State-of-the-art research and development facility for automotive and mobility innovations.",
+        features: [
+            { icon: "🔬", text: "Advanced Research Labs" },
+            { icon: "🤖", text: "AI & Machine Learning" },
+            { icon: "⚡", text: "Clean Energy Testing" },
+            { icon: "🏭", text: "Prototype Manufacturing" }
+        ],
+        size: "25,000 sq ft",
+        image: "public/about/slideshow2.jpg"
+    },
+    3: {
+        category: "TESTING & INNOVATION ZONES",
+        title: "Autonomous Vehicle Testing Center",
+        description: "Comprehensive testing facility for autonomous vehicles and smart transportation systems.",
+        features: [
+            { icon: "🚗", text: "Autonomous Vehicle Testing" },
+            { icon: "📡", text: "5G Connectivity" },
+            { icon: "🛣️", text: "Smart Road Infrastructure" },
+            { icon: "📊", text: "Real-time Data Analytics" }
+        ],
+        size: "40,000 sq ft",
+        image: "public/about/slideshow3.jpg"
+    }
+};
+
+// ENHANCED_MARKER_DATA removed from here - moved to proper location after newMarkers
+
+// getEnhancedMarkerData function - combines enhanced data with fallback generation
+function getEnhancedMarkerData(labelId, displayText) {
+    // First try to get data from ENHANCED_MARKER_DATA
+    if (ENHANCED_MARKER_DATA[labelId]) {
+        return ENHANCED_MARKER_DATA[labelId];
+    }
+    
+    // Fall back to generateLabelData if no enhanced data exists
+    return generateLabelData(labelId, displayText);
+}
+
+// Generate sample data for labels that don't have specific data
+function generateLabelData(id, displayText) {
+    const categories = [
+        "MAIN BUILDINGS & WORKSPACES",
+        "MAKING & BUILDING SPACES", 
+        "TESTING & INNOVATION ZONES",
+        "DRONE & AERIAL TECHNOLOGY",
+        "DATA & TECHNOLOGY INFRASTRUCTURE",
+        "STRATEGIC LOCATION ADVANTAGES"
+    ];
+    
+    const titles = [
+        "Innovation Hub", "Research Center", "Manufacturing Space", "Testing Facility",
+        "Technology Lab", "Development Center", "Engineering Workshop", "Design Studio"
+    ];
+    
+    const features = [
+        [
+            { icon: "🔬", text: "Advanced Research Labs" },
+            { icon: "🤖", text: "AI & Machine Learning" },
+            { icon: "⚡", text: "Clean Energy Testing" }
+        ],
+        [
+            { icon: "🏭", text: "Manufacturing Equipment" },
+            { icon: "🔧", text: "3D Printing Facilities" },
+            { icon: "🛠️", text: "Assembly Lines" }
+        ],
+        [
+            { icon: "📡", text: "5G Connectivity" },
+            { icon: "🛣️", text: "Smart Infrastructure" },
+            { icon: "📊", text: "Data Analytics" }
+        ]
+    ];
+    
+    // Use existing data if available, otherwise generate
+    if (labelData[id]) {
+        return labelData[id];
+    }
+    
+    const categoryIndex = (id - 1) % categories.length;
+    const titleIndex = (id - 1) % titles.length;
+    const featureIndex = (id - 1) % features.length;
+    
+    return {
+        category: categories[categoryIndex],
+        title: `${titles[titleIndex]} ${displayText}`,
+        description: `Advanced facility for innovation and development. This location provides cutting-edge technology and resources for research, testing, and manufacturing.`,
+        features: features[featureIndex],
+        size: `${15000 + (id * 1000)} sq ft`,
+        image: `public/about/slideshow${((id - 1) % 3) + 1}.jpg`
+    };
+}
+
+// Side Panel Functions
+function setupSidePanel() {
+    const closeBtn = document.getElementById('close-panel');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeSidePanel);
+    }
+}
+
+function openSidePanel(labelId, displayText) {
+    const panel = document.getElementById('label-info-panel');
+    const data = getEnhancedMarkerData(labelId, displayText);
+    
+    // Update panel content with enhanced data
+    const categoryElement = document.getElementById('location-category');
+    categoryElement.textContent = data.category;
+    
+    // Apply color coding if available
+    if (data.categoryColor) {
+        categoryElement.style.color = data.categoryColor;
+    }
+    
+    document.getElementById('location-title').textContent = data.title;
+    document.getElementById('location-coordinates').textContent = data.address || 'Detroit, Michigan';
+    document.getElementById('location-description').textContent = data.description;
+    document.getElementById('location-size').textContent = data.size;
+    
+    // Update features with proper handling for both formats
+    const featuresContainer = document.getElementById('location-features');
+    featuresContainer.innerHTML = '';
+    
+    if (data.features && Array.isArray(data.features)) {
+        data.features.forEach(feature => {
+            const featureDiv = document.createElement('div');
+            featureDiv.className = 'feature-item';
+            
+            // Handle both string and object format
+            if (typeof feature === 'string') {
+                featureDiv.innerHTML = `
+                    <span class="feature-icon">⚡</span>
+                    <span class="feature-text">${feature}</span>
+                `;
+            } else {
+                featureDiv.innerHTML = `
+                    <span class="feature-icon">${feature.icon || '⚡'}</span>
+                    <span class="feature-text">${feature.text || feature}</span>
+                `;
+            }
+            featuresContainer.appendChild(featureDiv);
+        });
+    }
+    
+    // Update image
+    const imgElement = document.getElementById('location-photo');
+    const placeholder = document.querySelector('.image-placeholder');
+    if (data.image) {
+        imgElement.src = data.image;
+        imgElement.style.display = 'block';
+        placeholder.style.display = 'none';
+        imgElement.onerror = () => {
+            imgElement.style.display = 'none';
+            placeholder.style.display = 'flex';
+            placeholder.textContent = '📷 Image not available';
+        };
+    } else {
+        imgElement.style.display = 'none';
+        placeholder.style.display = 'flex';
+        placeholder.textContent = '📷 No photo available';
+    }
+    
+    // Show panel with correct class
+    panel.classList.add('panel-open');
+}
+
+function closeSidePanel() {
+    const panel = document.getElementById('label-info-panel');
+    panel.classList.remove('panel-open');
+}
+
+// ADMIN PANEL FUNCTIONALITY
+function initializeAdminPanel() {
+    // Admin panel toggle button
+    const adminToggle = document.getElementById('admin-panel-toggle');
+    if (adminToggle) {
+        adminToggle.addEventListener('click', toggleAdminPanel);
+    }
+    
+    // Close admin panel button
+    const closeAdminBtn = document.getElementById('close-admin-panel-btn');
+    if (closeAdminBtn) {
+        closeAdminBtn.addEventListener('click', closeAdminPanel);
+    }
+    
+    // Populate marker dropdown
+    populateMarkerDropdown();
+    
+    // Marker selection change
+    const markerSelect = document.getElementById('admin-marker-select');
+    if (markerSelect) {
+        markerSelect.addEventListener('change', onMarkerSelection);
+    }
+    
+    // Save marker button
+    const saveBtn = document.getElementById('admin-save-marker');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveMarkerData);
+    }
+    
+    // Reset marker button
+    const resetBtn = document.getElementById('admin-reset-marker');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetMarkerForm);
+    }
+    
+    // Export data button
+    const exportBtn = document.getElementById('admin-export-data');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportMarkerData);
+    }
+    
+    console.log('✅ Admin panel initialized');
+}
+
+function toggleAdminPanel() {
+    const panel = document.getElementById('admin-panel');
+    if (panel.classList.contains('editor-hidden')) {
+        openAdminPanel();
+    } else {
+        closeAdminPanel();
+    }
+}
+
+function openAdminPanel() {
+    console.log('🛠️ Opening admin panel');
+    const panel = document.getElementById('admin-panel');
+    
+    // Close other panels first
+    closeAllPanels();
+    
+    panel.classList.remove('editor-hidden');
+    populateMarkerDropdown();
+}
+
+function closeAdminPanel() {
+    console.log('🚪 Closing admin panel');
+    const panel = document.getElementById('admin-panel');
+    panel.classList.add('editor-hidden');
+}
+
+function closeAllPanels() {
+    // Close SVG editor
+    const svgPanel = document.getElementById('svg-editor');
+    if (svgPanel) svgPanel.classList.add('editor-hidden');
+    
+    // Close building settings
+    const buildingPanel = document.getElementById('building-settings');
+    if (buildingPanel) buildingPanel.classList.add('editor-hidden');
+    
+    // Close side panel
+    const sidePanel = document.getElementById('label-info-panel');
+    if (sidePanel) sidePanel.classList.remove('panel-open');
+}
+
+function populateMarkerDropdown() {
+    const select = document.getElementById('admin-marker-select');
+    if (!select) return;
+    
+    // Clear existing options except the first one
+    select.innerHTML = '<option value="">Select a marker...</option>';
+    
+    // Add options for all markers
+    newMarkers.forEach(marker => {
+        const option = document.createElement('option');
+        option.value = marker.id;
+        const data = getEnhancedMarkerData(marker.id, marker.text);
+        option.textContent = `${marker.id} - ${data.title}`;
+        select.appendChild(option);
+    });
+}
+
+function onMarkerSelection() {
+    const select = document.getElementById('admin-marker-select');
+    const editSection = document.getElementById('admin-edit-section');
+    
+    if (select.value) {
+        const markerId = parseInt(select.value);
+        loadMarkerIntoForm(markerId);
+        editSection.style.display = 'block';
+    } else {
+        editSection.style.display = 'none';
+    }
+}
+
+function loadMarkerIntoForm(markerId) {
+    const data = getEnhancedMarkerData(markerId);
+    
+    // Populate form fields
+    document.getElementById('admin-marker-name').value = data.title || '';
+    document.getElementById('admin-marker-category').value = getCategoryKey(data.category) || 'innovation';
+    document.getElementById('admin-marker-short-desc').value = data.shortDescription || '';
+    document.getElementById('admin-marker-description').value = data.description || '';
+    document.getElementById('admin-marker-size').value = data.size || '';
+    document.getElementById('admin-marker-address').value = data.address || '';
+    document.getElementById('admin-marker-image').value = data.image || '';
+    
+    // Handle features
+    if (data.features && Array.isArray(data.features)) {
+        const featuresText = data.features.map(feature => {
+            if (typeof feature === 'string') return feature;
+            return feature.text || feature;
+        }).join('\n');
+        document.getElementById('admin-marker-features').value = featuresText;
+    }
+}
+
+function getCategoryKey(categoryDisplay) {
+    if (!categoryDisplay) return 'innovation';
+    
+    const lower = categoryDisplay.toLowerCase();
+    if (lower.includes('transport')) return 'transportation';
+    if (lower.includes('manufactur')) return 'manufacturing';
+    if (lower.includes('innovation') || lower.includes('technology')) return 'innovation';
+    if (lower.includes('infrastructure')) return 'infrastructure';
+    if (lower.includes('future')) return 'future';
+    
+    return 'innovation';
+}
+
+function saveMarkerData() {
+    const markerId = parseInt(document.getElementById('admin-marker-select').value);
+    if (!markerId) return;
+    
+    // Collect form data
+    const formData = {
+        title: document.getElementById('admin-marker-name').value,
+        category: document.getElementById('admin-marker-category').value,
+        shortDescription: document.getElementById('admin-marker-short-desc').value,
+        description: document.getElementById('admin-marker-description').value,
+        size: document.getElementById('admin-marker-size').value,
+        address: document.getElementById('admin-marker-address').value,
+        image: document.getElementById('admin-marker-image').value,
+        features: document.getElementById('admin-marker-features').value.split('\n').filter(f => f.trim())
+    };
+    
+    // Update ENHANCED_MARKER_DATA
+    const categoryInfo = {
+        transportation: { display: "🚂 TRANSPORTATION/LOGISTICS", color: "#4A90E2" },
+        manufacturing: { display: "🏭 MANUFACTURING/WORKSHOP", color: "#E74C3C" },
+        innovation: { display: "🚀 INNOVATION/TECHNOLOGY", color: "#9B59B6" },
+        infrastructure: { display: "🏗️ INFRASTRUCTURE/TRANSPORTATION", color: "#27AE60" },
+        future: { display: "🔮 FUTURE DEVELOPMENT", color: "#5DADE2" }
+    };
+    
+    const categoryData = categoryInfo[formData.category] || categoryInfo.innovation;
+    
+    ENHANCED_MARKER_DATA[markerId] = {
+        category: categoryData.display,
+        title: formData.title,
+        shortDescription: formData.shortDescription,
+        description: formData.description,
+        features: formData.features.map(text => ({ icon: "⚡", text })),
+        size: formData.size,
+        address: formData.address,
+        categoryColor: categoryData.color,
+        image: formData.image || null
+    };
+    
+    console.log('✅ Marker data saved for ID:', markerId);
+    alert('Marker data saved successfully!');
+}
+
+function resetMarkerForm() {
+    const markerId = parseInt(document.getElementById('admin-marker-select').value);
+    if (markerId) {
+        loadMarkerIntoForm(markerId);
+    }
+}
+
+function exportMarkerData() {
+    const dataToExport = {
+        markers: newMarkers,
+        enhancedData: ENHANCED_MARKER_DATA,
+        exportedAt: new Date().toISOString()
+    };
+    
+    const dataStr = JSON.stringify(dataToExport, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = 'marker-data-export.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log('📤 Marker data exported');
+    alert('Marker data exported successfully!');
+}
+
+// Initialize admin panel when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        initializeAdminPanel();
+    }, 1000);
+});
