@@ -4,6 +4,13 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Safe Supabase client creation - handle offline case
 let supabaseClient = null;
+try {
+  if (typeof supabase !== 'undefined') {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (error) {
+  // Silent fallback to offline mode
+}
 
 // --- Idle Mode Variables ---
 let idleTimer = null;
@@ -12,13 +19,6 @@ let idlePopupInterval = null;
 let currentIdleMarkerIndex = 0;
 let lastInteractionTime = Date.now();
 let activeIdlePopup = null;
-try {
-  if (typeof supabase !== 'undefined') {
-    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
-} catch (error) {
-  // Silent fallback to offline mode
-}
 
 // --- Idle Mode Functions ---
 function startIdleMode() {
@@ -285,13 +285,17 @@ async function fetchMarkersFromSupabase() {
   try {
     const { data, error } = await supabaseClient.from('markers').select('*');
     if (error) throw error;
-    // Process and normalize the CSV data structure
-    const processedMarkers = data.map(processCSVMarkerData);
-    console.log(`✅ Loaded ${processedMarkers.length} markers from database`);
-    return processedMarkers;
+    
+    // Cache the fresh data
+    cacheManager.cacheMarkers(data);
+    
+    // Store in global variable for easier access
+    allSupabaseMarkers = data;
+    
+    return data;
   } catch (error) {
-    console.log(`⚠️ Database unavailable, using cache`);
-    return [];
+    console.error('❌ Supabase fetch error:', error);
+    return []; // Return empty array on error
   }
 }
 
@@ -858,36 +862,27 @@ async function createNewMarkerInSupabase(markerData) {
 // --- Marker Creation Functions ---
 function createMarkerElement(markerData, source = 'hardcoded') {
   const el = document.createElement('div');
-  el.className = 'marker';
+  el.className = 'custom-marker';
   
-  // New styling: black background, white text, custom font
-  el.style.backgroundColor = '#000000';
-  el.style.border = 'none';
-  el.style.display = 'flex';
-  el.style.alignItems = 'center';
-  el.style.justifyContent = 'center';
-  el.style.color = 'white';
-  el.style.fontFamily = 'MichiganCentralMonumentGrotesk-Bold, Arial, sans-serif';
-  el.style.fontWeight = 'bold';
-  el.style.fontSize = '18px';
-  el.style.borderRadius = '2px'; // Only 2px rounded corners
-  
-  // Use custom text if provided, otherwise use ID
-  const displayText = markerData.text || markerData.label || markerData.id.toString();
-  el.textContent = displayText;
-  
-  // Make all markers rectangular with consistent sizing
-  el.style.minWidth = '60px';
-  el.style.height = '40px';
-  el.style.padding = '0 12px';
+  // Set marker color, defaulting to a neutral color if not specified
+  const markerColor = markerData.color || '#7f8c8d';
+  el.style.setProperty('--marker-color', markerColor);
 
-  // Make marker clickable
-  el.addEventListener('click', async () => {
-    await openSidePanel(markerData.id, displayText);
+  // Add click listener to show the new on-marker popup
+  el.addEventListener('click', (e) => {
+    e.stopPropagation(); // Prevent map click events from firing
+    
+    // Pass the necessary marker info to the popup function
+    const markerInstance = {
+      labelId: markerData.id || markerData.label,
+      lng: markerData.lng,
+      lat: markerData.lat
+    };
+    showMarkerPopup(markerInstance);
   });
   
-  // Add cursor pointer to indicate clickability
-  el.style.cursor = 'pointer';
+  // Add tooltip on hover
+  el.title = markerData.label || `Marker ${markerData.id}`;
   
   return el;
 }
@@ -5082,144 +5077,88 @@ function getCurrentKey(title) {
 // --- STANDARDIZED NAVIGATION CONTROLLER ---
 function navigateToLocation(key) {
   dbg("NAV_CLICK", {key: key});
-  
-  // Pause idle mode when navigating to a location
-  pauseIdleMode();
-  
-  // Clear any existing popups first
-  const existingPopups = document.querySelectorAll('.mapboxgl-popup');
-  existingPopups.forEach(popup => popup.remove());
-  
-  if (key === 'home') {
-    // Navigate to wider city view (ORBIT DISABLED)
-    // spinning = true; // COMMENTED OUT
-    // navState.spinning = true; // COMMENTED OUT
-    
-    // Ensure smooth transition from current position
-    const currentCenter = map.getCenter();
-    orbitCenter = [currentCenter.lng, currentCenter.lat];
-    targetOrbitCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
-    
-    navState.targetCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
-    navState.targetZoom = 14;
-    navState.targetPitch = 45;
-    navState.targetBearing = map.getBearing(); // Preserve current bearing
-    updateLegend();
-    
-    // SINGLE CAMERA CONTROLLER: Use easeTo for everything
-    map.easeTo({
-      center: navState.targetCenter,
-      bearing: navState.targetBearing,
-      zoom: navState.targetZoom,
-      pitch: navState.targetPitch,
-      duration: 2000
+
+  // Since popups are now used, clear them before opening a new panel
+  closeActivePopup();
+
+  // Find the marker data to fly to its coordinates
+  const allMarkers = getAllMapMarkers();
+  const markerData = allMarkers.find(m => m.labelId == key);
+
+  if (markerData && map) {
+    map.flyTo({
+      center: [markerData.lng, markerData.lat],
+      zoom: 15, // A comfortable zoom level for viewing the panel
+      essential: true
     });
-    
-    // ORBIT FUNCTIONALITY COMMENTED OUT
-    /*
-    // Ensure orbiting continues after transition
+  }
+  
+  // Open the main side panel with full details
+  openSidePanel(key);
+}
+
+// Global variable to keep track of the currently active on-marker popup
+let activeMarkerPopup = null;
+
+// Function to close any active popup
+function closeActivePopup() {
+  if (activeMarkerPopup) {
+    activeMarkerPopup.classList.remove('show');
     setTimeout(() => {
-      spinning = true;
-      navState.spinning = true;
-      dbg("ORBIT_RESUMED", {location: "home"});
-    }, 2100); // Slightly after easeTo duration
-    */
-    
-  } else {
-    const {lng, lat, label} = LOCATIONS[key];
-    
-    if (key === 'michiganCentral') {
-      // ORBIT DISABLED - Static view of Michigan Central
-      // spinning = true; // COMMENTED OUT
-      // navState.spinning = true; // COMMENTED OUT
-      
-      // Ensure smooth transition from current position
-      const currentCenter = map.getCenter();
-      orbitCenter = [currentCenter.lng, currentCenter.lat];
-      targetOrbitCenter = [lng, lat];
-      
-      navState.targetCenter = [lng, lat];
-      navState.targetZoom = 18;
-      navState.targetPitch = 60;
-      navState.targetBearing = map.getBearing(); // Preserve current bearing
-      
-      // SINGLE CAMERA CONTROLLER: Use easeTo for positioning (no orbit)
-      map.easeTo({
-        center: navState.targetCenter,
-        zoom: navState.targetZoom,
-        pitch: navState.targetPitch,
-        bearing: navState.targetBearing,
-        duration: 2000
-      });
-      
-      // ORBIT FUNCTIONALITY COMMENTED OUT
-      /*
-      // After transition completes, ensure orbiting is active
-      setTimeout(() => {
-        spinning = true;
-        navState.spinning = true;
-        dbg("ORBIT_RESUMED", {location: "michiganCentral"});
-      }, 2100); // Slightly after easeTo duration
-      */
-      
-    } else if (key === 'newlab') {
-      // ORBIT DISABLED - Static view of The Factory
-      // spinning = true; // COMMENTED OUT
-      // navState.spinning = true; // COMMENTED OUT
-      
-      // Navigate to The Factory (no orbit)
-      const currentCenter = map.getCenter();
-      orbitCenter = [currentCenter.lng, currentCenter.lat];
-      targetOrbitCenter = [lng, lat];
-      
-      navState.targetCenter = [lng, lat]; 
-      navState.targetZoom = 18;
-      navState.targetPitch = 60;
-      navState.targetBearing = map.getBearing(); // Preserve current bearing
-      
-      dbg("FACTORY_NAV", {
-        from: orbitCenter,
-        to: targetOrbitCenter,
-        distance: Math.sqrt(Math.pow(lng - currentCenter.lng, 2) + Math.pow(lat - currentCenter.lat, 2))
-      });
-      
-      // SINGLE CAMERA CONTROLLER: Use easeTo for static positioning
-      map.easeTo({
-        center: navState.targetCenter,
-        zoom: navState.targetZoom,
-        pitch: navState.targetPitch,
-        bearing: navState.targetBearing,
-        duration: 2000
-      });
-      
-      // ORBIT FUNCTIONALITY COMMENTED OUT
-      /*
-      // Ensure orbiting continues after transition
-      setTimeout(() => {
-        spinning = true;
-        navState.spinning = true;
-        dbg("ORBIT_RESUMED", {location: "factory"});
-      }, 2100); // Slightly after easeTo duration
-      */
-    }
-    
-    // Update legend with site info
-    let blurb = '';
-    if (key === 'michiganCentral') {
-      blurb = 'Historic train station, now a technology and mobility innovation hub. Camera orbits around the station for comprehensive viewing.';
-    } else if (key === 'newlab') {
-      blurb = 'Manufacturing and innovation facility in Detroit. Camera orbits continuously around The Factory location for dynamic exploration.';
-    } else {
-      blurb = 'Lorem ipsum placeholder text for this location.';
-    }
-    
-    updateLegend(label); // Remove blurb from bottom menu
-    
-    // Show popup with site information
-    new mapboxgl.Popup({offset:25})
-      .setLngLat([lng, lat])
-      .setHTML(`<h3>${label}</h3><p>${blurb}</p>`)
-      .addTo(map);
+      if (activeMarkerPopup && activeMarkerPopup.parentNode) {
+        activeMarkerPopup.parentNode.removeChild(activeMarkerPopup);
+      }
+      activeMarkerPopup = null;
+    }, 300); // Wait for the animation to finish
+  }
+}
+
+// New function to show the on-marker popup
+async function showMarkerPopup(markerInstance) {
+  // Close any existing popup first
+  closeActivePopup();
+
+  const key = markerInstance.labelId;
+  const markerData = await getMarkerDataWithShortDescription(key);
+
+  if (!markerData) return;
+
+  const popup = document.createElement('div');
+  popup.className = 'marker-popup';
+  popup.innerHTML = `
+    <div class="marker-popup-title-bar">
+      <p class="marker-popup-title">${markerData.title || markerData.label || 'Location'}</p>
+    </div>
+    <div class="marker-popup-content">
+      <p class="marker-popup-description">${markerData.short_description || 'No description available.'}</p>
+      <button class="marker-popup-button" onclick="navigateToLocation('${key}')">Learn more</button>
+    </div>
+  `;
+
+  // Use Mapbox's Popup feature for better positioning
+  const mapboxPopup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: true,
+    anchor: 'bottom',
+    offset: 25
+  })
+  .setLngLat([markerInstance.lng, markerInstance.lat])
+  .setDOMContent(popup)
+  .addTo(map);
+
+  // Store the element for later removal
+  activeMarkerPopup = popup;
+  
+  // Animate it in
+  setTimeout(() => popup.classList.add('show'), 10);
+  
+  // Fly to the marker
+  if (map) {
+    map.flyTo({
+      center: [markerInstance.lng, markerInstance.lat],
+      zoom: 17,
+      essential: true
+    });
   }
 }
 
