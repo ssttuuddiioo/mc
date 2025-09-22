@@ -28,11 +28,11 @@ function startIdleMode() {
   idleModeActive = true;
   currentIdleMarkerIndex = 0;
   
-  // Start cycling through markers every 10 seconds
+  // Start cycling through markers every 15 seconds (increased for camera movement)
   showNextIdlePopup();
   idlePopupInterval = setInterval(() => {
     showNextIdlePopup();
-  }, 10000);
+  }, 15000);
 }
 
 function pauseIdleMode() {
@@ -47,6 +47,15 @@ function pauseIdleMode() {
   
   // Hide current popup
   hideIdlePopup();
+  
+  // Zoom out to overview when pausing for better interaction
+  if (map) {
+    map.easeTo({
+      zoom: 14, // Overview zoom level
+      duration: 1500,
+      easing: (t) => t * (2 - t)
+    });
+  }
 }
 
 function resumeIdleMode() {
@@ -76,10 +85,18 @@ async function showNextIdlePopup() {
       return;
     }
     
+    console.log(`🎥 Moving camera to marker: ${currentMarker.labelId}`);
+    
+    // First, move camera to marker with smooth animation
+    await moveCameraToMarker(currentMarker);
+    
+    // Wait a moment for camera to settle
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     // Get marker data with short description
     const markerData = await getMarkerDataWithShortDescription(currentMarker.labelId);
     
-    // Show popup for current marker
+    // Show popup for current marker (now that camera is positioned)
     showIdlePopup(currentMarker, markerData);
     
     // Move to next marker
@@ -87,6 +104,32 @@ async function showNextIdlePopup() {
   } catch (error) {
     console.error('❌ Error in showNextIdlePopup:', error);
   }
+}
+
+async function moveCameraToMarker(marker) {
+  return new Promise((resolve) => {
+    if (!map || !marker) {
+      resolve();
+      return;
+    }
+    
+    // Calculate zoom level based on marker importance or use default
+    const targetZoom = 16; // Good zoom level to see marker clearly
+    
+    // Smooth camera movement with easing
+    map.easeTo({
+      center: [marker.lng, marker.lat],
+      zoom: targetZoom,
+      duration: 2000, // 2 seconds for smooth movement
+      easing: (t) => t * (2 - t) // easeOutQuad for smooth deceleration
+    });
+    
+    // Resolve when animation completes
+    map.once('moveend', () => {
+      console.log(`📍 Camera arrived at marker: ${marker.labelId}`);
+      resolve();
+    });
+  });
 }
 
 function showIdlePopup(marker, data) {
@@ -103,14 +146,13 @@ function showIdlePopup(marker, data) {
     </div>
   `;
   
-  // Position popup above marker
-  const markerElement = marker.getElement();
-  const rect = markerElement.getBoundingClientRect();
+  // Position popup above marker (centered on screen since camera moved to marker)
   const mapContainer = document.getElementById('map');
   const mapRect = mapContainer.getBoundingClientRect();
   
-  popup.style.left = (rect.left - mapRect.left - 100) + 'px'; // Center popup
-  popup.style.top = (rect.top - mapRect.top - 120) + 'px'; // Position above marker
+  // Since camera is now centered on marker, position popup in center-top of screen
+  popup.style.left = (mapRect.width / 2 - 125) + 'px'; // Center popup (125px = half popup width)
+  popup.style.top = '100px'; // Fixed position from top for better visibility
   
   // Add to map container
   mapContainer.appendChild(popup);
@@ -123,12 +165,12 @@ function showIdlePopup(marker, data) {
   // Store reference
   activeIdlePopup = popup;
   
-  // Auto-hide after 8 seconds (2 seconds before next popup)
+  // Auto-hide after 10 seconds (5 seconds before next cycle)
   setTimeout(() => {
     if (activeIdlePopup === popup) {
       hideIdlePopup();
     }
-  }, 8000);
+  }, 10000);
 }
 
 function hideIdlePopup() {
