@@ -223,19 +223,20 @@ body {
   margin-bottom: 0;
 }
 
-/* Side Panel - Figma Design */
+/* Side Panel - Modern Dark Design */
 .side-panel {
   position: fixed;
   top: 0;
   right: 0;
-  width: 942px; /* Matching Figma width */
+  width: 942px;
   height: 100vh;
-  background: white;
+  background: #0A0A0B; /* Deep black background */
   transform: translateX(100%);
   transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   z-index: 1002;
   overflow-y: auto;
-  box-shadow: -4px 0 32px rgba(0,0,0,0.1);
+  box-shadow: -4px 0 48px rgba(0,0,0,0.4);
+  border-left: 1px solid #1A1B23;
 }
 
 .side-panel.panel-open {
@@ -245,44 +246,50 @@ body {
 /* Close Button Overlay */
 .close-btn-overlay {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
+  top: 24px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
   border: none;
   border-radius: 50%;
-  background: rgba(0,0,0,0.6);
+  background: rgba(255,255,255,0.1);
   color: white;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 18px;
   z-index: 10;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .close-btn-overlay:hover {
-  background: rgba(0,0,0,0.8);
-  transform: scale(1.05);
+  background: rgba(255,255,255,0.15);
+  transform: scale(1.1) rotate(90deg);
+  border-color: #00FF88;
+  box-shadow: 0 4px 16px rgba(0,255,136,0.2);
 }
 
 /* Panel Container */
 .panel-container {
-  padding: 29px 41px;
+  padding: 48px 64px; /* Increased padding for premium feel */
   min-height: 100vh;
+  background: #0A0A0B;
 }
 
 /* Title Section */
 .panel-title-section {
-  margin-bottom: 36px;
+  margin-bottom: 64px; /* Double the spacing */
 }
 
 .panel-title {
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
-  font-weight: bold;
-  font-size: 80px;
-  line-height: 1;
-  color: black;
+  font-weight: 900; /* Extra bold */
+  font-size: 96px; /* Larger and bolder */
+  line-height: 0.9;
+  color: white;
   margin: 0;
+  text-shadow: 0 4px 20px rgba(0, 255, 136, 0.1);
+  letter-spacing: -2px;
 }
 
 /* Hero Image Section */
@@ -290,10 +297,18 @@ body {
   position: relative;
   width: 860px;
   height: 456px;
-  background: #d9d9d9;
-  border-radius: 10px;
-  margin-bottom: 70px;
+  background: linear-gradient(135deg, #1A1B23 0%, #2A2B33 100%);
+  border-radius: 24px; /* More rounded */
+  margin-bottom: 80px;
   overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.panel-hero:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3);
 }
 
 .panel-hero img {
@@ -306,85 +321,204 @@ body {
 .image-placeholder {
   width: 100%;
   height: 100%;
-  background: #d9d9d9;
-  border-radius: 10px;
+  background: linear-gradient(135deg, #1A1B23 0%, #2A2B33 100%);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.4);
+  font-size: 18px;
 }
 
 /* Category Badge */
 .category-badge {
   position: absolute;
   top: 28px;
-  left: 23px;
-  background: #d9d9d9;
-  border: 1px solid black;
-  border-radius: 10px;
-  padding: 8px 16px;
+  left: 28px;
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid #00FF88;
+  border-radius: 16px;
+  padding: 12px 20px;
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
   font-weight: bold;
-  font-size: 19.747px;
-  color: black;
+  font-size: 16px;
+  color: #00FF88;
   line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0, 255, 136, 0.2);
+}
+
+/* Stats Badges */
+.stats-badges {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  display: flex;
+  gap: 12px;
+}
+
+.stats-badge {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: white;
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stats-icon {
+  font-size: 12px;
+  opacity: 0.8;
 }
 
 /* Panel Sections */
 .panel-section {
-  margin-bottom: 50px;
+  margin-bottom: 80px; /* Double the spacing */
 }
 
 .section-title {
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
-  font-weight: bold;
-  font-size: 30px;
+  font-weight: 800;
+  font-size: 42px; /* Larger */
   line-height: 1;
-  color: black;
-  margin: 0 0 24px 15px; /* 15px left margin to match Figma */
+  color: white;
+  margin: 0 0 32px 0;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: #00FF88;
+  border-radius: 2px;
 }
 
 /* Description Content */
 .description-content {
   width: 860px;
-  height: 127px;
-  background: #d9d9d9;
-  border-radius: 10px;
-  padding: 24px 15px;
+  min-height: 140px;
+  background: linear-gradient(135deg, #1A1B23 0%, #242530 100%);
+  border-radius: 20px;
+  padding: 32px;
   box-sizing: border-box;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.description-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #00FF88, #00CC70);
 }
 
 .description-content p {
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
-  font-weight: normal;
-  font-size: 19.747px;
-  line-height: 1.4;
-  color: black;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.9);
   margin: 0;
 }
 
-/* Features Grid */
+/* Features Grid - Bento Box Layout */
 .features-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 67px 26px; /* Vertical gap 67px, horizontal gap 26px to match Figma */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
   width: 860px;
 }
 
+/* Make first feature span 2 columns */
+.feature-item:first-child {
+  grid-column: span 2;
+  background: linear-gradient(135deg, #00FF88 0%, #00CC70 100%);
+  color: #0A0A0B;
+}
+
+.feature-item:first-child .feature-text {
+  color: #0A0A0B;
+  font-weight: 600;
+}
+
+.feature-item:first-child .feature-icon {
+  background: rgba(10,10,11,0.2);
+  color: #0A0A0B;
+}
+
 .feature-item {
-  width: 418px;
-  height: 111px;
-  background: #d9d9d9;
-  border-radius: 10px;
-  padding: 21px 8px;
+  min-height: 140px;
+  background: linear-gradient(135deg, #1A1B23 0%, #242530 100%);
+  border-radius: 16px;
+  padding: 24px;
   box-sizing: border-box;
   display: flex;
   align-items: flex-start;
+  gap: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,255,136,0.3), transparent);
+}
+
+.feature-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  border-color: rgba(0,255,136,0.3);
+}
+
+.feature-icon {
+  width: 32px;
+  height: 32px;
+  background: #00FF88;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #0A0A0B;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,255,136,0.3);
 }
 
 .feature-text {
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
-  font-weight: normal;
-  font-size: 19.747px;
-  line-height: 1.4;
-  color: black;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.9);
   margin: 0;
+  flex: 1;
 }
 
 /* Editor Panels Base Styles */

@@ -5227,17 +5227,23 @@ async function openSidePanel(labelId, displayText) {
     // Clean styling to match Figma design - no additional styling needed
     // CSS handles all the styling now
     
-    // Update features to match Figma design
+    // Update features with modern bento box design and green accents
     const featuresContainer = document.getElementById('location-features');
     featuresContainer.innerHTML = '';
     
     if (data.features && Array.isArray(data.features)) {
-        data.features.forEach(feature => {
+        data.features.forEach((feature, index) => {
             const featureDiv = document.createElement('div');
             featureDiv.className = 'feature-item';
             
             const featureText = typeof feature === 'string' ? feature : (feature.text || feature);
-            featureDiv.innerHTML = `<span class="feature-text">${featureText}</span>`;
+            
+            // Add green checkmark icon to each feature
+            featureDiv.innerHTML = `
+                <div class="feature-icon">✓</div>
+                <span class="feature-text">${featureText}</span>
+            `;
+            
             featuresContainer.appendChild(featureDiv);
         });
     }
