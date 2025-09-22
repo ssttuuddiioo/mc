@@ -1297,6 +1297,10 @@ select:focus {
   color: white;
   line-height: 1.6;
   margin-bottom: 20px;
+  word-wrap: break-word; /* Ensure long words don't overflow */
+  white-space: normal;  /* Allow text to wrap naturally */
+  max-height: 100px;      /* Limit height to prevent excessive length */
+  overflow-y: auto;     /* Add a scrollbar if content overflows */
 }
 
 .marker-popup-button {

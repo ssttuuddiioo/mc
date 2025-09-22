@@ -890,6 +890,8 @@ function createMarkerElement(markerData, source = 'hardcoded') {
 function addMarkersToMap(markers, source = 'hardcoded') {
   markers.forEach(markerData => {
     const el = createMarkerElement(markerData, source);
+    
+    // Create the Mapbox marker and add it to the map
     new mapboxgl.Marker(el)
       .setLngLat([markerData.lng, markerData.lat])
       .addTo(map);
