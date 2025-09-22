@@ -69,25 +69,36 @@ function stopIdleMode() {
 async function showNextIdlePopup() {
   if (!idleModeActive) return;
   
-  // Hide current popup first
-  hideIdlePopup();
-  
-  // Get all markers from the map
-  const allMarkers = getAllMapMarkers();
-  if (allMarkers.length === 0) return;
-  
-  // Get current marker
-  const currentMarker = allMarkers[currentIdleMarkerIndex];
-  if (!currentMarker) return;
-  
-  // Get marker data with short description
-  const markerData = await getMarkerDataWithShortDescription(currentMarker.labelId);
-  
-  // Show popup for current marker
-  showIdlePopup(currentMarker, markerData);
-  
-  // Move to next marker
-  currentIdleMarkerIndex = (currentIdleMarkerIndex + 1) % allMarkers.length;
+  try {
+    // Hide current popup first
+    hideIdlePopup();
+    
+    // Get all markers from the map
+    const allMarkers = getAllMapMarkers();
+    if (allMarkers.length === 0) {
+      console.log('⚠️ No markers available for idle mode');
+      return;
+    }
+    
+    // Get current marker
+    const currentMarker = allMarkers[currentIdleMarkerIndex];
+    if (!currentMarker) {
+      console.log('⚠️ Current marker not found, resetting index');
+      currentIdleMarkerIndex = 0;
+      return;
+    }
+    
+    // Get marker data with short description
+    const markerData = await getMarkerDataWithShortDescription(currentMarker.labelId);
+    
+    // Show popup for current marker
+    showIdlePopup(currentMarker, markerData);
+    
+    // Move to next marker
+    currentIdleMarkerIndex = (currentIdleMarkerIndex + 1) % allMarkers.length;
+  } catch (error) {
+    console.error('❌ Error in showNextIdlePopup:', error);
+  }
 }
 
 function showIdlePopup(marker, data) {
@@ -200,22 +211,27 @@ function openLocationFromIdle(labelId) {
 }
 
 function initializeIdleMode() {
-  // Set up event listeners for user interactions
-  const events = ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'];
-  
-  events.forEach(event => {
-    document.addEventListener(event, resetIdleTimer, true);
-  });
-  
-  // Also listen for map interactions
-  if (map) {
-    map.on('move', resetIdleTimer);
-    map.on('zoom', resetIdleTimer);
-    map.on('click', resetIdleTimer);
+  try {
+    // Set up event listeners for user interactions
+    const events = ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+    
+    events.forEach(event => {
+      document.addEventListener(event, resetIdleTimer, true);
+    });
+    
+    // Also listen for map interactions
+    if (map && map.on) {
+      map.on('move', resetIdleTimer);
+      map.on('zoom', resetIdleTimer);
+      map.on('click', resetIdleTimer);
+    }
+    
+    // Start the initial timer
+    resetIdleTimer();
+    console.log('✅ Idle mode initialized successfully');
+  } catch (error) {
+    console.error('❌ Error initializing idle mode:', error);
   }
-  
-  // Start the initial timer
-  resetIdleTimer();
 }
 
 // --- Supabase Functions ---
@@ -4713,7 +4729,7 @@ let orbitTransitionSpeed = 0.015; // Normal speed
 // --- Interactive Orbit Control ---
 let userInteracting = false;
 let interactionTimeout = null;
-let lastInteractionTime = 0;
+// lastInteractionTime already declared for idle mode
 
 // --- NAVIGATION CONTROLLER --- (ORBIT COMMENTED OUT)
 function updateCamera() {
