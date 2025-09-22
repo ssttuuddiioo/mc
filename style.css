@@ -223,22 +223,19 @@ body {
   margin-bottom: 0;
 }
 
-/* Side Panel */
+/* Side Panel - Figma Design */
 .side-panel {
   position: fixed;
   top: 0;
   right: 0;
-  width: 700px;
+  width: 942px; /* Matching Figma width */
   height: 100vh;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(20px);
+  background: white;
   transform: translateX(100%);
   transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   z-index: 1002;
-  overflow: hidden; /* Remove scrolling */
+  overflow-y: auto;
   box-shadow: -4px 0 32px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
 }
 
 .side-panel.panel-open {
@@ -268,18 +265,38 @@ body {
   transform: scale(1.05);
 }
 
-/* Hero Section with Image and Overlay */
-.location-hero {
+/* Panel Container */
+.panel-container {
+  padding: 29px 41px;
+  min-height: 100vh;
+}
+
+/* Title Section */
+.panel-title-section {
+  margin-bottom: 36px;
+}
+
+.panel-title {
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  font-size: 80px;
+  line-height: 1;
+  color: black;
+  margin: 0;
+}
+
+/* Hero Image Section */
+.panel-hero {
   position: relative;
-  height: 40vh; /* 40% of viewport height */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 860px;
+  height: 456px;
+  background: #d9d9d9;
+  border-radius: 10px;
+  margin-bottom: 70px;
   overflow: hidden;
 }
 
-.location-hero img {
+.panel-hero img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -287,135 +304,87 @@ body {
 }
 
 .image-placeholder {
-  color: rgba(255,255,255,0.8);
-  font-size: 18px;
-  text-align: center;
+  width: 100%;
+  height: 100%;
+  background: #d9d9d9;
+  border-radius: 10px;
 }
 
-/* Hero Overlay */
-.hero-overlay {
+/* Category Badge */
+.category-badge {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(transparent, rgba(0,0,0,0.7));
-  padding: 60px 30px 30px;
-  color: white;
+  top: 28px;
+  left: 23px;
+  background: #d9d9d9;
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  font-size: 19.747px;
+  color: black;
+  line-height: 1;
 }
 
-.hero-overlay .location-category {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: rgba(255,255,255,0.9);
-  margin-bottom: 8px;
-  background: rgba(255,255,255,0.1);
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
+/* Panel Sections */
+.panel-section {
+  margin-bottom: 50px;
 }
 
-.hero-overlay .location-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: white;
-  margin: 0 0 12px 0;
-  line-height: 1.2;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+.section-title {
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  font-size: 30px;
+  line-height: 1;
+  color: black;
+  margin: 0 0 24px 15px; /* 15px left margin to match Figma */
 }
 
-.hero-overlay .location-address {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(255,255,255,0.9);
-  font-size: 15px;
-  margin-bottom: 12px;
+/* Description Content */
+.description-content {
+  width: 860px;
+  height: 127px;
+  background: #d9d9d9;
+  border-radius: 10px;
+  padding: 24px 15px;
+  box-sizing: border-box;
 }
 
-.hero-overlay .location-icon {
-  font-size: 16px;
-}
-
-.location-size-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,0.15);
-  padding: 6px 12px;
-  border-radius: 15px;
-  font-size: 14px;
-  font-weight: 500;
-  color: white;
-  backdrop-filter: blur(10px);
-}
-
-.size-icon {
-  font-size: 14px;
-}
-
-/* Content Area */
-.panel-content {
-  flex: 1;
-  padding: 24px 30px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.info-section {
-  margin-bottom: 0; /* Remove margin to save space */
-}
-
-.info-section h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 12px 0;
-  border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 8px;
-}
-
-.info-section p {
-  line-height: 1.5;
-  color: #555;
+.description-content p {
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: normal;
+  font-size: 19.747px;
+  line-height: 1.4;
+  color: black;
   margin: 0;
-  font-size: 14px;
-  max-height: 4.5em; /* Limit to ~3 lines */
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
+/* Features Grid */
 .features-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Two columns to save space */
-  gap: 8px;
-  max-height: 200px; /* Limit height */
-  overflow-y: auto;
+  grid-template-columns: 1fr 1fr;
+  gap: 67px 26px; /* Vertical gap 67px, horizontal gap 26px to match Figma */
+  width: 860px;
 }
 
 .feature-item {
+  width: 418px;
+  height: 111px;
+  background: #d9d9d9;
+  border-radius: 10px;
+  padding: 21px 8px;
+  box-sizing: border-box;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  background: rgba(0,0,0,0.03);
-  border-radius: 6px;
-  border-left: 3px solid #3b82f6;
-}
-
-.feature-icon {
-  font-size: 16px;
-  min-width: 16px;
+  align-items: flex-start;
 }
 
 .feature-text {
-  font-size: 12px;
-  color: #555;
-  line-height: 1.3;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: normal;
+  font-size: 19.747px;
+  line-height: 1.4;
+  color: black;
+  margin: 0;
 }
 
 /* Editor Panels Base Styles */

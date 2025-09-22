@@ -444,36 +444,33 @@ Feature 3"></textarea>
   <div id="label-info-panel" class="side-panel">
     <button id="close-panel" class="close-btn-overlay">×</button>
     
-    <!-- Hero Image with Overlay -->
-    <div class="location-hero" id="location-image">
-      <img id="location-photo" src="" alt="" style="display: none;">
-      <div class="image-placeholder">📷 No photo available</div>
-      <div class="hero-overlay">
-        <div class="location-category" id="location-category">LOADING...</div>
-        <h2 class="location-title" id="location-title">Loading Location...</h2>
-        <div class="location-address" id="location-address">
-          <span class="location-icon">📍</span>
-          <span id="location-coordinates">Detroit, Michigan</span>
-        </div>
-        <div class="location-size-badge">
-          <span class="size-icon">📏</span>
-          <span id="location-size">Loading size...</span>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Content Area -->
-    <div class="panel-content">
-      <div class="info-section">
-        <h3>Description</h3>
-        <p id="location-description">Loading description...</p>
+    <!-- Panel Content Container -->
+    <div class="panel-container">
+      <!-- Title Section -->
+      <div class="panel-title-section">
+        <h1 class="panel-title" id="location-title">Loading Location...</h1>
       </div>
       
-      <div class="info-section">
-        <h3>Key Features</h3>
-        <div id="location-features" class="features-grid">
+      <!-- Hero Image with Category Badge -->
+      <div class="panel-hero" id="location-image">
+        <img id="location-photo" src="" alt="" style="display: none;">
+        <div class="image-placeholder"></div>
+        <div class="category-badge" id="location-category">LOADING...</div>
+      </div>
+      
+      <!-- Description Section -->
+      <div class="panel-section">
+        <h2 class="section-title">Description</h2>
+        <div class="description-content">
+          <p id="location-description">Loading description...</p>
+        </div>
+      </div>
+      
+      <!-- Key Features Section -->
+      <div class="panel-section">
+        <h2 class="section-title">Key Features</h2>
+        <div class="features-grid" id="location-features">
           <div class="feature-item">
-            <span class="feature-icon">⚡</span>
             <span class="feature-text">Loading features...</span>
           </div>
         </div>

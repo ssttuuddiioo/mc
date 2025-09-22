@@ -5207,9 +5207,9 @@ function setupSidePanel() {
 async function openSidePanel(labelId, displayText) {
     const panel = document.getElementById('label-info-panel');
     
-    // Force dark theme styling
-    panel.style.background = '#000000';
-    panel.style.color = 'white';
+    // Clean white theme styling to match Figma
+    panel.style.background = 'white';
+    panel.style.color = 'black';
     
     // Try to get data from Supabase first, then fallback to hardcoded
     let data = await getMarkerDataFromSupabase(labelId);
@@ -5221,83 +5221,23 @@ async function openSidePanel(labelId, displayText) {
     const categoryElement = document.getElementById('location-category');
     categoryElement.textContent = data.category || 'Unknown Category';
     
-    // Apply color coding if available
-    if (data.categoryColor || data.color) {
-        categoryElement.style.color = data.categoryColor || data.color;
-    }
-    
     document.getElementById('location-title').textContent = data.title || data.name || 'Unknown Facility';
-    document.getElementById('location-coordinates').textContent = data.address || 'Detroit, Michigan';
     document.getElementById('location-description').textContent = data.description || 'No description available';
-    document.getElementById('location-size').textContent = data.size || 'Size not specified';
     
-    // Update category display
-    const categoryElement2 = document.getElementById('location-category');
-    categoryElement2.textContent = data.category || 'Unknown Category';
-    categoryElement2.style.background = '#1e2a4a';
-    categoryElement2.style.color = 'white';
-    categoryElement2.style.padding = '8px 16px';
-    categoryElement2.style.borderRadius = '20px';
-    categoryElement2.style.fontSize = '14px';
-    categoryElement2.style.fontWeight = '500';
-    categoryElement2.style.display = 'inline-block';
-    categoryElement2.style.marginBottom = '16px';
+    // Clean styling to match Figma design - no additional styling needed
+    // CSS handles all the styling now
     
-    // Force dark theme on content sections
-    const panelContent = document.querySelector('.panel-content');
-    if (panelContent) {
-        panelContent.style.background = '#000000';
-    }
-    
-    // Force dark theme on info sections
-    const infoSections = document.querySelectorAll('.info-section');
-    infoSections.forEach(section => {
-        section.style.background = '#1e2a4a';
-        section.style.padding = '24px';
-        section.style.borderRadius = '16px';
-        section.style.marginBottom = '16px';
-        
-        const heading = section.querySelector('h3');
-        if (heading) {
-            heading.style.color = 'white';
-            heading.style.fontSize = '16px';
-            heading.style.fontWeight = '600';
-            heading.style.margin = '0 0 16px 0';
-            heading.style.borderBottom = 'none';
-            heading.style.paddingBottom = '0';
-        }
-        
-        const paragraph = section.querySelector('p');
-        if (paragraph) {
-            paragraph.style.color = 'rgba(255, 255, 255, 0.85)';
-            paragraph.style.fontSize = '16px';
-            paragraph.style.lineHeight = '1.6';
-        }
-    });
-    
-    // Update features with green checkmark design
+    // Update features to match Figma design
     const featuresContainer = document.getElementById('location-features');
     featuresContainer.innerHTML = '';
-    featuresContainer.style.display = 'grid';
-    featuresContainer.style.gridTemplateColumns = '1fr 1fr';
-    featuresContainer.style.gap = '12px';
     
     if (data.features && Array.isArray(data.features)) {
         data.features.forEach(feature => {
             const featureDiv = document.createElement('div');
-            featureDiv.style.background = '#2a3f5f';
-            featureDiv.style.padding = '16px';
-            featureDiv.style.borderRadius = '12px';
-            featureDiv.style.display = 'flex';
-            featureDiv.style.alignItems = 'center';
-            featureDiv.style.gap = '12px';
+            featureDiv.className = 'feature-item';
             
-            // Always use green checkmark icon for consistency
             const featureText = typeof feature === 'string' ? feature : (feature.text || feature);
-                featureDiv.innerHTML = `
-                <span style="width: 20px; height: 20px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; color: white; font-weight: bold;">✓</span>
-                <span style="color: white; font-size: 14px; font-weight: 400; line-height: 1.4;">${featureText}</span>
-            `;
+            featureDiv.innerHTML = `<span class="feature-text">${featureText}</span>`;
             featuresContainer.appendChild(featureDiv);
         });
     }
