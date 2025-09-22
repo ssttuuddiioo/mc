@@ -3,13 +3,110 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Orbit Demo - SVG Placement Tool</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=1.0.1">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
+  
+  <!-- Custom Font -->
+  <style>
+    @font-face {
+      font-family: 'MichiganCentralMonumentGrotesk-Bold';
+      src: url('public/fonts/MichiganCentralMonumentGrotesk-Bold.woff2?v=1.0.1') format('woff2'),
+           url('public/fonts/MichiganCentralMonumentGrotesk-Bold.woff?v=1.0.1') format('woff'),
+           url('public/fonts/MichiganCentralMonumentGrotesk-Bold.ttf?v=1.0.1') format('truetype');
+      font-weight: bold;
+      font-display: swap;
+    }
+  </style>
 </head>
 <body>
   <div id="map"></div>
+  
+  <!-- TEST BUTTON FOR ADMIN PANEL (HIDDEN) -->
+  <button id="test-admin-button" style="display: none;">
+    🛠️ OPEN ADMIN PANEL (TEST)
+  </button>
+  
+  <script>
+    // Register Service Worker for offline functionality
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('✅ Service Worker registered:', registration.scope);
+          })
+          .catch(error => {
+            console.log('❌ Service Worker registration failed:', error);
+          });
+      });
+    }
+
+    // Simple direct function to open admin panel
+    function openAdminPanelTest() {
+      console.log('🛠️ DIRECT TEST BUTTON CLICKED!');
+      const panel = document.getElementById('admin-panel');
+      console.log('🔍 Panel found:', !!panel);
+      
+      if (panel) {
+        panel.classList.remove('editor-hidden');
+        panel.style.display = 'block';
+        panel.style.visibility = 'visible';
+        panel.style.opacity = '1';
+        panel.style.transform = 'translateX(0)';
+        panel.style.right = '0';
+        console.log('✅ Panel should be visible now');
+      } else {
+        console.error('❌ Panel not found');
+      }
+    }
+    
+    // Test function for Add New Marker
+    function testAddNewMarker() {
+      console.log('➕ ADD NEW MARKER CLICKED!');
+      
+      // Clear dropdown and set to "new" mode
+      const select = document.getElementById('admin-marker-select');
+      if (select) {
+        select.innerHTML = '<option value="new">➕ Creating New Marker...</option>';
+        select.value = 'new';
+        console.log('✅ Dropdown set to new mode');
+      }
+      
+      // Show the edit section
+      const editSection = document.getElementById('admin-edit-section');
+      if (editSection) {
+        editSection.style.display = 'block';
+        console.log('✅ Edit section shown');
+      }
+      
+      // Clear form fields
+      const fields = [
+        'admin-marker-name', 'admin-marker-lat', 'admin-marker-lng', 
+        'admin-marker-color', 'admin-marker-short-desc', 'admin-marker-description',
+        'admin-marker-size', 'admin-marker-address', 'admin-marker-image', 'admin-marker-features'
+      ];
+      
+      fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+          field.value = '';
+        }
+      });
+      
+      // Set default color
+      const colorField = document.getElementById('admin-marker-color');
+      if (colorField) {
+        colorField.value = '#4A90E2';
+      }
+      
+      console.log('✅ Form cleared and ready for new marker');
+    }
+  </script>
   
   <!-- PRECISION CROSSHAIR OVERLAY -->
   <div id="precision-crosshair" style="display: none;">
@@ -21,8 +118,8 @@
     </div>
   </div>
 
-  <!-- Style Controls in Top-Left -->
-  <div id="style-controls">
+  <!-- Style Controls in Top-Left (HIDDEN) -->
+  <div id="style-controls" style="display: none;">
     <button data-style="mapbox://styles/mapbox/light-v11" title="Light Mode">☀️</button>
     <button data-style="mapbox://styles/mapbox/standard" title="Standard Mode">🗺️</button>
     <button id="svg-editor-toggle" title="SVG Placement Tool">⚙️</button>
@@ -35,8 +132,15 @@
     <div id="controls-hint" style="font-size: 10px; opacity: 0.7; margin-top: 4px;">Press C for crosshair, Ctrl+P for help</div>
   </div>
 
-  <!-- Legend Toggle Button -->
-  <button id="legend-toggle">📍</button>
+  <!-- Online/Offline Status Indicator -->
+  <div id="connection-status" style="position: fixed; top: 20px; right: 20px; background: rgba(46, 204, 113, 0.9); color: white; padding: 6px 12px; border-radius: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 11px; font-weight: 500; z-index: 1001; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+    <span id="connection-icon">🌐</span>
+    <span id="connection-text">Online</span>
+    <span id="cache-info" style="font-size: 9px; opacity: 0.8; margin-left: 8px;"></span>
+  </div>
+
+  <!-- Legend Toggle Button (HIDDEN) -->
+  <button id="legend-toggle" style="display: none;">📍</button>
 
   <!-- Legend Panel -->
   <div id="legend" class="legend-hidden">
@@ -245,6 +349,7 @@
           <select id="admin-marker-select">
             <option value="">Select a marker...</option>
           </select>
+          <button id="admin-add-new-marker" class="primary-btn" style="margin-left: 10px;" onclick="testAddNewMarker()">➕ Add New Marker</button>
         </div>
       </div>
 
@@ -292,6 +397,21 @@
         </div>
         
         <div class="editor-section">
+          <label>Latitude:</label>
+          <input type="number" id="admin-marker-lat" step="0.0000001" placeholder="42.3289">
+        </div>
+        
+        <div class="editor-section">
+          <label>Longitude:</label>
+          <input type="number" id="admin-marker-lng" step="0.0000001" placeholder="-83.0776">
+        </div>
+        
+        <div class="editor-section">
+          <label>Color:</label>
+          <input type="color" id="admin-marker-color" value="#4A90E2">
+        </div>
+        
+        <div class="editor-section">
           <label>Image Path:</label>
           <input type="text" id="admin-marker-image" placeholder="public/about/image.jpg">
         </div>
@@ -303,8 +423,15 @@ Feature 2
 Feature 3"></textarea>
         </div>
         
+        <div class="editor-section">
+          <div id="admin-status-indicator" style="padding: 10px; margin: 10px 0; border-radius: 5px; display: none;">
+            <span id="admin-status-text">Ready</span>
+          </div>
+        </div>
+        
         <div class="editor-actions">
-          <button id="admin-save-marker" class="success-btn">Save Changes</button>
+          <button id="admin-save-marker" class="success-btn">💾 Save to Database</button>
+          <button id="admin-delete-marker" class="danger-btn" style="display: none;">🗑️ Delete Marker</button>
           <button id="admin-reset-marker" class="secondary-btn">Reset</button>
           <button id="admin-export-data" class="primary-btn">Export All Data</button>
         </div>
@@ -354,6 +481,6 @@ Feature 3"></textarea>
     </div>
   </div>
 
-  <script src="main.js"></script>
+  <script src="main.js?v=1.0.1"></script>
 </body>
 </html>

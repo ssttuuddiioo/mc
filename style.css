@@ -449,8 +449,7 @@ body {
   pointer-events: none !important;
 }
 
-/* Hide all unwanted UI elements */
-#style-controls,
+/* Hide unwanted UI elements (but keep style-controls visible for admin panel) */
 #precision-crosshair,
 #precision-status {
   display: none !important;
@@ -460,10 +459,25 @@ body {
 }
 
 #building-settings:not(.editor-hidden),
-#svg-editor:not(.editor-hidden) {
+#svg-editor:not(.editor-hidden),
+#admin-panel:not(.editor-hidden) {
   transform: translateX(0);
   opacity: 1;
   pointer-events: all;
+}
+
+/* Make sure admin panel is visible when not hidden */
+#admin-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100vh;
+  background: white;
+  box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  overflow-y: auto;
 }
 
 .editor-header {

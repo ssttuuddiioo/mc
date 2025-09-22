@@ -1,3 +1,700 @@
+// --- Supabase Configuration ---
+  const SUPABASE_URL = 'https://hzzcioecccskyywnvvbn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6emNpb2VjY2Nza3l5d252dmJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0Nzc1MjgsImV4cCI6MjA3NDA1MzUyOH0.2x3-B32F-osawrdCYjMD9KF-UMGMGLYopLWtPSJzwGY';
+
+// Safe Supabase client creation - handle offline case
+let supabaseClient = null;
+try {
+  if (typeof supabase !== 'undefined') {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (error) {
+  // Silent fallback to offline mode
+}
+
+// --- Supabase Functions ---
+async function fetchMarkersFromSupabase() {
+  if (!supabaseClient) return [];
+  
+  try {
+    const { data, error } = await supabaseClient.from('markers').select('*');
+    if (error) throw error;
+    // Process and normalize the CSV data structure
+    const processedMarkers = data.map(processCSVMarkerData);
+    console.log(`✅ Loaded ${processedMarkers.length} markers from database`);
+    return processedMarkers;
+  } catch (error) {
+    console.log(`⚠️ Database unavailable, using cache`);
+    return [];
+  }
+}
+
+// --- CSV Data Processing ---
+function processCSVMarkerData(rawMarker) {
+  // Parse coordinates from "Coordinates" column or use lat/lng directly
+  let lat = rawMarker.lat;
+  let lng = rawMarker.lng;
+  
+  if (rawMarker["Coordinates"] && typeof rawMarker["Coordinates"] === 'string') {
+    const coords = rawMarker["Coordinates"].split(',').map(c => parseFloat(c.trim()));
+    if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+      lat = coords[0];
+      lng = coords[1];
+    }
+  }
+
+  // Parse features from "Key Features" column (pipe-separated)
+  let features = [];
+  if (rawMarker["Key Features"]) {
+    features = rawMarker["Key Features"].split('|').map(f => f.trim()).filter(f => f);
+  }
+
+  // Map category to color (using exact category names from your data)
+  const categoryColors = {
+    'main buildings & workspaces': '#4A90E2',
+    'making & building spaces': '#E74C3C', 
+    'making & building spaces': '#E74C3C',
+    'testing & innovation zones': '#9B59B6',
+    'drone & aerial technology': '#27AE60',
+    'data & technology infrastructure': '#5DADE2',
+    'strategic location advantages': '#F39C12'
+  };
+
+  const categoryKey = rawMarker["Category"]?.toLowerCase() || '';
+  const color = rawMarker.color || categoryColors[categoryKey] || '#4A90E2';
+
+  return {
+    id: rawMarker.id || rawMarker["Label"],
+    label: rawMarker["Label"],
+    name: rawMarker["Facility Name"],
+    lat: lat,
+    lng: lng,
+    color: color,
+    category: rawMarker["Category"],
+    address: rawMarker["Address"],
+    size: rawMarker["Size/Capacity"],
+    description: rawMarker["Description"],
+    features: features,
+    location: rawMarker["Location"],
+    image: rawMarker["image"],
+    // Keep original text field for marker display
+    text: rawMarker["Label"] || rawMarker.id?.toString()
+  };
+}
+
+// --- Cache-First Loading System ---
+async function loadMarkersWithCache() {
+  // Step 1: Try to load from cache immediately
+  const cachedResult = cacheManager.getCachedMarkers();
+  let markers = [];
+  
+  if (cachedResult) {
+    markers = cachedResult.markers;
+    console.log(`⚡ Using ${markers.length} cached markers`);
+    
+    // Display cached markers immediately
+    displayMarkers(markers);
+    
+    // If data is stale and we're online, sync in background
+    if (cachedResult.isStale && cacheManager.isOnline) {
+      backgroundSyncMarkers();
+    }
+  } else {
+    // Step 2: No cache available, fetch from Supabase
+    console.log("📡 Fetching fresh data...");
+    markers = await fetchFromSupabaseWithFallback();
+    
+    if (markers.length > 0) {
+      displayMarkers(markers);
+      cacheManager.cacheMarkers(markers);
+    }
+  }
+  
+  // Step 3: Set up periodic background sync
+  setupBackgroundSync();
+  
+  return markers;
+}
+
+async function fetchFromSupabaseWithFallback() {
+  try {
+    const supabaseMarkers = await fetchMarkersFromSupabase();
+    if (supabaseMarkers.length > 0) {
+      return supabaseMarkers;
+    }
+  } catch (error) {
+    console.log("⚠️ Supabase failed, falling back to hardcoded markers");
+  }
+  
+  // Fallback to hardcoded markers if Supabase fails
+  if (TRANSITION_CONFIG.fallbackToHardcoded) {
+    console.log("🔄 Using hardcoded markers as fallback");
+    return newMarkers; // Your existing hardcoded markers
+  }
+  
+  return [];
+}
+
+async function backgroundSyncMarkers() {
+  console.log("🔄 Background sync starting...");
+  try {
+    const freshMarkers = await fetchMarkersFromSupabase();
+    if (freshMarkers.length > 0) {
+      cacheManager.cacheMarkers(freshMarkers);
+      
+      // Check if data changed, if so, update display
+      const cachedResult = cacheManager.getCachedMarkers();
+      if (cachedResult && JSON.stringify(cachedResult.markers) !== JSON.stringify(freshMarkers)) {
+        console.log("🔄 Data updated, refreshing display");
+        displayMarkers(freshMarkers);
+      }
+    }
+  } catch (error) {
+    console.log("⚠️ Background sync failed:", error.message);
+  }
+}
+
+function setupBackgroundSync() {
+  // Sync every 5 minutes when online
+  setInterval(() => {
+    if (cacheManager.isOnline) {
+      backgroundSyncMarkers();
+    }
+  }, CACHE_CONFIG.SYNC_INTERVAL);
+}
+
+function displayMarkers(markers) {
+  // Store Supabase markers globally for info panel access
+  allSupabaseMarkers = markers;
+  
+  // Remove existing markers
+  const existingMarkers = document.querySelectorAll('.marker');
+  existingMarkers.forEach(marker => {
+    const parent = marker.parentElement;
+    if (parent && parent.classList.contains('mapboxgl-marker')) {
+      parent.remove();
+    }
+  });
+  
+  // Add new markers
+  addMarkersToMap(markers, 'supabase');
+  
+  // Also add hardcoded markers if configured
+  const filteredHardcodedMarkers = filterHardcodedMarkers(newMarkers);
+  if (filteredHardcodedMarkers.length > 0) {
+    addMarkersToMap(filteredHardcodedMarkers, 'hardcoded');
+  }
+  
+  // Cache images in background (force download for offline use)
+  if (markers.length > 0) {
+    cacheManager.cacheAllImages(markers);
+  }
+  
+  console.log(`✅ ${markers.length} markers loaded`);
+}
+
+// --- Cache Management System ---
+const CACHE_KEYS = {
+  MARKERS: 'cached_markers',
+  IMAGES: 'cached_images',
+  LAST_SYNC: 'last_sync_timestamp',
+  APP_VERSION: 'app_cache_version'
+};
+
+const CACHE_CONFIG = {
+  MAX_AGE: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+  CURRENT_VERSION: '1.0.0',
+  SYNC_INTERVAL: 5 * 60 * 1000 // 5 minutes for background sync
+};
+
+class CacheManager {
+  constructor() {
+    this.isOnline = navigator.onLine;
+    this.setupOnlineDetection();
+    this.initializeCache();
+  }
+
+  setupOnlineDetection() {
+    window.addEventListener('online', () => {
+      this.isOnline = true;
+      console.log('🌐 Back online');
+      this.updateConnectionStatus();
+      this.backgroundSync();
+    });
+
+    window.addEventListener('offline', () => {
+      this.isOnline = false;
+      console.log('📱 Offline mode');
+      this.updateConnectionStatus();
+    });
+
+    // Initial status
+    this.updateConnectionStatus();
+  }
+
+  updateConnectionStatus() {
+    const statusEl = document.getElementById('connection-status');
+    const iconEl = document.getElementById('connection-icon');
+    const textEl = document.getElementById('connection-text');
+    const cacheInfoEl = document.getElementById('cache-info');
+    
+    if (!statusEl) return;
+
+    if (this.isOnline) {
+      statusEl.style.background = 'rgba(46, 204, 113, 0.9)';
+      iconEl.textContent = '🌐';
+      textEl.textContent = 'Online';
+      
+      // Show cache info
+      const cachedResult = this.getCachedMarkers();
+      if (cachedResult) {
+        cacheInfoEl.textContent = `(${cachedResult.markers.length} cached)`;
+      }
+    } else {
+      statusEl.style.background = 'rgba(231, 76, 60, 0.9)';
+      iconEl.textContent = '📱';
+      textEl.textContent = 'Offline';
+      
+      const cachedResult = this.getCachedMarkers();
+      if (cachedResult) {
+        cacheInfoEl.textContent = `(using ${cachedResult.markers.length} cached)`;
+      } else {
+        cacheInfoEl.textContent = '(no cache)';
+      }
+    }
+    
+    statusEl.style.display = 'block';
+    
+    // Auto-hide after 3 seconds if online
+    if (this.isOnline) {
+      setTimeout(() => {
+        if (statusEl && this.isOnline) {
+          statusEl.style.display = 'none';
+        }
+      }, 3000);
+    }
+  }
+
+  initializeCache() {
+    // Check if cache version matches current app version
+    const cachedVersion = localStorage.getItem(CACHE_KEYS.APP_VERSION);
+    if (cachedVersion !== CACHE_CONFIG.CURRENT_VERSION) {
+      console.log('🔄 App version changed - clearing old cache');
+      this.clearCache();
+      localStorage.setItem(CACHE_KEYS.APP_VERSION, CACHE_CONFIG.CURRENT_VERSION);
+    }
+  }
+
+  // Get cached markers with freshness check
+  getCachedMarkers() {
+    try {
+      const cachedData = localStorage.getItem(CACHE_KEYS.MARKERS);
+      const lastSync = localStorage.getItem(CACHE_KEYS.LAST_SYNC);
+      
+      if (!cachedData || !lastSync) {
+        return null;
+      }
+
+      const age = Date.now() - parseInt(lastSync);
+      const markers = JSON.parse(cachedData);
+      
+      // Return cached data regardless of age, but flag if stale
+      return {
+        markers,
+        isStale: age > CACHE_CONFIG.MAX_AGE,
+        age: Math.round(age / 1000 / 60) // age in minutes
+      };
+    } catch (error) {
+      console.error('❌ Error reading cache:', error);
+      return null;
+    }
+  }
+
+  // Cache markers data
+  cacheMarkers(markers) {
+    try {
+      localStorage.setItem(CACHE_KEYS.MARKERS, JSON.stringify(markers));
+      localStorage.setItem(CACHE_KEYS.LAST_SYNC, Date.now().toString());
+      console.log(`💾 Cached ${markers.length} markers`);
+      return true;
+    } catch (error) {
+      console.error('❌ Error caching markers:', error);
+      return false;
+    }
+  }
+
+  // Clear all cache
+  clearCache() {
+    Object.values(CACHE_KEYS).forEach(key => {
+      localStorage.removeItem(key);
+    });
+    console.log('🗑️ Cache cleared');
+  }
+
+  // Background sync when online
+  async backgroundSync() {
+    if (!this.isOnline) return;
+    
+    try {
+      console.log('🔄 Background sync starting...');
+      const freshMarkers = await fetchMarkersFromSupabase();
+      
+      if (freshMarkers.length > 0) {
+        this.cacheMarkers(freshMarkers);
+        // Trigger UI update if needed
+        this.onDataUpdated?.(freshMarkers);
+      }
+    } catch (error) {
+      console.log('⚠️ Background sync failed:', error.message);
+    }
+  }
+
+  // Set callback for when data is updated
+  onDataUpdate(callback) {
+    this.onDataUpdated = callback;
+  }
+
+  // --- Image Caching System ---
+  
+  // Get cached images list
+  getCachedImages() {
+    try {
+      const cachedImages = localStorage.getItem(CACHE_KEYS.IMAGES);
+      return cachedImages ? JSON.parse(cachedImages) : {};
+    } catch (error) {
+      console.error('❌ Error reading cached images:', error);
+      return {};
+    }
+  }
+
+  // Update cached images list
+  setCachedImages(imageMap) {
+    try {
+      localStorage.setItem(CACHE_KEYS.IMAGES, JSON.stringify(imageMap));
+      return true;
+    } catch (error) {
+      console.error('❌ Error saving cached images:', error);
+      return false;
+    }
+  }
+
+  // Cache a single image (force download)
+  async cacheImage(imageUrl, markerId) {
+    if (!imageUrl || imageUrl.startsWith('public/')) {
+      // Skip local images - they're already available
+      return true;
+    }
+
+    try {
+      const cache = await caches.open('images-v1.0.0');
+      
+      // Force fetch the image (not just cache on request)
+      const response = await fetch(imageUrl, {
+        mode: 'cors',
+        cache: 'no-cache' // Force fresh download
+      });
+      
+      if (response.ok) {
+        await cache.put(imageUrl, response.clone());
+        
+        // Update cached images list
+        const cachedImages = this.getCachedImages();
+        cachedImages[imageUrl] = {
+          markerId,
+          cachedAt: Date.now(),
+          size: response.headers.get('content-length') || 0
+        };
+        this.setCachedImages(cachedImages);
+        
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // Cache all images from marker data
+  async cacheAllImages(markers) {
+    const imageUrls = new Set();
+    const currentImages = this.getCachedImages();
+    
+    // Collect all image URLs from markers
+    markers.forEach(marker => {
+      if (marker.image && !marker.image.startsWith('public/')) {
+        imageUrls.add(marker.image);
+      }
+    });
+
+    if (imageUrls.size > 0) {
+      console.log(`🖼️ Caching ${imageUrls.size} images...`);
+    }
+
+    // Remove unused cached images
+    const usedUrls = Array.from(imageUrls);
+    const unusedUrls = Object.keys(currentImages).filter(url => !usedUrls.includes(url));
+    
+    if (unusedUrls.length > 0) {
+      await this.removeUnusedImages(unusedUrls);
+    }
+
+    // Cache new images (limit to 50)
+    const urlsToCache = Array.from(imageUrls).slice(0, 50);
+    let cachedCount = 0;
+    
+    // Process images in parallel for faster caching
+    const cachePromises = urlsToCache.map(async (imageUrl) => {
+      if (!currentImages[imageUrl]) {
+        const success = await this.cacheImage(imageUrl);
+        if (success) cachedCount++;
+        return success;
+      }
+      return true;
+    });
+    
+    await Promise.all(cachePromises);
+
+    if (cachedCount > 0) {
+      console.log(`✅ Cached ${cachedCount} images`);
+    }
+
+    return cachedCount;
+  }
+
+  // Remove unused images from cache
+  async removeUnusedImages(unusedUrls) {
+    try {
+      const cache = await caches.open('images-v1.0.0');
+      const cachedImages = this.getCachedImages();
+      
+      for (const url of unusedUrls) {
+        await cache.delete(url);
+        delete cachedImages[url];
+      }
+      
+      this.setCachedImages(cachedImages);
+      console.log(`🗑️ Removed ${unusedUrls.length} unused images`);
+    } catch (error) {
+      console.error('❌ Error removing unused images:', error);
+    }
+  }
+
+  // Check if image is cached
+  async isImageCached(imageUrl) {
+    if (imageUrl.startsWith('public/')) return true; // Local images always available
+    
+    try {
+      const cache = await caches.open('images-v1.0.0');
+      const response = await cache.match(imageUrl);
+      return !!response;
+    } catch (error) {
+      return false;
+    }
+  }
+}
+
+// Global cache manager instance
+const cacheManager = new CacheManager();
+
+// Global marker data store for quick access
+let allSupabaseMarkers = [];
+
+// --- Marker Data Access Functions ---
+async function getMarkerDataFromSupabase(labelId) {
+  // First try from global store (faster)
+  let marker = allSupabaseMarkers.find(m => m.id == labelId || m.label == labelId);
+  
+  if (!marker) {
+    // Try fetching fresh data
+    try {
+      const markers = await fetchMarkersFromSupabase();
+      allSupabaseMarkers = markers; // Update global store
+      marker = markers.find(m => m.id == labelId || m.label == labelId);
+    } catch (error) {
+      console.log('⚠️ Could not fetch marker data from Supabase');
+      return null;
+    }
+  }
+  
+  if (marker) {
+    // Convert Supabase data to expected format
+    return {
+      title: marker.name || marker["Facility Name"],
+      category: marker.category || marker["Category"],
+      description: marker.description || marker["Description"],
+      address: marker.address || marker["Address"],
+      size: marker.size || marker["Size/Capacity"],
+      location: marker.location || marker["Location"],
+      features: marker.features || [], // Already processed as array
+      image: marker.image,
+      color: marker.color,
+      categoryColor: marker.color
+    };
+  }
+  
+  return null;
+}
+
+// --- Supabase CRUD Operations ---
+async function saveMarkerToSupabase(markerData) {
+  console.log("💾 Saving marker to Supabase...", markerData);
+  try {
+    const { data, error } = await supabaseClient
+      .from('markers')
+      .upsert(markerData)
+      .select();
+    
+    if (error) throw error;
+    console.log("✅ Marker saved successfully:", data);
+    return { success: true, data };
+  } catch (error) {
+    console.error("❌ Error saving marker:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+async function deleteMarkerFromSupabase(markerId) {
+  console.log("🗑️ Deleting marker from Supabase...", markerId);
+  try {
+    const { data, error } = await supabaseClient
+      .from('markers')
+      .delete()
+      .eq('id', markerId)
+      .select();
+    
+    if (error) throw error;
+    console.log("✅ Marker deleted successfully:", data);
+    return { success: true, data };
+  } catch (error) {
+    console.error("❌ Error deleting marker:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+async function createNewMarkerInSupabase(markerData) {
+  console.log("➕ Creating new marker in Supabase...", markerData);
+  try {
+    const { data, error } = await supabaseClient
+      .from('markers')
+      .insert(markerData)
+      .select();
+    
+    if (error) throw error;
+    console.log("✅ New marker created successfully:", data);
+    return { success: true, data };
+  } catch (error) {
+    console.error("❌ Error creating marker:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// --- Marker Creation Functions ---
+function createMarkerElement(markerData, source = 'hardcoded') {
+  const el = document.createElement('div');
+  el.className = 'marker';
+  
+  // New styling: black background, white text, custom font
+  el.style.backgroundColor = '#000000';
+  el.style.border = 'none';
+  el.style.display = 'flex';
+  el.style.alignItems = 'center';
+  el.style.justifyContent = 'center';
+  el.style.color = 'white';
+  el.style.fontFamily = 'MichiganCentralMonumentGrotesk-Bold, Arial, sans-serif';
+  el.style.fontWeight = 'bold';
+  el.style.fontSize = '18px';
+  el.style.borderRadius = '2px'; // Only 2px rounded corners
+  
+  // Use custom text if provided, otherwise use ID
+  const displayText = markerData.text || markerData.label || markerData.id.toString();
+  el.textContent = displayText;
+  
+  // Make all markers rectangular with consistent sizing
+  el.style.minWidth = '60px';
+  el.style.height = '40px';
+  el.style.padding = '0 12px';
+
+  // Make marker clickable
+  el.addEventListener('click', async () => {
+    await openSidePanel(markerData.id, displayText);
+  });
+  
+  // Add cursor pointer to indicate clickability
+  el.style.cursor = 'pointer';
+  
+  return el;
+}
+
+function addMarkersToMap(markers, source = 'hardcoded') {
+  markers.forEach(markerData => {
+    const el = createMarkerElement(markerData, source);
+    new mapboxgl.Marker(el)
+      .setLngLat([markerData.lng, markerData.lat])
+      .addTo(map);
+  });
+  console.log(`✅ Added ${markers.length} ${source} markers to map`);
+}
+
+// --- Map Refresh Functions ---
+async function refreshMapMarkers() {
+  console.log("🔄 Refreshing map markers...");
+  
+  // Remove all existing markers
+  const existingMarkers = document.querySelectorAll('.marker');
+  existingMarkers.forEach(marker => {
+    const parent = marker.parentElement;
+    if (parent && parent.classList.contains('mapboxgl-marker')) {
+      parent.remove();
+    }
+  });
+  
+  // Re-add markers
+  const filteredHardcodedMarkers = filterHardcodedMarkers(newMarkers);
+  if (filteredHardcodedMarkers.length > 0) {
+    addMarkersToMap(filteredHardcodedMarkers, 'hardcoded');
+  }
+  
+  // Fetch and add fresh Supabase markers
+  try {
+    const supabaseMarkers = await fetchMarkersFromSupabase();
+    if (supabaseMarkers.length > 0) {
+      addMarkersToMap(supabaseMarkers, 'supabase');
+    }
+    console.log(`🔄 Map refreshed with ${filteredHardcodedMarkers.length} hardcoded + ${supabaseMarkers.length} Supabase markers`);
+  } catch (error) {
+    console.error('❌ Error refreshing Supabase markers:', error);
+  }
+}
+
+// --- Transition Helper Functions ---
+// Configuration for gradual transition
+const TRANSITION_CONFIG = {
+  useSupabaseOnly: true, // Now using only Supabase markers (CSV data)
+  excludeHardcodedIds: [], // Array of hardcoded marker IDs to exclude (replaced by Supabase)
+  fallbackToHardcoded: true // If Supabase fails, still show hardcoded markers
+};
+
+function filterHardcodedMarkers(hardcodedMarkers) {
+  if (TRANSITION_CONFIG.useSupabaseOnly) {
+    console.log("🔄 Using Supabase-only mode - skipping all hardcoded markers");
+    return [];
+  }
+  
+  if (TRANSITION_CONFIG.excludeHardcodedIds.length > 0) {
+    const filtered = hardcodedMarkers.filter(marker => 
+      !TRANSITION_CONFIG.excludeHardcodedIds.includes(marker.id)
+    );
+    console.log(`🔄 Excluded ${hardcodedMarkers.length - filtered.length} hardcoded markers (IDs: ${TRANSITION_CONFIG.excludeHardcodedIds.join(', ')})`);
+    return filtered;
+  }
+  
+  return hardcodedMarkers;
+}
+
+// Connection test removed for cleaner console
+
+
 mapboxgl.accessToken = 'pk.eyJ1Ijoic3N0dHV1ZGRpaW9vIiwiYSI6ImNtZHhveWU4bDI5djIyam9kY2I3M3pwbHcifQ.ck8h3apHSNVAmTwjz-Oc7w';
 
 const LOCATIONS = {
@@ -139,56 +836,52 @@ const ENHANCED_MARKER_DATA = {
     }
 };
 
-map.on('load', () => {
-    newMarkers.forEach(markerData => {
-        const el = document.createElement('div');
-        el.className = 'marker';
-        el.style.backgroundColor = markerData.color;
-        el.style.border = '2px solid white';
-        el.style.display = 'flex';
-        el.style.alignItems = 'center';
-        el.style.justifyContent = 'center';
-        el.style.color = 'white';
-        el.style.fontWeight = 'bold';
-        el.style.fontSize = '12px';
-        
-        // Use custom text if provided, otherwise use ID
-        const displayText = markerData.text || markerData.id.toString();
-        el.textContent = displayText;
-        
-        // Make rectangular for longer text, circular for single numbers
-        if (markerData.text && markerData.text.length > 2) {
-            // Rectangular for longer text
-            el.style.minWidth = '40px';
-            el.style.height = '25px';
-            el.style.borderRadius = '12px';
-            el.style.padding = '0 8px';
-        } else {
-            // Circular for single numbers
-            el.style.width = '30px';
-            el.style.height = '30px';
-            el.style.borderRadius = '50%';
-        }
-
-        // Make marker clickable
-        el.addEventListener('click', () => {
-            openSidePanel(markerData.id, displayText);
-        });
-        
-        // Add cursor pointer to indicate clickability
-        el.style.cursor = 'pointer';
-
-        new mapboxgl.Marker(el)
-            .setLngLat([markerData.lng, markerData.lat])
-            .addTo(map);
-    });
+map.on('load', async () => {
+    // Pre-cache essential map resources for offline use
+    preCacheMapResources();
+    
+    // Use cache-first loading system
+    const markers = await loadMarkersWithCache();
     
     // Setup side panel close functionality
     setupSidePanel();
-    
-    // Initialize admin-configurable marker data
-    initializeMarkerData();
 });
+
+// Pre-cache essential map resources for 3D buildings
+map.once('styledata', async () => {
+  try {
+    const cache = await caches.open('mapbox-v1.0.0');
+    const style = map.getStyle();
+    
+    if (style && style.sprite) {
+      const spritePNG = style.sprite + '.png';
+      const spriteJSON = style.sprite + '.json';
+      const spriteRetina = style.sprite + '@2x.png';
+      
+      // Sample glyph for fonts
+      const sampleGlyph = 
+        'https://api.mapbox.com/fonts/v1/mapbox/Open%20Sans%20Regular,Arial%20Unicode%20MS%20Regular/0-255.pbf?access_token=' +
+        mapboxgl.accessToken;
+      
+      // Cache essential resources for 3D buildings
+      const resourcesToCache = [
+        style.sprite,
+        spritePNG,
+        spriteJSON,
+        spriteRetina,
+        sampleGlyph
+      ];
+      
+      await cache.addAll(resourcesToCache.filter(Boolean));
+    }
+  } catch (error) {
+    // Silent fail
+  }
+});
+
+function preCacheMapResources() {
+  // This function is now handled by the styledata event above
+}
 
 // NEW SVG Editor State Variables
 let currentWorkingSVG = null;
@@ -4048,7 +4741,9 @@ function showAllLabels() {
 }
 
 // --- Zoom Controls ---
-document.getElementById('zoom-in').addEventListener('click', () => {
+const zoomInBtn = document.getElementById('zoom-in');
+if (zoomInBtn) {
+  zoomInBtn.addEventListener('click', () => {
   const currentZoom = map.getZoom();
   const newZoom = Math.min(currentZoom + 1, 22); // Max zoom level is 22
   map.easeTo({
@@ -4059,8 +4754,11 @@ document.getElementById('zoom-in').addEventListener('click', () => {
   navState.targetZoom = newZoom;
   dbg("ZOOM_IN", {from: currentZoom, to: newZoom});
 });
+}
 
-document.getElementById('zoom-out').addEventListener('click', () => {
+const zoomOutBtn = document.getElementById('zoom-out');
+if (zoomOutBtn) {
+  zoomOutBtn.addEventListener('click', () => {
   const currentZoom = map.getZoom();
   const newZoom = Math.max(currentZoom - 1, 0); // Min zoom level is 0
   map.easeTo({
@@ -4071,6 +4769,7 @@ document.getElementById('zoom-out').addEventListener('click', () => {
   navState.targetZoom = newZoom;
   dbg("ZOOM_OUT", {from: currentZoom, to: newZoom});
 });
+}
 
 // --- Orange markers removed - using legend navigation instead ---
 
@@ -4334,12 +5033,15 @@ const DETAIL_DATA = {
 };
 
 // Info area click functionality - opens detail panel
-document.getElementById('info').addEventListener('click', () => {
+const infoElement = document.getElementById('info');
+if (infoElement) {
+  infoElement.addEventListener('click', () => {
   currentDetailLocation = getSelectedLocation();
   if (currentDetailLocation) {
     showDetailPanel(currentDetailLocation);
   }
 });
+}
 
 // Close detail panel
 document.getElementById('close-detail-btn').addEventListener('click', () => {
@@ -4502,45 +5204,100 @@ function setupSidePanel() {
     }
 }
 
-function openSidePanel(labelId, displayText) {
+async function openSidePanel(labelId, displayText) {
     const panel = document.getElementById('label-info-panel');
-    const data = getEnhancedMarkerData(labelId, displayText);
+    
+    // Force dark theme styling
+    panel.style.background = '#000000';
+    panel.style.color = 'white';
+    
+    // Try to get data from Supabase first, then fallback to hardcoded
+    let data = await getMarkerDataFromSupabase(labelId);
+    if (!data) {
+        data = getEnhancedMarkerData(labelId, displayText);
+    }
     
     // Update panel content with enhanced data
     const categoryElement = document.getElementById('location-category');
-    categoryElement.textContent = data.category;
+    categoryElement.textContent = data.category || 'Unknown Category';
     
     // Apply color coding if available
-    if (data.categoryColor) {
-        categoryElement.style.color = data.categoryColor;
+    if (data.categoryColor || data.color) {
+        categoryElement.style.color = data.categoryColor || data.color;
     }
     
-    document.getElementById('location-title').textContent = data.title;
+    document.getElementById('location-title').textContent = data.title || data.name || 'Unknown Facility';
     document.getElementById('location-coordinates').textContent = data.address || 'Detroit, Michigan';
-    document.getElementById('location-description').textContent = data.description;
-    document.getElementById('location-size').textContent = data.size;
+    document.getElementById('location-description').textContent = data.description || 'No description available';
+    document.getElementById('location-size').textContent = data.size || 'Size not specified';
     
-    // Update features with proper handling for both formats
+    // Update category display
+    const categoryElement2 = document.getElementById('location-category');
+    categoryElement2.textContent = data.category || 'Unknown Category';
+    categoryElement2.style.background = '#1e2a4a';
+    categoryElement2.style.color = 'white';
+    categoryElement2.style.padding = '8px 16px';
+    categoryElement2.style.borderRadius = '20px';
+    categoryElement2.style.fontSize = '14px';
+    categoryElement2.style.fontWeight = '500';
+    categoryElement2.style.display = 'inline-block';
+    categoryElement2.style.marginBottom = '16px';
+    
+    // Force dark theme on content sections
+    const panelContent = document.querySelector('.panel-content');
+    if (panelContent) {
+        panelContent.style.background = '#000000';
+    }
+    
+    // Force dark theme on info sections
+    const infoSections = document.querySelectorAll('.info-section');
+    infoSections.forEach(section => {
+        section.style.background = '#1e2a4a';
+        section.style.padding = '24px';
+        section.style.borderRadius = '16px';
+        section.style.marginBottom = '16px';
+        
+        const heading = section.querySelector('h3');
+        if (heading) {
+            heading.style.color = 'white';
+            heading.style.fontSize = '16px';
+            heading.style.fontWeight = '600';
+            heading.style.margin = '0 0 16px 0';
+            heading.style.borderBottom = 'none';
+            heading.style.paddingBottom = '0';
+        }
+        
+        const paragraph = section.querySelector('p');
+        if (paragraph) {
+            paragraph.style.color = 'rgba(255, 255, 255, 0.85)';
+            paragraph.style.fontSize = '16px';
+            paragraph.style.lineHeight = '1.6';
+        }
+    });
+    
+    // Update features with green checkmark design
     const featuresContainer = document.getElementById('location-features');
     featuresContainer.innerHTML = '';
+    featuresContainer.style.display = 'grid';
+    featuresContainer.style.gridTemplateColumns = '1fr 1fr';
+    featuresContainer.style.gap = '12px';
     
     if (data.features && Array.isArray(data.features)) {
         data.features.forEach(feature => {
             const featureDiv = document.createElement('div');
-            featureDiv.className = 'feature-item';
+            featureDiv.style.background = '#2a3f5f';
+            featureDiv.style.padding = '16px';
+            featureDiv.style.borderRadius = '12px';
+            featureDiv.style.display = 'flex';
+            featureDiv.style.alignItems = 'center';
+            featureDiv.style.gap = '12px';
             
-            // Handle both string and object format
-            if (typeof feature === 'string') {
+            // Always use green checkmark icon for consistency
+            const featureText = typeof feature === 'string' ? feature : (feature.text || feature);
                 featureDiv.innerHTML = `
-                    <span class="feature-icon">⚡</span>
-                    <span class="feature-text">${feature}</span>
-                `;
-            } else {
-                featureDiv.innerHTML = `
-                    <span class="feature-icon">${feature.icon || '⚡'}</span>
-                    <span class="feature-text">${feature.text || feature}</span>
-                `;
-            }
+                <span style="width: 20px; height: 20px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; color: white; font-weight: bold;">✓</span>
+                <span style="color: white; font-size: 14px; font-weight: 400; line-height: 1.4;">${featureText}</span>
+            `;
             featuresContainer.appendChild(featureDiv);
         });
     }
@@ -4601,6 +5358,18 @@ function initializeAdminPanel() {
         saveBtn.addEventListener('click', saveMarkerData);
     }
     
+    // Add new marker button
+    const addNewBtn = document.getElementById('admin-add-new-marker');
+    if (addNewBtn) {
+        addNewBtn.addEventListener('click', startNewMarker);
+    }
+    
+    // Delete marker button
+    const deleteBtn = document.getElementById('admin-delete-marker');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', deleteMarker);
+    }
+    
     // Reset marker button
     const resetBtn = document.getElementById('admin-reset-marker');
     if (resetBtn) {
@@ -4656,41 +5425,100 @@ function closeAllPanels() {
     if (sidePanel) sidePanel.classList.remove('panel-open');
 }
 
-function populateMarkerDropdown() {
+async function populateMarkerDropdown() {
     const select = document.getElementById('admin-marker-select');
     if (!select) return;
     
     // Clear existing options except the first one
     select.innerHTML = '<option value="">Select a marker...</option>';
     
-    // Add options for all markers
+    // Add hardcoded markers
     newMarkers.forEach(marker => {
         const option = document.createElement('option');
         option.value = marker.id;
         const data = getEnhancedMarkerData(marker.id, marker.text);
-        option.textContent = `${marker.id} - ${data.title}`;
+        option.textContent = `${marker.id} - ${data.title} (Hardcoded)`;
         select.appendChild(option);
     });
-}
-
-function onMarkerSelection() {
-    const select = document.getElementById('admin-marker-select');
-    const editSection = document.getElementById('admin-edit-section');
     
-    if (select.value) {
-        const markerId = parseInt(select.value);
-        loadMarkerIntoForm(markerId);
-        editSection.style.display = 'block';
-    } else {
-        editSection.style.display = 'none';
+    // Add Supabase markers
+    try {
+        const supabaseMarkers = await fetchMarkersFromSupabase();
+        supabaseMarkers.forEach(marker => {
+            const option = document.createElement('option');
+            option.value = marker.id;
+            option.textContent = `${marker.id} - ${marker.name || 'Untitled'} (Supabase)`;
+            option.dataset.source = 'supabase';
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('❌ Error loading Supabase markers for dropdown:', error);
     }
 }
 
-function loadMarkerIntoForm(markerId) {
-    const data = getEnhancedMarkerData(markerId);
+async function onMarkerSelection() {
+    const select = document.getElementById('admin-marker-select');
+    const editSection = document.getElementById('admin-edit-section');
+    const deleteBtn = document.getElementById('admin-delete-marker');
     
-    // Populate form fields
+    if (select.value) {
+        const markerId = select.value;
+        const isSupabase = select.selectedOptions[0]?.dataset.source === 'supabase';
+        
+        await loadMarkerIntoForm(markerId, isSupabase);
+        editSection.style.display = 'block';
+        
+        // Show delete button for Supabase markers only
+        if (isSupabase) {
+            deleteBtn.style.display = 'inline-block';
+        } else {
+            deleteBtn.style.display = 'none';
+        }
+    } else {
+        editSection.style.display = 'none';
+        deleteBtn.style.display = 'none';
+    }
+}
+
+async function loadMarkerIntoForm(markerId, isSupabase = false) {
+    if (isSupabase) {
+        // Load Supabase marker data
+        try {
+            const supabaseMarkers = await fetchMarkersFromSupabase();
+            const marker = supabaseMarkers.find(m => m.id == markerId);
+            
+            if (marker) {
+                document.getElementById('admin-marker-name').value = marker.name || '';
+                document.getElementById('admin-marker-lat').value = marker.lat || '';
+                document.getElementById('admin-marker-lng').value = marker.lng || '';
+                document.getElementById('admin-marker-color').value = marker.color || '#4A90E2';
+                document.getElementById('admin-marker-category').value = marker.category || 'innovation';
+                document.getElementById('admin-marker-short-desc').value = marker.short_description || '';
+                document.getElementById('admin-marker-description').value = marker.description || '';
+                document.getElementById('admin-marker-size').value = marker.size || '';
+                document.getElementById('admin-marker-address').value = marker.address || '';
+                document.getElementById('admin-marker-image').value = marker.image || '';
+                
+                // Handle features array
+                if (marker.features && Array.isArray(marker.features)) {
+                    document.getElementById('admin-marker-features').value = marker.features.join('\n');
+                } else {
+                    document.getElementById('admin-marker-features').value = '';
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error loading Supabase marker:', error);
+            showAdminStatus('Error loading marker data', 'error');
+        }
+    } else {
+        // Load hardcoded marker data
+    const data = getEnhancedMarkerData(markerId);
+        const hardcodedMarker = newMarkers.find(m => m.id == markerId);
+    
     document.getElementById('admin-marker-name').value = data.title || '';
+        document.getElementById('admin-marker-lat').value = hardcodedMarker?.lat || '';
+        document.getElementById('admin-marker-lng').value = hardcodedMarker?.lng || '';
+        document.getElementById('admin-marker-color').value = hardcodedMarker?.color || '#4A90E2';
     document.getElementById('admin-marker-category').value = getCategoryKey(data.category) || 'innovation';
     document.getElementById('admin-marker-short-desc').value = data.shortDescription || '';
     document.getElementById('admin-marker-description').value = data.description || '';
@@ -4705,6 +5533,9 @@ function loadMarkerIntoForm(markerId) {
             return feature.text || feature;
         }).join('\n');
         document.getElementById('admin-marker-features').value = featuresText;
+        } else {
+            document.getElementById('admin-marker-features').value = '';
+        }
     }
 }
 
@@ -4721,15 +5552,22 @@ function getCategoryKey(categoryDisplay) {
     return 'innovation';
 }
 
-function saveMarkerData() {
-    const markerId = parseInt(document.getElementById('admin-marker-select').value);
-    if (!markerId) return;
+async function saveMarkerData() {
+    const markerId = document.getElementById('admin-marker-select').value;
+    const isNewMarker = markerId === 'new';
     
+    // Show loading status
+    showAdminStatus('Saving...', 'loading');
+    
+    try {
     // Collect form data
     const formData = {
-        title: document.getElementById('admin-marker-name').value,
+            name: document.getElementById('admin-marker-name').value,
+            lat: parseFloat(document.getElementById('admin-marker-lat').value),
+            lng: parseFloat(document.getElementById('admin-marker-lng').value),
+            color: document.getElementById('admin-marker-color').value,
         category: document.getElementById('admin-marker-category').value,
-        shortDescription: document.getElementById('admin-marker-short-desc').value,
+            short_description: document.getElementById('admin-marker-short-desc').value,
         description: document.getElementById('admin-marker-description').value,
         size: document.getElementById('admin-marker-size').value,
         address: document.getElementById('admin-marker-address').value,
@@ -4737,37 +5575,157 @@ function saveMarkerData() {
         features: document.getElementById('admin-marker-features').value.split('\n').filter(f => f.trim())
     };
     
-    // Update ENHANCED_MARKER_DATA
-    const categoryInfo = {
-        transportation: { display: "🚂 TRANSPORTATION/LOGISTICS", color: "#4A90E2" },
-        manufacturing: { display: "🏭 MANUFACTURING/WORKSHOP", color: "#E74C3C" },
-        innovation: { display: "🚀 INNOVATION/TECHNOLOGY", color: "#9B59B6" },
-        infrastructure: { display: "🏗️ INFRASTRUCTURE/TRANSPORTATION", color: "#27AE60" },
-        future: { display: "🔮 FUTURE DEVELOPMENT", color: "#5DADE2" }
-    };
-    
-    const categoryData = categoryInfo[formData.category] || categoryInfo.innovation;
-    
-    ENHANCED_MARKER_DATA[markerId] = {
-        category: categoryData.display,
-        title: formData.title,
-        shortDescription: formData.shortDescription,
-        description: formData.description,
-        features: formData.features.map(text => ({ icon: "⚡", text })),
-        size: formData.size,
-        address: formData.address,
-        categoryColor: categoryData.color,
-        image: formData.image || null
-    };
-    
-    console.log('✅ Marker data saved for ID:', markerId);
-    alert('Marker data saved successfully!');
+        // Validate required fields
+        if (!formData.name || !formData.lat || !formData.lng) {
+            throw new Error('Name, Latitude, and Longitude are required fields');
+        }
+        
+        let result;
+        if (isNewMarker) {
+            // Create new marker
+            result = await createNewMarkerInSupabase(formData);
+        } else {
+            // Update existing marker
+            formData.id = parseInt(markerId);
+            result = await saveMarkerToSupabase(formData);
+        }
+        
+        if (result.success) {
+            showAdminStatus('✅ Saved successfully!', 'success');
+            
+            // Refresh the map markers
+            await refreshMapMarkers();
+            
+            // If it was a new marker, update the dropdown and select it
+            if (isNewMarker && result.data && result.data[0]) {
+                const newMarkerId = result.data[0].id;
+                await populateMarkerDropdown();
+                document.getElementById('admin-marker-select').value = newMarkerId;
+                document.getElementById('admin-delete-marker').style.display = 'inline-block';
+            }
+            
+        } else {
+            throw new Error(result.error);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error saving marker:', error);
+        showAdminStatus(`❌ Error: ${error.message}`, 'error');
+    }
 }
 
 function resetMarkerForm() {
+    const markerId = document.getElementById('admin-marker-select').value;
+    if (markerId && markerId !== 'new') {
+        loadMarkerIntoForm(parseInt(markerId));
+    } else {
+        clearMarkerForm();
+    }
+}
+
+// --- Admin Status Functions ---
+function showAdminStatus(message, type = 'info') {
+    const indicator = document.getElementById('admin-status-indicator');
+    const text = document.getElementById('admin-status-text');
+    
+    if (!indicator || !text) return;
+    
+    text.textContent = message;
+    indicator.style.display = 'block';
+    
+    // Set colors based on type
+    switch (type) {
+        case 'success':
+            indicator.style.backgroundColor = '#d4edda';
+            indicator.style.color = '#155724';
+            indicator.style.borderColor = '#c3e6cb';
+            break;
+        case 'error':
+            indicator.style.backgroundColor = '#f8d7da';
+            indicator.style.color = '#721c24';
+            indicator.style.borderColor = '#f5c6cb';
+            break;
+        case 'loading':
+            indicator.style.backgroundColor = '#d1ecf1';
+            indicator.style.color = '#0c5460';
+            indicator.style.borderColor = '#bee5eb';
+            break;
+        default:
+            indicator.style.backgroundColor = '#e2e3e5';
+            indicator.style.color = '#383d41';
+            indicator.style.borderColor = '#d6d8db';
+    }
+    
+    // Auto-hide success messages after 3 seconds
+    if (type === 'success') {
+        setTimeout(() => {
+            indicator.style.display = 'none';
+        }, 3000);
+    }
+}
+
+function clearMarkerForm() {
+    document.getElementById('admin-marker-name').value = '';
+    document.getElementById('admin-marker-lat').value = '';
+    document.getElementById('admin-marker-lng').value = '';
+    document.getElementById('admin-marker-color').value = '#4A90E2';
+    document.getElementById('admin-marker-category').value = 'innovation';
+    document.getElementById('admin-marker-short-desc').value = '';
+    document.getElementById('admin-marker-description').value = '';
+    document.getElementById('admin-marker-size').value = '';
+    document.getElementById('admin-marker-address').value = '';
+    document.getElementById('admin-marker-image').value = '';
+    document.getElementById('admin-marker-features').value = '';
+}
+
+// --- Add New Marker Functions ---
+function startNewMarker() {
+    console.log('➕ Starting new marker creation');
+    
+    // Set dropdown to "new" mode
+    const select = document.getElementById('admin-marker-select');
+    select.innerHTML = '<option value="new">➕ Creating New Marker...</option>';
+    select.value = 'new';
+    
+    // Clear and show the form
+    clearMarkerForm();
+    document.getElementById('admin-edit-section').style.display = 'block';
+    document.getElementById('admin-delete-marker').style.display = 'none';
+    
+    showAdminStatus('Ready to create new marker', 'info');
+}
+
+// --- Delete Marker Functions ---
+async function deleteMarker() {
     const markerId = parseInt(document.getElementById('admin-marker-select').value);
-    if (markerId) {
-        loadMarkerIntoForm(markerId);
+    if (!markerId || markerId === 'new') return;
+    
+    if (!confirm(`Are you sure you want to delete marker ID ${markerId}? This action cannot be undone.`)) {
+        return;
+    }
+    
+    showAdminStatus('Deleting...', 'loading');
+    
+    try {
+        const result = await deleteMarkerFromSupabase(markerId);
+        
+        if (result.success) {
+            showAdminStatus('✅ Marker deleted successfully!', 'success');
+            
+            // Refresh map and dropdown
+            await refreshMapMarkers();
+            await populateMarkerDropdown();
+            
+            // Hide the edit section
+            document.getElementById('admin-edit-section').style.display = 'none';
+            
+        } else {
+            throw new Error(result.error);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error deleting marker:', error);
+        showAdminStatus(`❌ Error: ${error.message}`, 'error');
     }
 }
 
@@ -4794,7 +5752,49 @@ function exportMarkerData() {
 
 // Initialize admin panel when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOM Content Loaded - Initializing admin panel...');
+    
     setTimeout(() => {
+        console.log('⏰ Timeout reached - setting up admin panel');
         initializeAdminPanel();
-    }, 1000);
+        
+        // Add test button functionality
+        console.log('🔍 Looking for test button...');
+        const testButton = document.getElementById('test-admin-button');
+        console.log('🔍 Test button found:', !!testButton);
+        
+        if (testButton) {
+            testButton.addEventListener('click', () => {
+                console.log('🛠️ TEST BUTTON CLICKED - opening admin panel');
+                const panel = document.getElementById('admin-panel');
+                console.log('🔍 Admin panel found:', !!panel);
+                
+                if (panel) {
+                    panel.classList.remove('editor-hidden');
+                    panel.style.display = 'block';
+                    panel.style.visibility = 'visible';
+                    panel.style.opacity = '1';
+                    panel.style.transform = 'translateX(0)';
+                    console.log('✅ Admin panel styles applied');
+                    console.log('📋 Panel classes:', panel.className);
+                    
+                    // Also populate the dropdown
+                    populateMarkerDropdown();
+                } else {
+                    console.error('❌ Admin panel not found');
+                }
+            });
+            console.log('✅ Test button event listener added successfully');
+        } else {
+            console.error('❌ Test button not found in DOM');
+        }
+        
+        // Also check if admin panel exists
+        const adminPanel = document.getElementById('admin-panel');
+        console.log('🔍 Admin panel exists:', !!adminPanel);
+        if (adminPanel) {
+            console.log('📋 Admin panel current classes:', adminPanel.className);
+        }
+        
+    }, 2000); // Increased timeout to 2 seconds
 });
