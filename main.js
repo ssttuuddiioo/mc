@@ -28,11 +28,11 @@ function startIdleMode() {
   idleModeActive = true;
   currentIdleMarkerIndex = 0;
   
-  // Start cycling through markers every 15 seconds (increased for camera movement)
+  // Start cycling through markers every 18 seconds (increased for orbiting movement)
   showNextIdlePopup();
   idlePopupInterval = setInterval(() => {
     showNextIdlePopup();
-  }, 15000);
+  }, 18000);
 }
 
 function pauseIdleMode() {
@@ -90,8 +90,8 @@ async function showNextIdlePopup() {
     // First, move camera to marker with smooth animation
     await moveCameraToMarker(currentMarker);
     
-    // Wait a moment for camera to settle
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Wait a moment for camera to settle after orbiting
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
     // Get marker data with short description
     const markerData = await getMarkerDataWithShortDescription(currentMarker.labelId);
@@ -113,20 +113,36 @@ async function moveCameraToMarker(marker) {
       return;
     }
     
-    // Calculate zoom level based on marker importance or use default
-    const targetZoom = 16; // Good zoom level to see marker clearly
+    console.log(`🎥 Moving to marker ${marker.labelId} at coordinates: ${marker.lat}, ${marker.lng}`);
     
-    // Smooth camera movement with easing
+    // Much closer zoom level (2x closer than before)
+    const targetZoom = 19; // Very close zoom to see marker details clearly
+    
+    // Add slight orbiting effect by offsetting the center slightly
+    const orbitRadius = 0.0001; // Small offset for orbiting effect
+    const orbitAngle = (currentIdleMarkerIndex * 45) % 360; // Different angle for each marker
+    const orbitRadians = (orbitAngle * Math.PI) / 180;
+    
+    const orbitCenter = {
+      lng: marker.lng + Math.cos(orbitRadians) * orbitRadius,
+      lat: marker.lat + Math.sin(orbitRadians) * orbitRadius
+    };
+    
+    // Smooth camera movement with orbiting and easing
     map.easeTo({
-      center: [marker.lng, marker.lat],
+      center: [orbitCenter.lng, orbitCenter.lat],
       zoom: targetZoom,
-      duration: 2000, // 2 seconds for smooth movement
-      easing: (t) => t * (2 - t) // easeOutQuad for smooth deceleration
+      bearing: orbitAngle * 0.5, // Slight rotation for cinematic effect
+      duration: 3000, // 3 seconds for smooth orbiting movement
+      easing: (t) => {
+        // Custom easing for smooth orbiting
+        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      }
     });
     
     // Resolve when animation completes
     map.once('moveend', () => {
-      console.log(`📍 Camera arrived at marker: ${marker.labelId}`);
+      console.log(`📍 Camera arrived at marker ${marker.labelId} with orbiting effect`);
       resolve();
     });
   });
@@ -139,10 +155,12 @@ function showIdlePopup(marker, data) {
   const popup = document.createElement('div');
   popup.className = 'idle-popup';
   popup.innerHTML = `
+    <div class="idle-popup-title-bar">
+      <p class="idle-popup-title">${data.title || data.label || 'Location'}</p>
+    </div>
     <div class="idle-popup-content">
-      <div class="idle-popup-title">${data.category || 'Location'}</div>
-      <div class="idle-popup-description">${data.short_description || data.description || 'Discover more about this location.'}</div>
-      <button class="idle-popup-button" onclick="openLocationFromIdle('${marker.labelId}')">Learn More</button>
+      <p class="idle-popup-description">${data.short_description || data.description || 'Discover more about this location.'}</p>
+      <button class="idle-popup-button" onclick="openLocationFromIdle('${marker.labelId}')">Learn more</button>
     </div>
   `;
   
@@ -151,7 +169,7 @@ function showIdlePopup(marker, data) {
   const mapRect = mapContainer.getBoundingClientRect();
   
   // Since camera is now centered on marker, position popup in center-top of screen
-  popup.style.left = (mapRect.width / 2 - 125) + 'px'; // Center popup (125px = half popup width)
+  popup.style.left = (mapRect.width / 2 - 200) + 'px'; // Center popup (200px = half popup width)
   popup.style.top = '100px'; // Fixed position from top for better visibility
   
   // Add to map container
@@ -165,12 +183,12 @@ function showIdlePopup(marker, data) {
   // Store reference
   activeIdlePopup = popup;
   
-  // Auto-hide after 10 seconds (5 seconds before next cycle)
+  // Auto-hide after 12 seconds (6 seconds before next cycle)
   setTimeout(() => {
     if (activeIdlePopup === popup) {
       hideIdlePopup();
     }
-  }, 10000);
+  }, 12000);
 }
 
 function hideIdlePopup() {
@@ -186,22 +204,32 @@ function hideIdlePopup() {
 }
 
 function getAllMapMarkers() {
-  // Get all markers currently on the map
+  // Get all markers currently on the map using the newMarkers array
   const mapMarkers = [];
   
-  // Access markers from the global store
+  // Use the actual newMarkers array with real coordinates
+  if (typeof newMarkers !== 'undefined' && Array.isArray(newMarkers)) {
+    return newMarkers.map(markerData => ({
+      labelId: markerData.id || markerData.label || markerData.text,
+      lng: markerData.lng,
+      lat: markerData.lat,
+      color: markerData.color,
+      // Create a function to get marker element for positioning
+      getElement: () => {
+        const markerElements = document.querySelectorAll('.mapboxgl-marker');
+        return markerElements[0] || { getBoundingClientRect: () => ({ left: 100, top: 100 }) };
+      }
+    }));
+  }
+  
+  // Fallback to window.currentMarkers if newMarkers isn't available
   if (window.currentMarkers && Array.isArray(window.currentMarkers)) {
-    // Transform marker data to include necessary properties for idle mode
     return window.currentMarkers.map(markerData => ({
       labelId: markerData.id || markerData.label || markerData.label_id,
       lng: markerData.lng,
       lat: markerData.lat,
-      // Create a mock getElement function since we need marker positioning
       getElement: () => {
-        // Find the actual marker element on the map
         const markerElements = document.querySelectorAll('.mapboxgl-marker');
-        // For now, return the first marker element as a fallback
-        // In a real implementation, you'd match by coordinates
         return markerElements[0] || { getBoundingClientRect: () => ({ left: 100, top: 100 }) };
       }
     }));

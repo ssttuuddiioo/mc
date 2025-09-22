@@ -1097,84 +1097,68 @@ body {
   }
 }
 
-/* Idle Mode Popup */
+/* Idle Mode Popup - Figma Design */
 .idle-popup {
   position: absolute;
-  background: rgba(10, 10, 11, 0.95);
-  border: 1px solid rgba(100, 149, 237, 0.3);
-  border-radius: 12px;
-  padding: 16px;
-  max-width: 250px;
-  min-width: 200px;
+  width: 401px;
   z-index: 1000;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
   opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform: translateY(10px) scale(0.95);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .idle-popup.show {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
   pointer-events: auto;
 }
 
-.idle-popup::before {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid rgba(10, 10, 11, 0.95);
-}
-
-.idle-popup-content {
-  color: white;
-  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+.idle-popup-title-bar {
+  background-color: #1e1e1e;
+  height: 44px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
 }
 
 .idle-popup-title {
-  font-weight: 600;
-  font-size: 14px;
-  color: #6495ED;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  font-size: 21.8px;
+  color: white;
+  white-space: pre;
+}
+
+.idle-popup-content {
+  background-color: #1e1e1e;
+  height: 121px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
 }
 
 .idle-popup-description {
-  font-weight: 400;
-  font-size: 13px;
-  line-height: 1.4;
-  color: rgba(255,255,255,0.9);
-  margin-bottom: 12px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-size: 21.8px;
+  color: white;
+  line-height: 1.3;
+  flex-grow: 1;
 }
 
 .idle-popup-button {
-  background: linear-gradient(135deg, #6495ED, #87CEEB);
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  color: white;
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
-  font-weight: 600;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 14px;
+  color: white;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(100, 149, 237, 0.3);
-}
-
-.idle-popup-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(100, 149, 237, 0.4);
+  text-align: left;
 }
 
 /* Scrollbar Styling */
