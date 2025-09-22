@@ -4,12 +4,218 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Safe Supabase client creation - handle offline case
 let supabaseClient = null;
+
+// --- Idle Mode Variables ---
+let idleTimer = null;
+let idleModeActive = false;
+let idlePopupInterval = null;
+let currentIdleMarkerIndex = 0;
+let lastInteractionTime = Date.now();
+let activeIdlePopup = null;
 try {
   if (typeof supabase !== 'undefined') {
     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 } catch (error) {
   // Silent fallback to offline mode
+}
+
+// --- Idle Mode Functions ---
+function resetIdleTimer() {
+  lastInteractionTime = Date.now();
+  
+  // Clear existing timer
+  if (idleTimer) {
+    clearTimeout(idleTimer);
+  }
+  
+  // Stop idle mode if active
+  if (idleModeActive) {
+    stopIdleMode();
+  }
+  
+  // Set new timer for 5 seconds
+  idleTimer = setTimeout(() => {
+    startIdleMode();
+  }, 5000);
+}
+
+function startIdleMode() {
+  console.log('🌙 Starting idle mode');
+  idleModeActive = true;
+  currentIdleMarkerIndex = 0;
+  
+  // Start cycling through markers every 10 seconds
+  showNextIdlePopup();
+  idlePopupInterval = setInterval(() => {
+    showNextIdlePopup();
+  }, 10000);
+}
+
+function stopIdleMode() {
+  console.log('⚡ Stopping idle mode');
+  idleModeActive = false;
+  
+  // Clear interval
+  if (idlePopupInterval) {
+    clearInterval(idlePopupInterval);
+    idlePopupInterval = null;
+  }
+  
+  // Hide current popup
+  hideIdlePopup();
+}
+
+async function showNextIdlePopup() {
+  if (!idleModeActive) return;
+  
+  // Hide current popup first
+  hideIdlePopup();
+  
+  // Get all markers from the map
+  const allMarkers = getAllMapMarkers();
+  if (allMarkers.length === 0) return;
+  
+  // Get current marker
+  const currentMarker = allMarkers[currentIdleMarkerIndex];
+  if (!currentMarker) return;
+  
+  // Get marker data with short description
+  const markerData = await getMarkerDataWithShortDescription(currentMarker.labelId);
+  
+  // Show popup for current marker
+  showIdlePopup(currentMarker, markerData);
+  
+  // Move to next marker
+  currentIdleMarkerIndex = (currentIdleMarkerIndex + 1) % allMarkers.length;
+}
+
+function showIdlePopup(marker, data) {
+  if (!marker || !data) return;
+  
+  // Create popup element
+  const popup = document.createElement('div');
+  popup.className = 'idle-popup';
+  popup.innerHTML = `
+    <div class="idle-popup-content">
+      <div class="idle-popup-title">${data.category || 'Location'}</div>
+      <div class="idle-popup-description">${data.short_description || data.description || 'Discover more about this location.'}</div>
+      <button class="idle-popup-button" onclick="openLocationFromIdle('${marker.labelId}')">Learn More</button>
+    </div>
+  `;
+  
+  // Position popup above marker
+  const markerElement = marker.getElement();
+  const rect = markerElement.getBoundingClientRect();
+  const mapContainer = document.getElementById('map');
+  const mapRect = mapContainer.getBoundingClientRect();
+  
+  popup.style.left = (rect.left - mapRect.left - 100) + 'px'; // Center popup
+  popup.style.top = (rect.top - mapRect.top - 120) + 'px'; // Position above marker
+  
+  // Add to map container
+  mapContainer.appendChild(popup);
+  
+  // Show with animation
+  setTimeout(() => {
+    popup.classList.add('show');
+  }, 100);
+  
+  // Store reference
+  activeIdlePopup = popup;
+  
+  // Auto-hide after 8 seconds (2 seconds before next popup)
+  setTimeout(() => {
+    if (activeIdlePopup === popup) {
+      hideIdlePopup();
+    }
+  }, 8000);
+}
+
+function hideIdlePopup() {
+  if (activeIdlePopup) {
+    activeIdlePopup.classList.remove('show');
+    setTimeout(() => {
+      if (activeIdlePopup && activeIdlePopup.parentNode) {
+        activeIdlePopup.parentNode.removeChild(activeIdlePopup);
+      }
+      activeIdlePopup = null;
+    }, 300);
+  }
+}
+
+function getAllMapMarkers() {
+  // Get all markers currently on the map
+  const mapMarkers = [];
+  
+  // Access markers from the global store
+  if (window.currentMarkers && Array.isArray(window.currentMarkers)) {
+    // Transform marker data to include necessary properties for idle mode
+    return window.currentMarkers.map(markerData => ({
+      labelId: markerData.id || markerData.label || markerData.label_id,
+      lng: markerData.lng,
+      lat: markerData.lat,
+      // Create a mock getElement function since we need marker positioning
+      getElement: () => {
+        // Find the actual marker element on the map
+        const markerElements = document.querySelectorAll('.mapboxgl-marker');
+        // For now, return the first marker element as a fallback
+        // In a real implementation, you'd match by coordinates
+        return markerElements[0] || { getBoundingClientRect: () => ({ left: 100, top: 100 }) };
+      }
+    }));
+  }
+  
+  return mapMarkers;
+}
+
+async function getMarkerDataWithShortDescription(labelId) {
+  // First try to get from Supabase with short_description
+  if (supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient
+        .from('markers')
+        .select('*')
+        .eq('label_id', labelId)
+        .single();
+      
+      if (data && !error) {
+        return data;
+      }
+    } catch (error) {
+      console.log('Supabase fetch error:', error);
+    }
+  }
+  
+  // Fallback to existing marker data
+  return getEnhancedMarkerData(labelId, labelId);
+}
+
+function openLocationFromIdle(labelId) {
+  // Stop idle mode
+  stopIdleMode();
+  
+  // Open the location panel
+  navigateToLocation(labelId);
+}
+
+function initializeIdleMode() {
+  // Set up event listeners for user interactions
+  const events = ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+  
+  events.forEach(event => {
+    document.addEventListener(event, resetIdleTimer, true);
+  });
+  
+  // Also listen for map interactions
+  if (map) {
+    map.on('move', resetIdleTimer);
+    map.on('zoom', resetIdleTimer);
+    map.on('click', resetIdleTimer);
+  }
+  
+  // Start the initial timer
+  resetIdleTimer();
 }
 
 // --- Supabase Functions ---
@@ -843,8 +1049,17 @@ map.on('load', async () => {
     // Use cache-first loading system
     const markers = await loadMarkersWithCache();
     
+    // Store markers globally for idle mode access
+    window.currentMarkers = markers;
+    
     // Setup side panel close functionality
     setupSidePanel();
+    
+    // Initialize idle mode after a short delay to ensure everything is loaded
+    setTimeout(() => {
+        initializeIdleMode();
+        console.log('🌙 Idle mode initialized');
+    }, 2000);
 });
 
 // Pre-cache essential map resources for 3D buildings
