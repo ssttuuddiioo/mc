@@ -21,26 +21,9 @@ try {
 }
 
 // --- Idle Mode Functions ---
-function resetIdleTimer() {
-  lastInteractionTime = Date.now();
-  
-  // Clear existing timer
-  if (idleTimer) {
-    clearTimeout(idleTimer);
-  }
-  
-  // Stop idle mode if active
-  if (idleModeActive) {
-    stopIdleMode();
-  }
-  
-  // Set new timer for 5 seconds
-  idleTimer = setTimeout(() => {
-    startIdleMode();
-  }, 5000);
-}
-
 function startIdleMode() {
+  if (idleModeActive) return; // Already running
+  
   console.log('🌙 Starting idle mode');
   idleModeActive = true;
   currentIdleMarkerIndex = 0;
@@ -52,11 +35,11 @@ function startIdleMode() {
   }, 10000);
 }
 
-function stopIdleMode() {
-  console.log('⚡ Stopping idle mode');
+function pauseIdleMode() {
+  console.log('⏸️ Pausing idle mode');
   idleModeActive = false;
   
-  // Clear interval
+  // Clear interval but don't reset
   if (idlePopupInterval) {
     clearInterval(idlePopupInterval);
     idlePopupInterval = null;
@@ -64,6 +47,11 @@ function stopIdleMode() {
   
   // Hide current popup
   hideIdlePopup();
+}
+
+function resumeIdleMode() {
+  console.log('▶️ Resuming idle mode');
+  startIdleMode();
 }
 
 async function showNextIdlePopup() {
@@ -203,8 +191,8 @@ async function getMarkerDataWithShortDescription(labelId) {
 }
 
 function openLocationFromIdle(labelId) {
-  // Stop idle mode
-  stopIdleMode();
+  // Pause idle mode (navigateToLocation will also pause, but this is explicit)
+  pauseIdleMode();
   
   // Open the location panel
   navigateToLocation(labelId);
@@ -212,23 +200,9 @@ function openLocationFromIdle(labelId) {
 
 function initializeIdleMode() {
   try {
-    // Set up event listeners for user interactions
-    const events = ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'];
-    
-    events.forEach(event => {
-      document.addEventListener(event, resetIdleTimer, true);
-    });
-    
-    // Also listen for map interactions
-    if (map && map.on) {
-      map.on('move', resetIdleTimer);
-      map.on('zoom', resetIdleTimer);
-      map.on('click', resetIdleTimer);
-    }
-    
-    // Start the initial timer
-    resetIdleTimer();
-    console.log('✅ Idle mode initialized successfully');
+    // Start idle mode immediately - no timer needed
+    startIdleMode();
+    console.log('✅ Idle mode initialized and started');
   } catch (error) {
     console.error('❌ Error initializing idle mode:', error);
   }
@@ -1075,7 +1049,7 @@ map.on('load', async () => {
     setTimeout(() => {
         initializeIdleMode();
         console.log('🌙 Idle mode initialized');
-    }, 2000);
+    }, 1000); // Reduced delay for faster startup
 });
 
 // Pre-cache essential map resources for 3D buildings
@@ -5039,6 +5013,9 @@ function getCurrentKey(title) {
 function navigateToLocation(key) {
   dbg("NAV_CLICK", {key: key});
   
+  // Pause idle mode when navigating to a location
+  pauseIdleMode();
+  
   // Clear any existing popups first
   const existingPopups = document.querySelectorAll('.mapboxgl-popup');
   existingPopups.forEach(popup => popup.remove());
@@ -5504,6 +5481,9 @@ async function openSidePanel(labelId, displayText) {
 function closeSidePanel() {
     const panel = document.getElementById('label-info-panel');
     panel.classList.remove('panel-open');
+    
+    // Resume idle mode when closing the side panel
+    resumeIdleMode();
 }
 
 // ADMIN PANEL FUNCTIONALITY
