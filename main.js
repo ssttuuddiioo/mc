@@ -34,25 +34,48 @@ try {
 
 // --- Supabase Functions ---
 async function fetchMarkersFromSupabase() {
-  if (!supabaseClient) return [];
-  
-  try {
-    const { data, error } = await supabaseClient.from('markers').select('*');
-    if (error) throw error;
-    
-    // Debugging removed
-    
-    // Cache the fresh data
-    cacheManager.cacheMarkers(data);
-    
-    // Store in global variable for easier access
-    allSupabaseMarkers = data;
-    
-    return data;
-  } catch (error) {
-    console.error('❌ Supabase fetch error:', error);
-    return []; // Return empty array on error
-  }
+    console.log("Fetching markers from Supabase...");
+    try {
+        const { data, error } = await supabase
+            .from('dev')
+            .select('*');
+
+        if (error) {
+            console.error('Error fetching markers:', error);
+            return null;
+        }
+
+        if (data) {
+            // This mapping is CRITICAL for the rest of the app to function.
+            newMarkers = data.map(marker => {
+                const features = marker["Key Features"] 
+                    ? marker["Key Features"].split('|').map(f => f.trim()).filter(f => f) 
+                    : [];
+
+                return {
+                    id: marker.id,
+                    lat: marker.lat,
+                    lng: marker.lng,
+                    color: marker.color,
+                    Label: marker.Label, // Keep original case
+                    label: marker.Label, // Standardize to lowercase for compatibility
+                    name: marker.name,
+                    size: marker.size,
+                    description: marker.Description,
+                    features: features,
+                    location: marker.location,
+                    image: marker.image,
+                    text: marker.Label || marker.id?.toString()
+                };
+            });
+            console.log(`Successfully fetched and processed ${newMarkers.length} markers.`);
+            return newMarkers;
+        }
+        return []; // Return empty array if no data
+    } catch (error) {
+        console.error('Error in fetchMarkersFromSupabase:', error);
+        return null;
+    }
 }
 
 // --- CSV Data Processing ---
@@ -633,12 +656,19 @@ function createMarkerElement(markerData, source = 'hardcoded') {
                      markerData.id.toString();
   el.textContent = displayText;
 
-  // Add click listener to go directly to side panel
-  el.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const key = markerData.id || markerData.label;
-    navigateToLocation(key, false); // Do not move camera on direct marker click
-  });
+  const disabledIds = [29, 30, 31, 32, 33];
+  if (!disabledIds.includes(markerData.id)) {
+    // Add click listener to go directly to side panel
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = markerData.id || markerData.label;
+      navigateToLocation(key, false); // Do not move camera on direct marker click
+    });
+  } else {
+    // For disabled markers, make them non-interactive
+    el.style.pointerEvents = 'none';
+    el.style.cursor = 'default';
+  }
   
   el.title = markerData.label || `Marker ${markerData.id}`;
   
@@ -5132,11 +5162,20 @@ function setupSidePanel() {
 }
 
 function populateCompaniesList() {
+    console.log('DEBUG: Attempting to populate companies list...');
     const container = document.getElementById('companies-list');
     if (!container) {
-        console.error('Company list container not found!');
+        console.error('DEBUG ERROR: Company list container not found!');
         return;
     }
+    console.log('DEBUG: Company list container found:', container);
+
+    if (!newMarkers || newMarkers.length === 0) {
+        console.error('DEBUG ERROR: newMarkers array is empty. Cannot populate company list.');
+        return;
+    }
+    console.log(`DEBUG: Populating list with ${newMarkers.length} companies.`);
+
 
     container.innerHTML = ''; // Clear existing list
 
@@ -5160,6 +5199,8 @@ function populateCompaniesList() {
 
         container.appendChild(companyItem);
     });
+
+    console.log('DEBUG: Successfully populated companies list.');
 
     // Add a single event listener to the container for efficiency
     container.addEventListener('click', (e) => {
