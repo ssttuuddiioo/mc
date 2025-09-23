@@ -4644,7 +4644,7 @@ let navState = {
 
 // --- orbit ---- (COMMENTED OUT)
 let bearing = 180, spinning = false; // Start 180 degrees around - ORBIT DISABLED
-let orbitCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
+// orbitCenter is now declared globally above
 let targetOrbitCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
 let orbitTransitionSpeed = 0.015; // Normal speed
 
