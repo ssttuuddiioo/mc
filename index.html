@@ -7,7 +7,11 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Orbit Demo - SVG Placement Tool</title>
-  <link rel="stylesheet" href="style.css?v=1.0.1">
+  <script>
+    // Auto cache-busting for development - load fresh files every time
+    const timestamp = Date.now();
+    document.write('<link rel="stylesheet" href="style.css?v=' + timestamp + '">');
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
@@ -16,9 +20,9 @@
   <style>
     @font-face {
       font-family: 'MichiganCentralMonumentGrotesk-Bold';
-      src: url('public/fonts/MichiganCentralMonumentGrotesk-Bold.woff2?v=1.0.1') format('woff2'),
-           url('public/fonts/MichiganCentralMonumentGrotesk-Bold.woff?v=1.0.1') format('woff'),
-           url('public/fonts/MichiganCentralMonumentGrotesk-Bold.ttf?v=1.0.1') format('truetype');
+      src: url('public/fonts/MichiganCentralMonumentGrotesk-Bold.woff2') format('woff2'),
+           url('public/fonts/MichiganCentralMonumentGrotesk-Bold.woff') format('woff'),
+           url('public/fonts/MichiganCentralMonumentGrotesk-Bold.ttf') format('truetype');
       font-weight: bold;
       font-display: swap;
     }
@@ -488,6 +492,10 @@ Feature 3"></textarea>
     </div>
   </div>
 
-  <script src="main.js?v=1.0.1"></script>
+  <script>
+    // Auto cache-busting for development - load main.js with timestamp
+    const timestamp = Date.now();
+    document.write('<script src="main.js?v=' + timestamp + '"><\/script>');
+  </script>
 </body>
 </html>

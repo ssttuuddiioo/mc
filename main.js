@@ -649,12 +649,31 @@ function addMarkersToMap(markers, source = 'hardcoded') {
   markers.forEach(markerData => {
     const el = createMarkerElement(markerData, source);
     
-    // Create the Mapbox marker and add it to the map
-    new mapboxgl.Marker(el)
-      .setLngLat([markerData.lng, markerData.lat])
-      .addTo(map);
+    // Create the Mapbox marker but DON'T add to map yet
+    const marker = new mapboxgl.Marker(el)
+      .setLngLat([markerData.lng, markerData.lat]);
+
+    // Add to our custom array for synced rendering
+    syncedMarkers.push({ element: el, marker: marker });
   });
-  console.log(`✅ Added ${markers.length} ${source} markers to map`);
+  console.log(`✅ Queued ${markers.length} ${source} markers for synced rendering`);
+}
+
+function syncMarkers() {
+  syncedMarkers.forEach(item => {
+    // Check if the marker has been added to the DOM
+    if (!item.element.parentNode) {
+      // If not, add it now.
+      item.marker.addTo(map);
+    }
+    
+    // Get the marker's current screen position
+    const pos = item.marker.getLngLat();
+    const screenPos = map.project(pos);
+    
+    // Update the element's transform for smooth animation
+    item.element.style.transform = `translate(${screenPos.x}px, ${screenPos.y}px)`;
+  });
 }
 
 // --- Map Refresh Functions ---
@@ -731,11 +750,13 @@ const map = new mapboxgl.Map({
   style: 'mapbox://styles/mapbox/standard',
   center: [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat],
   zoom: 17.5,
-  pitch: 60,
+  pitch: 75, // Increased pitch by another 5 degrees
+  bearing: 180, // Start the orbit 180 degrees around
   antialias: true
 });
 
 let orbitAnimation; // To hold the animation frame ID
+let syncedMarkers = []; // For smooth marker animation
 
 function startOrbitAnimation() {
   const center = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
@@ -745,7 +766,7 @@ function startOrbitAnimation() {
   function animate() {
     bearing += 0.05; // Adjust for speed
     map.setBearing(bearing);
-    map.setPitch(65); // Lower angle to see horizon
+    map.setPitch(75); // Lower angle to see horizon
     map.setCenter(center); // Keep the center fixed
     orbitAnimation = requestAnimationFrame(animate);
   }
@@ -765,7 +786,6 @@ function stopOrbitAnimation() {
 }
 
 // Stop orbiting on user interaction
-map.on('mousedown', stopOrbitAnimation);
 map.on('dragstart', stopOrbitAnimation);
 map.on('touchstart', stopOrbitAnimation);
 
@@ -919,6 +939,9 @@ map.on('load', async () => {
     // Initialize Multi-SVG Editor system
     console.log('🎯 About to initialize SVG Editor...');
     initializeSVGEditor();
+
+    // Start syncing markers with the map's render cycle
+    map.on('render', syncMarkers);
 });
 
 // Pre-cache essential map resources for 3D buildings

@@ -271,7 +271,7 @@ body {
 
 /* Panel Container */
 .panel-container {
-  padding: 48px 64px; /* Increased padding for premium feel */
+  padding: 60px; /* Equal padding on all sides */
   min-height: 100vh;
   background: #0A0A0B;
 }
@@ -284,7 +284,7 @@ body {
 .panel-title {
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
   font-weight: 900; /* Extra bold */
-  font-size: 96px; /* Larger and bolder */
+  font-size: 64px; /* Reduced from 96px for better proportions */
   line-height: 0.9;
   color: white;
   margin: 0;
@@ -1253,6 +1253,9 @@ select:focus {
 }
 
 .custom-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
   background-color: #000000;
   border: none;
   display: flex;
@@ -1261,15 +1264,17 @@ select:focus {
   color: white;
   font-family: 'MichiganCentralMonumentGrotesk-Bold', Arial, sans-serif;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 14px; /* Reduced from 18px */
   border-radius: 2px;
-  min-width: 60px;
-  height: 40px;
-  padding: 0 12px;
+  padding: 8px 12px;
   white-space: nowrap;
+  will-change: transform; /* Performance hint for the browser */
+  backface-visibility: hidden; /* Helps prevent flickering during transforms */
+  transform: translateZ(0); /* Promotes the element to a hardware-accelerated layer */
   cursor: pointer;
 }
 
+/* Hide the default marker label text if it's rendered */
 .marker-label {
   /* This class is no longer needed with the new marker style */
   display: none;
