@@ -286,6 +286,10 @@ async function fetchMarkersFromSupabase() {
     const { data, error } = await supabaseClient.from('markers').select('*');
     if (error) throw error;
     
+    // Debug: Log the first few markers to see what data we're getting
+    console.log('🔍 Supabase data sample:', data.slice(0, 3));
+    console.log('🔍 Available columns:', data.length > 0 ? Object.keys(data[0]) : 'No data');
+    
     // Cache the fresh data
     cacheManager.cacheMarkers(data);
     
@@ -863,6 +867,9 @@ async function createNewMarkerInSupabase(markerData) {
 function createMarkerElement(markerData, source = 'hardcoded') {
   const el = document.createElement('div');
   el.className = 'custom-marker';
+
+  // Debug: Log marker data to see what we're working with
+  console.log('🔍 Creating marker:', { id: markerData.id, label: markerData.label, text: markerData.text, source });
 
   // Prioritize the 'label' field for the marker text
   const displayText = markerData.label || markerData.text || markerData.id.toString();
