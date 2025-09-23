@@ -862,17 +862,25 @@ async function createNewMarkerInSupabase(markerData) {
 // --- Marker Creation Functions ---
 function createMarkerElement(markerData, source = 'hardcoded') {
   const el = document.createElement('div');
-  el.className = 'custom-marker';
-  
-  // Set marker color, defaulting to a neutral color if not specified
-  const markerColor = markerData.color || '#7f8c8d';
-  el.style.setProperty('--marker-color', markerColor);
+  el.className = 'custom-marker-wrapper';
 
-  // Add click listener to show the new on-marker popup
+  // Create the dot element
+  const dot = document.createElement('div');
+  dot.className = 'custom-marker';
+  const markerColor = markerData.color || '#7f8c8d';
+  dot.style.setProperty('--marker-color', markerColor);
+  
+  // Create the label element
+  const label = document.createElement('div');
+  label.className = 'marker-label';
+  label.textContent = markerData.label || markerData.title || `Marker ${markerData.id}`;
+
+  el.appendChild(dot);
+  el.appendChild(label);
+
+  // Add click listener to the wrapper to show the popup
   el.addEventListener('click', (e) => {
-    e.stopPropagation(); // Prevent map click events from firing
-    
-    // Pass the necessary marker info to the popup function
+    e.stopPropagation();
     const markerInstance = {
       labelId: markerData.id || markerData.label,
       lng: markerData.lng,
@@ -881,7 +889,6 @@ function createMarkerElement(markerData, source = 'hardcoded') {
     showMarkerPopup(markerInstance);
   });
   
-  // Add tooltip on hover
   el.title = markerData.label || `Marker ${markerData.id}`;
   
   return el;
