@@ -637,7 +637,7 @@ function createMarkerElement(markerData, source = 'hardcoded') {
   el.addEventListener('click', (e) => {
     e.stopPropagation();
     const key = markerData.id || markerData.label;
-    navigateToLocation(key);
+    navigateToLocation(key, false); // Do not move camera on direct marker click
   });
   
   el.title = markerData.label || `Marker ${markerData.id}`;
@@ -4831,13 +4831,26 @@ function getCurrentKey(title) {
 }
 
 // --- STANDARDIZED NAVIGATION CONTROLLER ---
-function navigateToLocation(key) {
-  dbg("NAV_CLICK", {key: key});
+function navigateToLocation(key, moveCamera = false) {
+  dbg("NAV_CLICK", {key: key, moveCamera: moveCamera});
 
-  // Clear any existing popups
+  // Since popups are now used, clear them before opening a new panel
   closeActivePopup();
 
-  // Open the main side panel with full details (no camera movement)
+  if (moveCamera) {
+    // Find the marker data to fly to its coordinates
+    const markerData = newMarkers.find(m => m.id == key);
+
+    if (markerData && map) {
+      map.flyTo({
+        center: [markerData.lng, markerData.lat],
+        zoom: 15, // A comfortable zoom level for viewing the panel
+        essential: true
+      });
+    }
+  }
+  
+  // Open the main side panel with full details
   openSidePanel(key);
 }
 
@@ -5116,29 +5129,60 @@ function setupSidePanel() {
     if (closeBtn) {
         closeBtn.addEventListener('click', closeSidePanel);
     }
-    
-    // Add event listener for the List of Facilities button
-    const facilitiesBtn = document.getElementById('list-facilities-btn');
-    if (facilitiesBtn) {
-        facilitiesBtn.addEventListener('click', handleFacilitiesButtonClick);
-    }
 }
 
-function handleFacilitiesButtonClick() {
-    console.log('🏢 List of Facilities button clicked!');
-    
-    // For now, we'll show an alert with all available facilities
-    // In the future, this could open a modal or navigate to a facilities list page
-    const facilities = newMarkers.map(marker => marker.Label || marker.label || `Facility ${marker.id}`).join('\n• ');
-    
-    alert(`Available Facilities:\n\n• ${facilities}`);
-    
-    // TODO: Replace with proper facilities list modal or navigation
-    // This could:
-    // 1. Open a modal with a scrollable list of all facilities
-    // 2. Navigate to a dedicated facilities page
-    // 3. Show a dropdown with facility categories
-    // 4. Filter the map to show only facilities of a certain type
+function populateCompaniesList() {
+    const container = document.getElementById('companies-list');
+    if (!container) {
+        console.error('Company list container not found!');
+        return;
+    }
+
+    container.innerHTML = ''; // Clear existing list
+
+    newMarkers.sort((a, b) => (a.Label || a.label).localeCompare(b.Label || b.label)).forEach(marker => {
+        const companyItem = document.createElement('button');
+        companyItem.className = 'company-item';
+        companyItem.textContent = marker.Label || marker.label;
+        companyItem.dataset.key = marker.id;
+        
+        // Use the color from the data if available for a colorful tag cloud
+        if (marker.color) {
+            companyItem.style.backgroundColor = marker.color;
+            // Basic check for text color contrast
+            const bgColor = marker.color.toLowerCase();
+            if (isColorDark(bgColor)) {
+                companyItem.style.color = '#FFFFFF';
+            } else {
+                companyItem.style.color = '#000000';
+            }
+        }
+
+        container.appendChild(companyItem);
+    });
+
+    // Add a single event listener to the container for efficiency
+    container.addEventListener('click', (e) => {
+        const target = e.target.closest('.company-item');
+        if (target) {
+            const key = target.dataset.key;
+            if (key) {
+                // When clicking from the list, update panel AND move camera
+                navigateToLocation(key, true);
+            }
+        }
+    });
+}
+
+function isColorDark(hexColor) {
+    if (!hexColor || hexColor.length < 4) return false;
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    // Formula for perceived brightness
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness < 128;
 }
 
 async function openSidePanel(labelId, displayText) {
@@ -5683,3 +5727,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
     }, 2000); // Increased timeout to 2 seconds
 });
+
+// Function to handle clicks on SVG elements
+function handleSVGClick(svgId) {
+  // ... existing code ...
+}

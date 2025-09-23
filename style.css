@@ -1245,36 +1245,34 @@ select:focus {
 
 /* On-Marker Popup CSS removed - now going directly to side panel */
 
-/* List of Facilities Button */
-.facilities-button {
+/* Companies List */
+.companies-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.company-item {
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 500;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: white;
-  background: #4A90E2; /* Blue color inspired by the screenshot */
-  border: none;
-  border-radius: 6px;
-  padding: 12px 24px;
+  color: #000;
+  background-color: #f0f0f0; /* Default background */
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 8px 16px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
-  display: block;
+  text-align: center;
 }
 
-.facilities-button:hover {
-  background: #357ABD; /* Darker blue on hover */
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
-}
-
-.facilities-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(74, 144, 226, 0.2);
+.company-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border-color: #ccc;
 }
 
 .custom-marker-wrapper {
