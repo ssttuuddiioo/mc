@@ -4962,11 +4962,11 @@ function startSidePanelAutoClose() {
     clearTimeout(sidePanelAutoCloseTimer);
   }
   
-  // Set new timer for 10 seconds
+  // Set new timer for 45 seconds
   sidePanelAutoCloseTimer = setTimeout(() => {
-    console.log('⏰ Auto-closing side panel after 10 seconds of inactivity');
+    console.log('⏰ Auto-closing side panel after 45 seconds of inactivity');
     closeSidePanel();
-  }, 10000); // 10 seconds
+  }, 45000); // 45 seconds
 }
 
 // Function to reset auto-close timer (call on any interaction)
