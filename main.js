@@ -646,33 +646,70 @@ function createMarkerElement(markerData, source = 'hardcoded') {
 }
 
 function addMarkersToMap(markers, source = 'hardcoded') {
+  let validMarkersCount = 0;
+  
   markers.forEach(markerData => {
+    // Validate coordinates before creating marker
+    const lat = parseFloat(markerData.lat);
+    const lng = parseFloat(markerData.lng);
+    
+    if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
+      console.warn(`⚠️ Skipping marker with invalid coordinates:`, markerData);
+      return; // Skip this marker
+    }
+    
+    // Check if coordinates are within reasonable bounds (rough world bounds)
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      console.warn(`⚠️ Skipping marker with out-of-bounds coordinates:`, markerData);
+      return; // Skip this marker
+    }
+    
     const el = createMarkerElement(markerData, source);
     
     // Create the Mapbox marker but DON'T add to map yet
     const marker = new mapboxgl.Marker(el)
-      .setLngLat([markerData.lng, markerData.lat]);
+      .setLngLat([lng, lat]);
 
     // Add to our custom array for synced rendering
     syncedMarkers.push({ element: el, marker: marker });
+    validMarkersCount++;
   });
-  console.log(`✅ Queued ${markers.length} ${source} markers for synced rendering`);
+  
+  console.log(`✅ Queued ${validMarkersCount}/${markers.length} valid ${source} markers for synced rendering`);
 }
 
 function syncMarkers() {
-  syncedMarkers.forEach(item => {
-    // Check if the marker has been added to the DOM
-    if (!item.element.parentNode) {
-      // If not, add it now.
-      item.marker.addTo(map);
+  syncedMarkers.forEach((item, index) => {
+    try {
+      // Check if the marker has been added to the DOM
+      if (!item.element.parentNode) {
+        // If not, add it now.
+        item.marker.addTo(map);
+      }
+      
+      // Get the marker's current screen position
+      const pos = item.marker.getLngLat();
+      
+      // Validate position before projecting
+      if (!pos || isNaN(pos.lat) || isNaN(pos.lng)) {
+        console.warn(`⚠️ Invalid marker position:`, pos);
+        return; // Skip this marker
+      }
+      
+      const screenPos = map.project(pos);
+      
+      // Validate screen position
+      if (isNaN(screenPos.x) || isNaN(screenPos.y) || 
+          Math.abs(screenPos.x) > 10000 || Math.abs(screenPos.y) > 10000) {
+        console.warn(`⚠️ Invalid screen position for marker:`, screenPos, pos);
+        return; // Skip this marker
+      }
+      
+      // Update the element's transform for smooth animation
+      item.element.style.transform = `translate(${screenPos.x}px, ${screenPos.y}px)`;
+    } catch (error) {
+      console.error(`❌ Error syncing marker ${index}:`, error);
     }
-    
-    // Get the marker's current screen position
-    const pos = item.marker.getLngLat();
-    const screenPos = map.project(pos);
-    
-    // Update the element's transform for smooth animation
-    item.element.style.transform = `translate(${screenPos.x}px, ${screenPos.y}px)`;
   });
 }
 
@@ -764,7 +801,7 @@ function startOrbitAnimation() {
   let bearing = initialBearing;
 
   function animate() {
-    bearing += 0.05; // Adjust for speed
+    bearing += 0.015; // Adjust for speed
     map.setBearing(bearing);
     map.setPitch(75); // Lower angle to see horizon
     map.setCenter(center); // Keep the center fixed
