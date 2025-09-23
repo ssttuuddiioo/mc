@@ -12,271 +12,25 @@ try {
   // Silent fallback to offline mode
 }
 
-// --- Idle Mode Variables ---
-let idleTimer = null;
-let idleModeActive = false;
-let idlePopupInterval = null;
-let currentIdleMarkerIndex = 0;
-let lastInteractionTime = Date.now();
-let activeIdlePopup = null;
+// --- Idle Mode Variables --- (REMOVED)
 
-// --- Idle Mode Functions ---
-function startIdleMode() {
-  if (idleModeActive) return; // Already running
-  
-  console.log('🌙 Starting idle mode');
-  idleModeActive = true;
-  currentIdleMarkerIndex = 0;
-  
-  // Start cycling through markers every 18 seconds (increased for orbiting movement)
-  showNextIdlePopup();
-  idlePopupInterval = setInterval(() => {
-    showNextIdlePopup();
-  }, 18000);
-}
+// --- Idle Mode Functions --- (REMOVED)
 
-function pauseIdleMode() {
-  console.log('⏸️ Pausing idle mode');
-  idleModeActive = false;
-  
-  // Clear interval but don't reset
-  if (idlePopupInterval) {
-    clearInterval(idlePopupInterval);
-    idlePopupInterval = null;
-  }
-  
-  // Hide current popup
-  hideIdlePopup();
-  
-  // Zoom out to overview when pausing for better interaction
-  if (map) {
-    map.easeTo({
-      zoom: 14, // Overview zoom level
-      duration: 1500,
-      easing: (t) => t * (2 - t)
-    });
-  }
-}
+// showNextIdlePopup function removed
 
-function resumeIdleMode() {
-  console.log('▶️ Resuming idle mode');
-  startIdleMode();
-}
+// moveCameraToMarker function removed
 
-async function showNextIdlePopup() {
-  if (!idleModeActive) return;
-  
-  try {
-    // Hide current popup first
-    hideIdlePopup();
-    
-    // Get all markers from the map
-    const allMarkers = getAllMapMarkers();
-    if (allMarkers.length === 0) {
-      console.log('⚠️ No markers available for idle mode');
-      return;
-    }
-    
-    // Get current marker
-    const currentMarker = allMarkers[currentIdleMarkerIndex];
-    if (!currentMarker) {
-      console.log('⚠️ Current marker not found, resetting index');
-      currentIdleMarkerIndex = 0;
-      return;
-    }
-    
-    console.log(`🎥 Moving camera to marker: ${currentMarker.labelId}`);
-    
-    // First, move camera to marker with smooth animation
-    await moveCameraToMarker(currentMarker);
-    
-    // Wait a moment for camera to settle after orbiting
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Get marker data with short description
-    const markerData = await getMarkerDataWithShortDescription(currentMarker.labelId);
-    
-    // Show popup for current marker (now that camera is positioned)
-    showIdlePopup(currentMarker, markerData);
-    
-    // Move to next marker
-    currentIdleMarkerIndex = (currentIdleMarkerIndex + 1) % allMarkers.length;
-  } catch (error) {
-    console.error('❌ Error in showNextIdlePopup:', error);
-  }
-}
+// showIdlePopup function removed
 
-async function moveCameraToMarker(marker) {
-  return new Promise((resolve) => {
-    if (!map || !marker) {
-      resolve();
-      return;
-    }
-    
-    console.log(`🎥 Moving to marker ${marker.labelId} at coordinates: ${marker.lat}, ${marker.lng}`);
-    
-    // Much closer zoom level (2x closer than before)
-    const targetZoom = 19; // Very close zoom to see marker details clearly
-    
-    // Add slight orbiting effect by offsetting the center slightly
-    const orbitRadius = 0.0001; // Small offset for orbiting effect
-    const orbitAngle = (currentIdleMarkerIndex * 45) % 360; // Different angle for each marker
-    const orbitRadians = (orbitAngle * Math.PI) / 180;
-    
-    const orbitCenter = {
-      lng: marker.lng + Math.cos(orbitRadians) * orbitRadius,
-      lat: marker.lat + Math.sin(orbitRadians) * orbitRadius
-    };
-    
-    // Smooth camera movement with orbiting and easing
-    map.easeTo({
-      center: [orbitCenter.lng, orbitCenter.lat],
-      zoom: targetZoom,
-      bearing: orbitAngle * 0.5, // Slight rotation for cinematic effect
-      duration: 3000, // 3 seconds for smooth orbiting movement
-      easing: (t) => {
-        // Custom easing for smooth orbiting
-        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-      }
-    });
-    
-    // Resolve when animation completes
-    map.once('moveend', () => {
-      console.log(`📍 Camera arrived at marker ${marker.labelId} with orbiting effect`);
-      resolve();
-    });
-  });
-}
+// hideIdlePopup function removed
 
-function showIdlePopup(marker, data) {
-  if (!marker || !data) return;
-  
-  // Create popup element
-  const popup = document.createElement('div');
-  popup.className = 'idle-popup';
-  popup.innerHTML = `
-    <div class="idle-popup-title-bar">
-      <p class="idle-popup-title">${data.title || data.label || 'Location'}</p>
-    </div>
-    <div class="idle-popup-content">
-      <p class="idle-popup-description">${data.short_description || data.description || 'Discover more about this location.'}</p>
-      <button class="idle-popup-button" onclick="openLocationFromIdle('${marker.labelId}')">Learn more</button>
-    </div>
-  `;
-  
-  // Position popup above marker (centered on screen since camera moved to marker)
-  const mapContainer = document.getElementById('map');
-  const mapRect = mapContainer.getBoundingClientRect();
-  
-  // Since camera is now centered on marker, position popup in center-top of screen
-  popup.style.left = (mapRect.width / 2 - 200) + 'px'; // Center popup (200px = half popup width)
-  popup.style.top = '100px'; // Fixed position from top for better visibility
-  
-  // Add to map container
-  mapContainer.appendChild(popup);
-  
-  // Show with animation
-  setTimeout(() => {
-    popup.classList.add('show');
-  }, 100);
-  
-  // Store reference
-  activeIdlePopup = popup;
-  
-  // Auto-hide after 12 seconds (6 seconds before next cycle)
-  setTimeout(() => {
-    if (activeIdlePopup === popup) {
-      hideIdlePopup();
-    }
-  }, 12000);
-}
+// getAllMapMarkers function removed
 
-function hideIdlePopup() {
-  if (activeIdlePopup) {
-    activeIdlePopup.classList.remove('show');
-    setTimeout(() => {
-      if (activeIdlePopup && activeIdlePopup.parentNode) {
-        activeIdlePopup.parentNode.removeChild(activeIdlePopup);
-      }
-      activeIdlePopup = null;
-    }, 300);
-  }
-}
+// getMarkerDataWithShortDescription function removed
 
-function getAllMapMarkers() {
-  // Get all markers currently on the map using the newMarkers array
-  const mapMarkers = [];
-  
-  // Use the actual newMarkers array with real coordinates
-  if (typeof newMarkers !== 'undefined' && Array.isArray(newMarkers)) {
-    return newMarkers.map(markerData => ({
-      labelId: markerData.id || markerData.label || markerData.text,
-      lng: markerData.lng,
-      lat: markerData.lat,
-      color: markerData.color,
-      // Create a function to get marker element for positioning
-      getElement: () => {
-        const markerElements = document.querySelectorAll('.mapboxgl-marker');
-        return markerElements[0] || { getBoundingClientRect: () => ({ left: 100, top: 100 }) };
-      }
-    }));
-  }
-  
-  // Fallback to window.currentMarkers if newMarkers isn't available
-  if (window.currentMarkers && Array.isArray(window.currentMarkers)) {
-    return window.currentMarkers.map(markerData => ({
-      labelId: markerData.id || markerData.label || markerData.label_id,
-      lng: markerData.lng,
-      lat: markerData.lat,
-      getElement: () => {
-        const markerElements = document.querySelectorAll('.mapboxgl-marker');
-        return markerElements[0] || { getBoundingClientRect: () => ({ left: 100, top: 100 }) };
-      }
-    }));
-  }
-  
-  return mapMarkers;
-}
+// openLocationFromIdle function removed
 
-async function getMarkerDataWithShortDescription(labelId) {
-  // First try to get from Supabase with short_description
-  if (supabaseClient) {
-    try {
-      const { data, error } = await supabaseClient
-        .from('markers')
-        .select('*')
-        .eq('label_id', labelId)
-        .single();
-      
-      if (data && !error) {
-        return data;
-      }
-    } catch (error) {
-      console.log('Supabase fetch error:', error);
-    }
-  }
-  
-  // Fallback to existing marker data
-  return getEnhancedMarkerData(labelId, labelId);
-}
-
-function openLocationFromIdle(labelId) {
-  // Pause idle mode (navigateToLocation will also pause, but this is explicit)
-  pauseIdleMode();
-  
-  // Open the location panel
-  navigateToLocation(labelId);
-}
-
-function initializeIdleMode() {
-  try {
-    // Start idle mode immediately - no timer needed
-    startIdleMode();
-    console.log('✅ Idle mode initialized and started');
-  } catch (error) {
-    console.error('❌ Error initializing idle mode:', error);
-  }
-}
+// initializeIdleMode function removed
 
 // --- Supabase Functions ---
 async function fetchMarkersFromSupabase() {
@@ -286,9 +40,7 @@ async function fetchMarkersFromSupabase() {
     const { data, error } = await supabaseClient.from('markers').select('*');
     if (error) throw error;
     
-    // Debug: Log the first few markers to see what data we're getting
-    console.log('🔍 Supabase data sample:', data.slice(0, 3));
-    console.log('🔍 Available columns:', data.length > 0 ? Object.keys(data[0]) : 'No data');
+    // Debugging removed
     
     // Cache the fresh data
     cacheManager.cacheMarkers(data);
@@ -868,18 +620,7 @@ function createMarkerElement(markerData, source = 'hardcoded') {
   const el = document.createElement('div');
   el.className = 'custom-marker';
 
-  // Debug: Log marker data to see what we're working with
-  console.log('🔍 Creating marker:', { 
-    id: markerData.id, 
-    Label: markerData.Label,  // Capital L!
-    label: markerData.label, 
-    name: markerData.name,
-    title: markerData.title,
-    facility_name: markerData.facility_name,
-    text: markerData.text, 
-    source,
-    allKeys: Object.keys(markerData)
-  });
+  // Debugging removed
 
   // Try multiple possible column names for the marker text (case-sensitive!)
   const displayText = markerData.Label || 
@@ -1133,11 +874,7 @@ map.on('load', async () => {
     // Setup side panel close functionality
     setupSidePanel();
     
-    // Initialize idle mode after a short delay to ensure everything is loaded
-    setTimeout(() => {
-        initializeIdleMode();
-        console.log('🌙 Idle mode initialized');
-    }, 1000); // Reduced delay for faster startup
+    // Idle mode initialization removed
 });
 
 // Pre-cache essential map resources for 3D buildings
@@ -5105,8 +4842,7 @@ function navigateToLocation(key) {
   closeActivePopup();
 
   // Find the marker data to fly to its coordinates
-  const allMarkers = getAllMapMarkers();
-  const markerData = allMarkers.find(m => m.labelId == key);
+  const markerData = newMarkers.find(m => m.id == key);
 
   if (markerData && map) {
     map.flyTo({
@@ -5142,7 +4878,7 @@ async function showMarkerPopup(markerInstance) {
   closeActivePopup();
 
   const key = markerInstance.labelId;
-  const markerData = await getMarkerDataWithShortDescription(key);
+  const markerData = newMarkers.find(m => m.id == key);
 
   if (!markerData) return;
 
@@ -5514,8 +5250,7 @@ function closeSidePanel() {
     const panel = document.getElementById('label-info-panel');
     panel.classList.remove('panel-open');
     
-    // Resume idle mode when closing the side panel
-    resumeIdleMode();
+    // Idle mode resume removed
 }
 
 // ADMIN PANEL FUNCTIONALITY
