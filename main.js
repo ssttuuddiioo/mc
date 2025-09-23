@@ -5116,6 +5116,29 @@ function setupSidePanel() {
     if (closeBtn) {
         closeBtn.addEventListener('click', closeSidePanel);
     }
+    
+    // Add event listener for the List of Facilities button
+    const facilitiesBtn = document.getElementById('list-facilities-btn');
+    if (facilitiesBtn) {
+        facilitiesBtn.addEventListener('click', handleFacilitiesButtonClick);
+    }
+}
+
+function handleFacilitiesButtonClick() {
+    console.log('🏢 List of Facilities button clicked!');
+    
+    // For now, we'll show an alert with all available facilities
+    // In the future, this could open a modal or navigate to a facilities list page
+    const facilities = newMarkers.map(marker => marker.Label || marker.label || `Facility ${marker.id}`).join('\n• ');
+    
+    alert(`Available Facilities:\n\n• ${facilities}`);
+    
+    // TODO: Replace with proper facilities list modal or navigation
+    // This could:
+    // 1. Open a modal with a scrollable list of all facilities
+    // 2. Navigate to a dedicated facilities page
+    // 3. Show a dropdown with facility categories
+    // 4. Filter the map to show only facilities of a certain type
 }
 
 async function openSidePanel(labelId, displayText) {

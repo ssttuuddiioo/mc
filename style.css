@@ -1245,6 +1245,38 @@ select:focus {
 
 /* On-Marker Popup CSS removed - now going directly to side panel */
 
+/* List of Facilities Button */
+.facilities-button {
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+  background: #4A90E2; /* Blue color inspired by the screenshot */
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  display: block;
+}
+
+.facilities-button:hover {
+  background: #357ABD; /* Darker blue on hover */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+.facilities-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(74, 144, 226, 0.2);
+}
+
 .custom-marker-wrapper {
   display: flex;
   align-items: center;
