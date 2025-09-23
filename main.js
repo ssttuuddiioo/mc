@@ -546,14 +546,14 @@ async function getMarkerDataFromSupabase(labelId) {
   if (marker) {
     // Convert Supabase data to expected format
     return {
-      title: marker.name || marker["Facility Name"],
+      title: marker.name || marker["Facility Name"] || marker.Label,
       category: marker.category || marker["Category"],
       description: marker.description || marker["Description"],
       address: marker.address || marker["Address"],
       size: marker.size || marker["Size/Capacity"],
       location: marker.location || marker["Location"],
-      features: marker.features || [], // Already processed as array
-      image: marker.image,
+      features: marker.features || (marker["Key Features"] ? marker["Key Features"].split('|').map(f => f.trim()).filter(f => f) : []), // Use Key Features column
+      image: marker.image || marker["image"], // Use image column
       color: marker.color,
       categoryColor: marker.color
     };
