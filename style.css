@@ -1245,36 +1245,6 @@ select:focus {
 
 /* On-Marker Popup CSS removed - now going directly to side panel */
 
-/* Companies List */
-.companies-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: flex-start;
-}
-
-.company-item {
-  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
-  font-weight: 500;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #000;
-  background-color: #f0f0f0; /* Default background */
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
-}
-
-.company-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  border-color: #ccc;
-}
-
 .custom-marker-wrapper {
   display: flex;
   align-items: center;

@@ -34,48 +34,25 @@ try {
 
 // --- Supabase Functions ---
 async function fetchMarkersFromSupabase() {
-    console.log("Fetching markers from Supabase...");
-    try {
-        const { data, error } = await supabase
-            .from('dev')
-            .select('*');
-
-        if (error) {
-            console.error('Error fetching markers:', error);
-            return null;
-        }
-
-        if (data) {
-            // This mapping is CRITICAL for the rest of the app to function.
-            newMarkers = data.map(marker => {
-                const features = marker["Key Features"] 
-                    ? marker["Key Features"].split('|').map(f => f.trim()).filter(f => f) 
-                    : [];
-
-                return {
-                    id: marker.id,
-                    lat: marker.lat,
-                    lng: marker.lng,
-                    color: marker.color,
-                    Label: marker.Label, // Keep original case
-                    label: marker.Label, // Standardize to lowercase for compatibility
-                    name: marker.name,
-                    size: marker.size,
-                    description: marker.Description,
-                    features: features,
-                    location: marker.location,
-                    image: marker.image,
-                    text: marker.Label || marker.id?.toString()
-                };
-            });
-            console.log(`Successfully fetched and processed ${newMarkers.length} markers.`);
-            return newMarkers;
-        }
-        return []; // Return empty array if no data
-    } catch (error) {
-        console.error('Error in fetchMarkersFromSupabase:', error);
-        return null;
-    }
+  if (!supabaseClient) return [];
+  
+  try {
+    const { data, error } = await supabaseClient.from('markers').select('*');
+    if (error) throw error;
+    
+    // Debugging removed
+    
+    // Cache the fresh data
+    cacheManager.cacheMarkers(data);
+    
+    // Store in global variable for easier access
+    allSupabaseMarkers = data;
+    
+    return data;
+  } catch (error) {
+    console.error('❌ Supabase fetch error:', error);
+    return []; // Return empty array on error
+  }
 }
 
 // --- CSV Data Processing ---
@@ -656,19 +633,12 @@ function createMarkerElement(markerData, source = 'hardcoded') {
                      markerData.id.toString();
   el.textContent = displayText;
 
-  const disabledIds = [29, 30, 31, 32, 33];
-  if (!disabledIds.includes(markerData.id)) {
-    // Add click listener to go directly to side panel
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const key = markerData.id || markerData.label;
-      navigateToLocation(key, false); // Do not move camera on direct marker click
-    });
-  } else {
-    // For disabled markers, make them non-interactive
-    el.style.pointerEvents = 'none';
-    el.style.cursor = 'default';
-  }
+  // Add click listener to go directly to side panel
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const key = markerData.id || markerData.label;
+    navigateToLocation(key);
+  });
   
   el.title = markerData.label || `Marker ${markerData.id}`;
   
@@ -764,6 +734,40 @@ const map = new mapboxgl.Map({
   pitch: 60,
   antialias: true
 });
+
+let orbitAnimation; // To hold the animation frame ID
+
+function startOrbitAnimation() {
+  const center = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
+  const initialBearing = map.getBearing();
+  let bearing = initialBearing;
+
+  function animate() {
+    bearing += 0.05; // Adjust for speed
+    map.setBearing(bearing);
+    map.setPitch(65); // Lower angle to see horizon
+    map.setCenter(center); // Keep the center fixed
+    orbitAnimation = requestAnimationFrame(animate);
+  }
+
+  // Stop any existing animation
+  if (orbitAnimation) {
+    cancelAnimationFrame(orbitAnimation);
+  }
+  animate();
+}
+
+function stopOrbitAnimation() {
+  if (orbitAnimation) {
+    cancelAnimationFrame(orbitAnimation);
+    orbitAnimation = null;
+  }
+}
+
+// Stop orbiting on user interaction
+map.on('mousedown', stopOrbitAnimation);
+map.on('dragstart', stopOrbitAnimation);
+map.on('touchstart', stopOrbitAnimation);
 
 const newMarkers = [
     { id: 1, lat: 42.32887642685346, lng: -83.07771868841701, color: '#4A90E2' },
@@ -888,19 +892,33 @@ const ENHANCED_MARKER_DATA = {
 };
 
 map.on('load', async () => {
+    dbg("MAP_LOAD", "Map fully loaded");
+
+    // Start the orbit animation
+    startOrbitAnimation();
+
+    // Configure map settings for a cleaner look
+    map.getCanvas().style.cursor = 'pointer';
+    map.setRenderWorldCopies(true);
+    
     // Pre-cache essential map resources for offline use
     preCacheMapResources();
     
-    // Use cache-first loading system
+    // Use cache-first loading system to get markers
     const markers = await loadMarkersWithCache();
     
-    // Store markers globally for idle mode access
+    // Store markers globally for access
     window.currentMarkers = markers;
     
     // Setup side panel close functionality
     setupSidePanel();
-    
-    // Idle mode initialization removed
+
+    // Initialize building highlighting for Michigan Central
+    initializeBuildingHighlighting();
+
+    // Initialize Multi-SVG Editor system
+    console.log('🎯 About to initialize SVG Editor...');
+    initializeSVGEditor();
 });
 
 // Pre-cache essential map resources for 3D buildings
@@ -4861,26 +4879,13 @@ function getCurrentKey(title) {
 }
 
 // --- STANDARDIZED NAVIGATION CONTROLLER ---
-function navigateToLocation(key, moveCamera = false) {
-  dbg("NAV_CLICK", {key: key, moveCamera: moveCamera});
+function navigateToLocation(key) {
+  dbg("NAV_CLICK", {key: key});
 
-  // Since popups are now used, clear them before opening a new panel
+  // Clear any existing popups
   closeActivePopup();
 
-  if (moveCamera) {
-    // Find the marker data to fly to its coordinates
-    const markerData = newMarkers.find(m => m.id == key);
-
-    if (markerData && map) {
-      map.flyTo({
-        center: [markerData.lng, markerData.lat],
-        zoom: 15, // A comfortable zoom level for viewing the panel
-        essential: true
-      });
-    }
-  }
-  
-  // Open the main side panel with full details
+  // Open the main side panel with full details (no camera movement)
   openSidePanel(key);
 }
 
@@ -5159,71 +5164,6 @@ function setupSidePanel() {
     if (closeBtn) {
         closeBtn.addEventListener('click', closeSidePanel);
     }
-}
-
-function populateCompaniesList() {
-    console.log('DEBUG: Attempting to populate companies list...');
-    const container = document.getElementById('companies-list');
-    if (!container) {
-        console.error('DEBUG ERROR: Company list container not found!');
-        return;
-    }
-    console.log('DEBUG: Company list container found:', container);
-
-    if (!newMarkers || newMarkers.length === 0) {
-        console.error('DEBUG ERROR: newMarkers array is empty. Cannot populate company list.');
-        return;
-    }
-    console.log(`DEBUG: Populating list with ${newMarkers.length} companies.`);
-
-
-    container.innerHTML = ''; // Clear existing list
-
-    newMarkers.sort((a, b) => (a.Label || a.label).localeCompare(b.Label || b.label)).forEach(marker => {
-        const companyItem = document.createElement('button');
-        companyItem.className = 'company-item';
-        companyItem.textContent = marker.Label || marker.label;
-        companyItem.dataset.key = marker.id;
-        
-        // Use the color from the data if available for a colorful tag cloud
-        if (marker.color) {
-            companyItem.style.backgroundColor = marker.color;
-            // Basic check for text color contrast
-            const bgColor = marker.color.toLowerCase();
-            if (isColorDark(bgColor)) {
-                companyItem.style.color = '#FFFFFF';
-            } else {
-                companyItem.style.color = '#000000';
-            }
-        }
-
-        container.appendChild(companyItem);
-    });
-
-    console.log('DEBUG: Successfully populated companies list.');
-
-    // Add a single event listener to the container for efficiency
-    container.addEventListener('click', (e) => {
-        const target = e.target.closest('.company-item');
-        if (target) {
-            const key = target.dataset.key;
-            if (key) {
-                // When clicking from the list, update panel AND move camera
-                navigateToLocation(key, true);
-            }
-        }
-    });
-}
-
-function isColorDark(hexColor) {
-    if (!hexColor || hexColor.length < 4) return false;
-    const hex = hexColor.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    // Formula for perceived brightness
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness < 128;
 }
 
 async function openSidePanel(labelId, displayText) {
@@ -5768,8 +5708,3 @@ document.addEventListener('DOMContentLoaded', () => {
         
     }, 2000); // Increased timeout to 2 seconds
 });
-
-// Function to handle clicks on SVG elements
-function handleSVGClick(svgId) {
-  // ... existing code ...
-}
