@@ -4952,6 +4952,31 @@ function navigateToLocation(key) {
 // Global variable to keep track of the currently active on-marker popup
 let activeMarkerPopup = null;
 
+// Auto-close timer for side panel
+let sidePanelAutoCloseTimer = null;
+
+// Function to start auto-close timer for side panel
+function startSidePanelAutoClose() {
+  // Clear any existing timer
+  if (sidePanelAutoCloseTimer) {
+    clearTimeout(sidePanelAutoCloseTimer);
+  }
+  
+  // Set new timer for 10 seconds
+  sidePanelAutoCloseTimer = setTimeout(() => {
+    console.log('⏰ Auto-closing side panel after 10 seconds of inactivity');
+    closeSidePanel();
+  }, 10000); // 10 seconds
+}
+
+// Function to reset auto-close timer (call on any interaction)
+function resetSidePanelAutoClose() {
+  if (sidePanelAutoCloseTimer) {
+    clearTimeout(sidePanelAutoCloseTimer);
+    startSidePanelAutoClose(); // Restart the timer
+  }
+}
+
 // Function to close any active popup
 function closeActivePopup() {
   if (activeMarkerPopup) {
@@ -5224,6 +5249,16 @@ function setupSidePanel() {
     if (closeBtn) {
         closeBtn.addEventListener('click', closeSidePanel);
     }
+    
+    // Add event listeners to reset auto-close timer on interaction
+    const panel = document.getElementById('label-info-panel');
+    if (panel) {
+        // Reset timer on any interaction with the panel
+        panel.addEventListener('click', resetSidePanelAutoClose);
+        panel.addEventListener('scroll', resetSidePanelAutoClose);
+        panel.addEventListener('mousemove', resetSidePanelAutoClose);
+        panel.addEventListener('touchstart', resetSidePanelAutoClose);
+    }
 }
 
 async function openSidePanel(labelId, displayText) {
@@ -5290,11 +5325,20 @@ async function openSidePanel(labelId, displayText) {
     
     // Show panel with correct class
     panel.classList.add('panel-open');
+    
+    // Start auto-close timer
+    startSidePanelAutoClose();
 }
 
 function closeSidePanel() {
     const panel = document.getElementById('label-info-panel');
     panel.classList.remove('panel-open');
+    
+    // Clear auto-close timer
+    if (sidePanelAutoCloseTimer) {
+        clearTimeout(sidePanelAutoCloseTimer);
+        sidePanelAutoCloseTimer = null;
+    }
     
     // Idle mode resume removed
 }
