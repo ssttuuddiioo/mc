@@ -4945,7 +4945,19 @@ function navigateToLocation(key) {
   // Clear any existing popups
   closeActivePopup();
 
-  // Open the main side panel with full details (no camera movement)
+  // Find the marker data to center camera on it
+  const markerData = newMarkers.find(m => m.id == key);
+  
+  if (markerData && map) {
+    // Center camera on the clicked marker
+    map.easeTo({
+      center: [markerData.lng, markerData.lat],
+      zoom: 17.5, // Same zoom level as initial
+      duration: 1000 // Smooth 1-second transition
+    });
+  }
+
+  // Open the main side panel with full details
   openSidePanel(key);
 }
 
@@ -4965,6 +4977,18 @@ function startSidePanelAutoClose() {
   // Set new timer for 45 seconds
   sidePanelAutoCloseTimer = setTimeout(() => {
     console.log('⏰ Auto-closing side panel after 45 seconds of inactivity');
+    
+    // Return camera to original home position (Michigan Central Station)
+    if (map) {
+      map.easeTo({
+        center: [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat],
+        zoom: 17.5,
+        pitch: 75,
+        bearing: 180,
+        duration: 2000 // Smooth 2-second transition back home
+      });
+    }
+    
     closeSidePanel();
   }, 45000); // 45 seconds
 }
