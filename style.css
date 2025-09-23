@@ -432,7 +432,7 @@ body {
 .description-content p {
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
   font-weight: 400;
-  font-size: 18px;
+  font-size: 27px; /* Increased from 18px to 27px (1.5x) */
   line-height: 1.6;
   color: rgba(255,255,255,0.9);
   margin: 0;
@@ -441,9 +441,9 @@ body {
 /* Features Grid - Individual Boxes */
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr; /* Single column for full width */
   gap: 20px;
-  width: 860px;
+  width: 100%; /* Full width of panel */
 }
 
 .feature-item {
@@ -497,7 +497,7 @@ body {
 .feature-text {
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
   font-weight: 500;
-  font-size: 16px;
+  font-size: 24px; /* Increased from 16px to 24px (1.5x) */
   line-height: 1.5;
   color: rgba(255,255,255,0.9);
   margin: 0;
