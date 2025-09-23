@@ -864,8 +864,8 @@ function createMarkerElement(markerData, source = 'hardcoded') {
   const el = document.createElement('div');
   el.className = 'custom-marker';
 
-  // Use custom text if provided, otherwise use ID
-  const displayText = markerData.text || markerData.label || markerData.id.toString();
+  // Prioritize the 'label' field for the marker text
+  const displayText = markerData.label || markerData.text || markerData.id.toString();
   el.textContent = displayText;
 
   // Add click listener to show the on-marker popup
