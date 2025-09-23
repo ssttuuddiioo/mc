@@ -1,5 +1,5 @@
 // Production-Ready Service Worker with Smart Caching
-const CACHE_VERSION = '2024092301'; // Auto-updated by version manager
+const CACHE_VERSION = 'MTc1ODU5'; // Auto-updated by version manager
 const STATIC_CACHE = `orbit-demo-static-v${CACHE_VERSION}`;
 const MAPBOX_CACHE = `mapbox-v${CACHE_VERSION}`;
 const API_CACHE = `api-cache-v${CACHE_VERSION}`;
