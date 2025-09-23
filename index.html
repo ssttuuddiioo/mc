@@ -489,5 +489,43 @@ Feature 3"></textarea>
   </div>
 
   <script src="main.js?v=2024092301"></script>
+  
+  <!-- Cache clearing utility for development -->
+  <script>
+    // Function to clear all caches and reload
+    window.clearAllCaches = async function() {
+      console.log('🧹 Clearing all caches...');
+      
+      // Clear service worker caches
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(
+          cacheNames.map(cacheName => {
+            console.log('🗑️ Deleting cache:', cacheName);
+            return caches.delete(cacheName);
+          })
+        );
+      }
+      
+      // Unregister service worker
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(
+          registrations.map(registration => {
+            console.log('🔄 Unregistering service worker');
+            return registration.unregister();
+          })
+        );
+      }
+      
+      console.log('✅ All caches cleared! Reloading...');
+      window.location.reload(true);
+    };
+    
+    // Auto-clear cache if we detect old version
+    if (window.location.search.includes('clearcache')) {
+      clearAllCaches();
+    }
+  </script>
 </body>
 </html>
