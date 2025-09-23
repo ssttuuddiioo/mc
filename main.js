@@ -795,9 +795,9 @@ const map = new mapboxgl.Map({
 let orbitAnimation; // To hold the animation frame ID
 let syncedMarkers = []; // For smooth marker animation
 let orbitPaused = false; // Track if orbit is paused
+let orbitCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat]; // Dynamic orbit center
 
 function startOrbitAnimation() {
-  const center = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
   const initialBearing = map.getBearing();
   let bearing = initialBearing;
 
@@ -807,7 +807,7 @@ function startOrbitAnimation() {
       bearing += 0.015; // Adjust for speed
       map.setBearing(bearing);
       map.setPitch(75); // Lower angle to see horizon
-      map.setCenter(center); // Keep the center fixed
+      map.setCenter(orbitCenter); // Use dynamic orbit center
     }
     orbitAnimation = requestAnimationFrame(animate);
   }
@@ -834,6 +834,11 @@ function pauseOrbitAnimation() {
 function resumeOrbitAnimation() {
   orbitPaused = false;
   console.log('▶️ Orbit animation resumed');
+}
+
+function updateOrbitCenter(lng, lat) {
+  orbitCenter = [lng, lat];
+  console.log('🎯 Orbit center updated to:', orbitCenter);
 }
 
 // Stop orbiting on user interaction
@@ -4966,6 +4971,9 @@ function navigateToLocation(key) {
   const markerData = newMarkers.find(m => m.id == key);
   
   if (markerData && map) {
+    // Update orbit center to the clicked marker's location
+    updateOrbitCenter(markerData.lng, markerData.lat);
+    
     // Center camera on the clicked marker
     map.easeTo({
       center: [markerData.lng, markerData.lat],
@@ -5002,6 +5010,9 @@ function startSidePanelAutoClose() {
     
     // Return camera to original home position (Michigan Central Station)
     if (map) {
+      // Reset orbit center back to Michigan Central Station
+      updateOrbitCenter(LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat);
+      
       map.easeTo({
         center: [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat],
         zoom: 17.5,
