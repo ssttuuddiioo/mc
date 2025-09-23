@@ -807,7 +807,22 @@ function startOrbitAnimation() {
       bearing += 0.015; // Adjust for speed
       map.setBearing(bearing);
       map.setPitch(75); // Lower angle to see horizon
-      map.setCenter(orbitCenter); // Use dynamic orbit center
+      
+      // Calculate offset for side panel (if panel is open)
+      const panel = document.getElementById('label-info-panel');
+      const isPanelOpen = panel && panel.classList.contains('panel-open');
+      
+      if (isPanelOpen) {
+        // Offset to center in left 2/3 of screen when panel is open
+        const mapContainer = map.getContainer();
+        const mapWidth = mapContainer.offsetWidth;
+        const sidePanelWidth = mapWidth * 0.33;
+        const offsetX = sidePanelWidth / 2;
+        map.setCenter(orbitCenter, { offset: [offsetX, 0] });
+      } else {
+        // No offset when panel is closed
+        map.setCenter(orbitCenter);
+      }
     }
     orbitAnimation = requestAnimationFrame(animate);
   }
@@ -4974,11 +4989,18 @@ function navigateToLocation(key) {
     // Update orbit center to the clicked marker's location
     updateOrbitCenter(markerData.lng, markerData.lat);
     
-    // Center camera on the clicked marker
+    // Calculate offset to center marker in the left 2/3 of screen (accounting for side panel)
+    const mapContainer = map.getContainer();
+    const mapWidth = mapContainer.offsetWidth;
+    const sidePanelWidth = mapWidth * 0.33; // Assume side panel takes up 1/3 of screen
+    const offsetX = sidePanelWidth / 2; // Offset to center in visible area
+    
+    // Center camera on the clicked marker, offset to account for side panel
     map.easeTo({
       center: [markerData.lng, markerData.lat],
       zoom: 17.5, // Same zoom level as initial
-      duration: 1000 // Smooth 1-second transition
+      duration: 1000, // Smooth 1-second transition
+      offset: [offsetX, 0] // Offset to center in left 2/3 of screen
     });
     
     // Resume orbit animation after camera movement completes
