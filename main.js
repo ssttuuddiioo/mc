@@ -869,10 +869,25 @@ function createMarkerElement(markerData, source = 'hardcoded') {
   el.className = 'custom-marker';
 
   // Debug: Log marker data to see what we're working with
-  console.log('🔍 Creating marker:', { id: markerData.id, label: markerData.label, text: markerData.text, source });
+  console.log('🔍 Creating marker:', { 
+    id: markerData.id, 
+    label: markerData.label, 
+    name: markerData.name,
+    title: markerData.title,
+    facility_name: markerData.facility_name,
+    text: markerData.text, 
+    source,
+    allKeys: Object.keys(markerData)
+  });
 
-  // Prioritize the 'label' field for the marker text
-  const displayText = markerData.label || markerData.text || markerData.id.toString();
+  // Try multiple possible column names for the marker text
+  const displayText = markerData.label || 
+                     markerData.name || 
+                     markerData.title || 
+                     markerData.facility_name || 
+                     markerData.location_name ||
+                     markerData.text || 
+                     markerData.id.toString();
   el.textContent = displayText;
 
   // Add click listener to show the on-marker popup
