@@ -794,6 +794,7 @@ const map = new mapboxgl.Map({
 
 let orbitAnimation; // To hold the animation frame ID
 let syncedMarkers = []; // For smooth marker animation
+let orbitPaused = false; // Track if orbit is paused
 
 function startOrbitAnimation() {
   const center = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
@@ -801,10 +802,13 @@ function startOrbitAnimation() {
   let bearing = initialBearing;
 
   function animate() {
-    bearing += 0.015; // Adjust for speed
-    map.setBearing(bearing);
-    map.setPitch(75); // Lower angle to see horizon
-    map.setCenter(center); // Keep the center fixed
+    // Only animate if not paused
+    if (!orbitPaused) {
+      bearing += 0.015; // Adjust for speed
+      map.setBearing(bearing);
+      map.setPitch(75); // Lower angle to see horizon
+      map.setCenter(center); // Keep the center fixed
+    }
     orbitAnimation = requestAnimationFrame(animate);
   }
 
@@ -820,6 +824,16 @@ function stopOrbitAnimation() {
     cancelAnimationFrame(orbitAnimation);
     orbitAnimation = null;
   }
+}
+
+function pauseOrbitAnimation() {
+  orbitPaused = true;
+  console.log('⏸️ Orbit animation paused');
+}
+
+function resumeOrbitAnimation() {
+  orbitPaused = false;
+  console.log('▶️ Orbit animation resumed');
 }
 
 // Stop orbiting on user interaction
@@ -4945,6 +4959,9 @@ function navigateToLocation(key) {
   // Clear any existing popups
   closeActivePopup();
 
+  // Pause orbit animation to allow camera movement
+  pauseOrbitAnimation();
+
   // Find the marker data to center camera on it
   const markerData = newMarkers.find(m => m.id == key);
   
@@ -4987,6 +5004,11 @@ function startSidePanelAutoClose() {
         bearing: 180,
         duration: 2000 // Smooth 2-second transition back home
       });
+      
+      // Resume orbit animation after camera movement completes
+      setTimeout(() => {
+        resumeOrbitAnimation();
+      }, 2000); // Wait for camera transition to complete
     }
     
     closeSidePanel();
@@ -5364,7 +5386,8 @@ function closeSidePanel() {
         sidePanelAutoCloseTimer = null;
     }
     
-    // Idle mode resume removed
+    // Resume orbit animation when panel is closed
+    resumeOrbitAnimation();
 }
 
 // ADMIN PANEL FUNCTIONALITY
