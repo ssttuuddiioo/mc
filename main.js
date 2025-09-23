@@ -633,15 +633,11 @@ function createMarkerElement(markerData, source = 'hardcoded') {
                      markerData.id.toString();
   el.textContent = displayText;
 
-  // Add click listener to show the on-marker popup
+  // Add click listener to go directly to side panel
   el.addEventListener('click', (e) => {
     e.stopPropagation();
-    const markerInstance = {
-      labelId: markerData.id || markerData.label,
-      lng: markerData.lng,
-      lat: markerData.lat
-    };
-    showMarkerPopup(markerInstance);
+    const key = markerData.id || markerData.label;
+    navigateToLocation(key);
   });
   
   el.title = markerData.label || `Marker ${markerData.id}`;
@@ -4838,21 +4834,10 @@ function getCurrentKey(title) {
 function navigateToLocation(key) {
   dbg("NAV_CLICK", {key: key});
 
-  // Since popups are now used, clear them before opening a new panel
+  // Clear any existing popups
   closeActivePopup();
 
-  // Find the marker data to fly to its coordinates
-  const markerData = newMarkers.find(m => m.id == key);
-
-  if (markerData && map) {
-    map.flyTo({
-      center: [markerData.lng, markerData.lat],
-      zoom: 15, // A comfortable zoom level for viewing the panel
-      essential: true
-    });
-  }
-  
-  // Open the main side panel with full details
+  // Open the main side panel with full details (no camera movement)
   openSidePanel(key);
 }
 
@@ -4872,54 +4857,7 @@ function closeActivePopup() {
   }
 }
 
-// New function to show the on-marker popup
-async function showMarkerPopup(markerInstance) {
-  // Close any existing popup first
-  closeActivePopup();
-
-  const key = markerInstance.labelId;
-  const markerData = newMarkers.find(m => m.id == key);
-
-  if (!markerData) return;
-
-  const popup = document.createElement('div');
-  popup.className = 'marker-popup';
-  popup.innerHTML = `
-    <div class="marker-popup-title-bar">
-      <p class="marker-popup-title">${markerData.title || markerData.label || 'Location'}</p>
-    </div>
-    <div class="marker-popup-content">
-      <p class="marker-popup-description">${markerData.short_description || 'No description available.'}</p>
-      <button class="marker-popup-button" onclick="navigateToLocation('${key}')">Learn more</button>
-    </div>
-  `;
-
-  // Use Mapbox's Popup feature for better positioning
-  const mapboxPopup = new mapboxgl.Popup({
-    closeButton: false,
-    closeOnClick: true,
-    anchor: 'bottom',
-    offset: 25
-  })
-  .setLngLat([markerInstance.lng, markerInstance.lat])
-  .setDOMContent(popup)
-  .addTo(map);
-
-  // Store the element for later removal
-  activeMarkerPopup = popup;
-  
-  // Animate it in
-  setTimeout(() => popup.classList.add('show'), 10);
-  
-  // Fly to the marker
-  if (map) {
-    map.flyTo({
-      center: [markerInstance.lng, markerInstance.lat],
-      zoom: 17,
-      essential: true
-    });
-  }
-}
+// showMarkerPopup function removed - now going directly to side panel
 
 // Legacy function - redirect to new controller
 function flyToLocation(key) {
