@@ -871,6 +871,7 @@ function createMarkerElement(markerData, source = 'hardcoded') {
   // Debug: Log marker data to see what we're working with
   console.log('🔍 Creating marker:', { 
     id: markerData.id, 
+    Label: markerData.Label,  // Capital L!
     label: markerData.label, 
     name: markerData.name,
     title: markerData.title,
@@ -880,8 +881,9 @@ function createMarkerElement(markerData, source = 'hardcoded') {
     allKeys: Object.keys(markerData)
   });
 
-  // Try multiple possible column names for the marker text
-  const displayText = markerData.label || 
+  // Try multiple possible column names for the marker text (case-sensitive!)
+  const displayText = markerData.Label || 
+                     markerData.label || 
                      markerData.name || 
                      markerData.title || 
                      markerData.facility_name || 
