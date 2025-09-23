@@ -1,5 +1,5 @@
 // Service Worker for Offline Functionality with Proper Mapbox 3D Support
-const CACHE_VERSION = '1.0.1'; // Increment this to force cache refresh
+const CACHE_VERSION = '2024092301'; // Increment this to force cache refresh
 const STATIC_CACHE = `orbit-demo-static-v${CACHE_VERSION}`;
 const MAPBOX_CACHE = `mapbox-v${CACHE_VERSION}`;
 const MAPBOX_HOST = 'api.mapbox.com';
@@ -123,9 +123,20 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Handle static resources
+  // Handle static resources - respect version parameters for main.js and style.css
   if (url.origin === location.origin) {
-    event.respondWith(cacheFirst(event.request, STATIC_CACHE));
+    // For main.js and style.css, check version parameter
+    if (url.pathname.includes('main.js') || url.pathname.includes('style.css')) {
+      const version = url.searchParams.get('v');
+      if (version === CACHE_VERSION) {
+        event.respondWith(cacheFirst(event.request, STATIC_CACHE));
+      } else {
+        // Different version - fetch fresh and don't cache
+        event.respondWith(fetch(event.request));
+      }
+    } else {
+      event.respondWith(cacheFirst(event.request, STATIC_CACHE));
+    }
     return;
   }
 
