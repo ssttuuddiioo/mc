@@ -4972,6 +4972,11 @@ function navigateToLocation(key) {
       zoom: 17.5, // Same zoom level as initial
       duration: 1000 // Smooth 1-second transition
     });
+    
+    // Resume orbit animation after camera movement completes
+    setTimeout(() => {
+      resumeOrbitAnimation();
+    }, 1000); // Wait for camera transition to complete
   }
 
   // Open the main side panel with full details
@@ -5386,8 +5391,7 @@ function closeSidePanel() {
         sidePanelAutoCloseTimer = null;
     }
     
-    // Resume orbit animation when panel is closed
-    resumeOrbitAnimation();
+    // Orbit continues running while panel is open, no need to resume here
 }
 
 // ADMIN PANEL FUNCTIONALITY
