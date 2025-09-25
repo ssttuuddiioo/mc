@@ -1740,15 +1740,16 @@ function setupPrecisionKeyboardControls() {
         
       // ANCHOR SYSTEM - Set SVG position to crosshair center OR place preloaded SVG
       case 'Space':
-        if (currentWorkingSVG) {
-          // Existing SVG - anchor to crosshair
-          anchorSVGToCrosshair();
-          handled = true;
-        } else if (preloadedSVG) {
-          // First spacebar - place preloaded SVG and start editing
-          placePreloadedSVG();
-          handled = true;
-        }
+        // Disabled spacebar functionality for SVG placement
+        // if (currentWorkingSVG) {
+        //   // Existing SVG - anchor to crosshair
+        //   anchorSVGToCrosshair();
+        //   handled = true;
+        // } else if (preloadedSVG) {
+        //   // First spacebar - place preloaded SVG and start editing
+        //   placePreloadedSVG();
+        //   handled = true;
+        // }
         break;
         
       // CROSSHAIR TOGGLE - Show/hide crosshair for positioning
