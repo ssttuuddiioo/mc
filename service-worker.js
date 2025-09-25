@@ -4,8 +4,8 @@ const URLS_TO_CACHE = [
   '/index.html',
   '/style.css',
   '/main.js',
-  'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js',
-  'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css'
+  'https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js',
+  'https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css'
 ];
 
 // URLs that should always be fetched from the network when online, but cached for offline use

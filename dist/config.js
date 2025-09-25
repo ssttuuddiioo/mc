@@ -35,7 +35,7 @@ class Config {
       // Performance settings
       performance: {
         orbitSpeed: 0.05,
-        autoCloseDelay: 45000, // 45 seconds
+        autoCloseDelay: 10000, // 10 seconds
         cacheMaxAge: 5 * 60 * 1000, // 5 minutes
         retryAttempts: 3,
         retryDelay: 1000

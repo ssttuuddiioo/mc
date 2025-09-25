@@ -31,8 +31,8 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="style.css?v=MTc1ODU5">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
-  <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css" rel="stylesheet">
   
   <!-- Production Configuration -->
   <script src="config.js?v=MTc1ODU5"></script>
@@ -147,9 +147,16 @@
   <!-- Style Controls in Top-Left (HIDDEN) -->
   <div id="style-controls" style="display: none;">
     <button data-style="mapbox://styles/mapbox/light-v11" title="Light Mode">☀️</button>
-    <button data-style="mapbox://styles/mapbox/standard" title="Standard Mode">🗺️</button>
+    <button data-style="mapbox://styles/ssttuuddiioo/cmdxew05b001901ry34gb69wy" title="Studio Style">🗺️</button>
     <button id="svg-editor-toggle" title="SVG Placement Tool">⚙️</button>
     <button id="admin-panel-toggle" title="Admin Panel">🛠️</button>
+  </div>
+  
+  <!-- Test Page Link (Visible) -->
+  <div id="test-page-link" style="position: fixed; top: 10px; right: 10px; z-index: 1000; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 4px;">
+    <a href="test.html" style="color: white; text-decoration: none; font-weight: bold; font-family: Arial, sans-serif;">
+      🧪 Style Test Page
+    </a>
   </div>
   
   <!-- Precision Mode Status -->
@@ -477,11 +484,10 @@ Feature 3"></textarea>
         <h1 class="panel-title" id="location-title">Loading Location...</h1>
       </div>
       
-      <!-- Hero Image with Category Badge -->
+      <!-- Hero Image -->
       <div class="panel-hero" id="location-image">
         <img id="location-photo" src="" alt="" style="display: none;">
         <div class="image-placeholder"></div>
-        <div class="category-badge" id="location-category">LOADING...</div>
         <div class="stats-badges" id="location-stats">
           <div class="stats-badge">
             <span class="stats-icon">🏢</span>
@@ -492,6 +498,11 @@ Feature 3"></textarea>
             <span id="building-size">500K sq ft</span>
           </div>
         </div>
+      </div>
+      
+      <!-- Category Info -->
+      <div class="category-section">
+        <div class="category-badge" id="location-category">LOADING...</div>
       </div>
       
       <!-- Description Section -->
@@ -514,7 +525,7 @@ Feature 3"></textarea>
     </div>
   </div>
 
-  <script src="main.js?v=MTc1ODU5"></script>
+  <script src="main.js?v=1758662603?v=MTc1ODU5"></script>
   
   <!-- Cache clearing utility for development -->
   <script>

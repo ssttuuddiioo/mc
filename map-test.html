@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detroit Map Test</title>
+  <!-- Load the latest Mapbox GL JS version -->
+  <script src='https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css' rel='stylesheet' />
+  <style>
+    body { 
+      margin: 0; 
+      padding: 0; 
+      font-family: Arial, sans-serif;
+    }
+    #map { 
+      position: absolute; 
+      top: 0; 
+      bottom: 0; 
+      width: 100%; 
+      height: 100%;
+      background-color: #f0f0f0; /* Light gray background so we know div is rendering */
+    }
+    #debug {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(255,255,255,0.9);
+      padding: 10px;
+      z-index: 1000;
+      max-width: 400px;
+      max-height: 300px;
+      overflow: auto;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+    .success {
+      color: green;
+    }
+    /* Style for the popup */
+    .mapboxgl-popup {
+      max-width: 250px;
+    }
+    .mapboxgl-popup-content {
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    .mapboxgl-popup-content h4 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+    }
+    .mapboxgl-popup-content p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Map container -->
+  <div id="map"></div>
+  
+  <!-- Debug panel -->
+  <div id="debug">
+    <h3>Debug Info</h3>
+    <div id="debug-content">Loading map...</div>
+    <hr>
+    <button onclick="testMapboxAPI()">Test Mapbox API</button>
+    <button onclick="useDefaultStyle()">Try Default Style</button>
+    <button onclick="enableBuildingInteractivity()">Enable Building Click</button>
+  </div>
+
+  <script>
+    // Debug function
+    function log(message, isError = false, isSuccess = false) {
+      console.log(message);
+      const debugEl = document.getElementById('debug-content');
+      const msgClass = isError ? 'error' : (isSuccess ? 'success' : '');
+      debugEl.innerHTML += `<div class="${msgClass}">${message}</div>`;
+    }
+
+    // Function to test Mapbox API connectivity
+    function testMapboxAPI() {
+      log('Testing Mapbox API connectivity...');
+      
+      fetch('https://api.mapbox.com/tokens/v2?access_token=pk.eyJ1Ijoic3N0dHV1ZGRpaW9vIiwiYSI6ImNtZHhlc2hsNjI1MWQyaXB0ZnU3NzE0ejMifQ.bxWkQ9zjw_a9C3cHag86Rg')
+        .then(response => {
+          if (response.ok) {
+            log('Mapbox API is accessible ✓', false, true);
+          } else {
+            log(`Mapbox API returned status: ${response.status} ${response.statusText}`, true);
+          }
+          return response.text();
+        })
+        .then(text => {
+          try {
+            const data = JSON.parse(text);
+            log('Response: ' + JSON.stringify(data).substring(0, 100) + '...', false, true);
+          } catch (e) {
+            log('Non-JSON response: ' + text.substring(0, 100) + '...', true);
+          }
+        })
+        .catch(error => {
+          log('Error testing Mapbox API: ' + error.message, true);
+        });
+    }
+
+    // Function to try a default Mapbox style
+    function useDefaultStyle() {
+      log('Trying default Mapbox style...');
+      try {
+        if (window.map) {
+          window.map.remove();
+          log('Removed previous map instance');
+        }
+        
+        window.map = new mapboxgl.Map({
+          container: 'map',
+          style: 'mapbox://styles/mapbox/streets-v12', // Default Mapbox style
+          center: [-83.0776, 42.3289], // Detroit
+          zoom: 16.9,
+          pitch: 45,
+          bearing: 0
+        });
+        
+        log('Created map with default style');
+        
+        window.map.on('load', () => {
+          log('Default style map loaded successfully ✓', false, true);
+        });
+        
+        window.map.on('error', (e) => {
+          log('Map error with default style: ' + e.error.message, true);
+        });
+      } catch (error) {
+        log('Error creating map with default style: ' + error.message, true);
+      }
+    }
+
+    // Global variable to store the building layer ID
+    let activeBuildingLayer = null;
+    
+    // Function to enable building interactivity
+    function enableBuildingInteractivity() {
+      try {
+        log('Analyzing map layers to find buildings...');
+        
+        // Check if the map style has a building layer
+        const layers = window.map.getStyle().layers;
+        log(`Found ${layers.length} total layers in the map style`);
+        
+        // Find potential building layers
+        const potentialBuildingLayers = layers.filter(layer => 
+          layer.type === 'fill-extrusion' || 
+          (layer.id && layer.id.includes('building')) ||
+          (layer.paint && layer.paint['fill-extrusion-height'])
+        );
+        
+        log(`Found ${potentialBuildingLayers.length} potential building layers`);
+        potentialBuildingLayers.forEach(layer => {
+          log(`Building layer candidate: ${layer.id} (type: ${layer.type})`);
+        });
+        
+        // Try to find the main building layer
+        for (let i = 0; i < layers.length; i++) {
+          if (layers[i].type === 'fill-extrusion' || 
+              (layers[i].id && layers[i].id.includes('building')) || 
+              (layers[i].paint && layers[i].paint['fill-extrusion-height'])) {
+            activeBuildingLayer = layers[i].id;
+            log(`Using building layer: ${activeBuildingLayer}`, false, true);
+            break;
+          }
+        }
+        
+        if (!activeBuildingLayer) {
+          log('No building layer found. Adding a custom 3D buildings layer...', false, false);
+          
+          // If no building layer found, add the 3D buildings layer
+          window.map.addLayer({
+            'id': 'custom-3d-buildings',
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['==', 'extrude', 'true'],
+            'type': 'fill-extrusion',
+            'minzoom': 15,
+            'paint': {
+              'fill-extrusion-color': '#aaa',
+              'fill-extrusion-height': [
+                'interpolate', ['linear'], ['zoom'],
+                15, 0,
+                16, ['get', 'height']
+              ],
+              'fill-extrusion-base': [
+                'interpolate', ['linear'], ['zoom'],
+                15, 0,
+                16, ['get', 'min_height']
+              ],
+              'fill-extrusion-opacity': 0.8
+            }
+          });
+          
+          activeBuildingLayer = 'custom-3d-buildings';
+          log('Added custom 3D buildings layer', false, true);
+        }
+        
+        // Add click event for buildings
+        window.map.on('click', (e) => {
+          // If we have a specific building layer, query it
+          if (activeBuildingLayer) {
+            const features = window.map.queryRenderedFeatures(e.point, { 
+              layers: [activeBuildingLayer] 
+            });
+            
+            if (features.length > 0) {
+              const feature = features[0];
+              
+              // Create popup
+              new mapboxgl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(`
+                  <h4>Building Info</h4>
+                  <p>Height: ${feature.properties.height || 'Unknown'}</p>
+                  <p>Type: ${feature.properties.type || 'Building'}</p>
+                `)
+                .addTo(window.map);
+                
+              log(`Building clicked: ${JSON.stringify(feature.properties).substring(0, 100)}...`, false, true);
+              return;
+            }
+          }
+          
+          // If no specific building was clicked or no building layer is active,
+          // just show the coordinates
+          new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`
+              <h4>Location</h4>
+              <p>Longitude: ${e.lngLat.lng.toFixed(6)}</p>
+              <p>Latitude: ${e.lngLat.lat.toFixed(6)}</p>
+            `)
+            .addTo(window.map);
+            
+          log(`Map clicked at: ${e.lngLat.lng.toFixed(6)}, ${e.lngLat.lat.toFixed(6)}`);
+        });
+        
+        // Change cursor to pointer when hovering over buildings
+        if (activeBuildingLayer) {
+          window.map.on('mouseenter', activeBuildingLayer, () => {
+            window.map.getCanvas().style.cursor = 'pointer';
+          });
+          
+          window.map.on('mouseleave', activeBuildingLayer, () => {
+            window.map.getCanvas().style.cursor = '';
+          });
+        }
+        
+        log('Building interactivity enabled ✓', false, true);
+      } catch (error) {
+        log('Error enabling building interactivity: ' + error.message, true);
+      }
+    }
+
+    // Main initialization
+    log('Script started');
+
+    try {
+      // Check if mapboxgl is loaded
+      if (typeof mapboxgl === 'undefined') {
+        log('ERROR: mapboxgl is not defined. Mapbox library failed to load.', true);
+      } else {
+        log('Mapbox library loaded ✓', false, true);
+        
+        // Use the provided access token
+        mapboxgl.accessToken = 'pk.eyJ1Ijoic3N0dHV1ZGRpaW9vIiwiYSI6ImNtZHhlc2hsNjI1MWQyaXB0ZnU3NzE0ejMifQ.bxWkQ9zjw_a9C3cHag86Rg';
+        log('Access token set ✓', false, true);
+        
+        // Detroit location coordinates (Michigan Central)
+        const DETROIT_LOCATION = [-83.0776, 42.3289];
+        log('Detroit location defined ✓', false, true);
+
+        // Initialize the map
+        log('Creating map...');
+        try {
+          window.map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/ssttuuddiioo/cmdxew05b001901ry34gb69wy',
+            center: DETROIT_LOCATION,
+            zoom: 16.9,
+            pitch: 75,
+            bearing: 185,
+            antialias: true,
+            transformRequest: (url, resourceType) => {
+              log(`Resource request: ${resourceType} - ${url.substring(0, 50)}...`);
+              return { url };
+            }
+          });
+          log('Map object created ✓', false, true);
+
+          // Add error handling
+          window.map.on('error', (e) => {
+            log('Map error: ' + (e.error ? e.error.message : 'Unknown error'), true);
+          });
+
+          // Log when style and map are loaded
+          window.map.on('style.load', () => {
+            log('Map style loaded ✓', false, true);
+          });
+
+          window.map.on('load', () => {
+            log('Map fully loaded ✓', false, true);
+          });
+        } catch (mapError) {
+          log('Error creating map: ' + mapError.message, true);
+        }
+      }
+    } catch (error) {
+      log('ERROR: ' + error.message, true);
+    }
+  </script>
+</body>
+</html>

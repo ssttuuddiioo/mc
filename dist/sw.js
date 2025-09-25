@@ -35,8 +35,8 @@ const STATIC_RESOURCES = [
 
 // External CDN resources to cache
 const CDN_RESOURCES = [
-  'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js',
-  'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css',
+  'https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js',
+  'https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
 ];
 

@@ -330,11 +330,15 @@ body {
   font-size: 18px;
 }
 
+/* Category Section */
+.category-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
 /* Category Badge */
 .category-badge {
-  position: absolute;
-  top: 28px;
-  left: 28px;
   background: rgba(100, 149, 237, 0.15);
   border: 1px solid #6495ED;
   border-radius: 16px;
@@ -348,7 +352,9 @@ body {
   letter-spacing: 1px;
   backdrop-filter: blur(12px);
   box-shadow: 0 4px 16px rgba(100, 149, 237, 0.2);
+  display: inline-block;
 }
+
 
 /* Stats Badges */
 .stats-badges {
@@ -1266,7 +1272,7 @@ select:focus {
   font-weight: bold;
   font-size: 14px; /* Reduced from 18px */
   border-radius: 2px;
-  padding: 8px 12px;
+  padding: 4px 12px; /* Reduced vertical padding from 8px to 4px */
   white-space: nowrap;
   will-change: transform; /* Performance hint for the browser */
   backface-visibility: hidden; /* Helps prevent flickering during transforms */
@@ -1278,6 +1284,96 @@ select:focus {
 .marker-label {
   /* This class is no longer needed with the new marker style */
   display: none;
+}
+
+/* Marker Navigation Grid */
+.marker-navigation-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.marker-nav-row {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+.marker-nav-item {
+  flex: 1;
+  background: rgba(100, 149, 237, 0.15);
+  border: 1px solid #6495ED;
+  border-radius: 16px;
+  padding: 12px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(100, 149, 237, 0.2);
+}
+
+.marker-nav-item:hover {
+  background: rgba(100, 149, 237, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(100, 149, 237, 0.3);
+}
+
+.marker-nav-item.active {
+  background: rgba(135, 206, 235, 0.15);
+  border-color: #87CEEB;
+  box-shadow: 0 4px 16px rgba(135, 206, 235, 0.2);
+}
+
+.marker-nav-item.active:hover {
+  background: rgba(135, 206, 235, 0.25);
+  box-shadow: 0 6px 20px rgba(135, 206, 235, 0.3);
+}
+
+.marker-nav-label {
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  color: #6495ED;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.marker-nav-item.active .marker-nav-label {
+  color: #87CEEB;
+}
+
+/* Secondary navigation items (second row) */
+.marker-nav-item-secondary {
+  background: rgba(135, 206, 235, 0.1);
+  border: 1px solid #87CEEB;
+  box-shadow: 0 2px 8px rgba(135, 206, 235, 0.15);
+}
+
+.marker-nav-item-secondary:hover {
+  background: rgba(135, 206, 235, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(135, 206, 235, 0.25);
+}
+
+.marker-nav-item-secondary .marker-nav-label {
+  color: #87CEEB;
+  font-size: 14px;
+}
+
+.marker-nav-item-secondary.active {
+  background: rgba(100, 149, 237, 0.2);
+  border-color: #6495ED;
+  box-shadow: 0 4px 16px rgba(100, 149, 237, 0.3);
+}
+
+.marker-nav-item-secondary.active .marker-nav-label {
+  color: #6495ED;
 }
 
 /* ===== PRODUCTION-READY STYLES ===== */

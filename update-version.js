@@ -33,3 +33,4 @@ files.forEach(filename => {
 
 console.log(`🎉 All files updated to version ${newVersion}`);
 console.log(`💡 Now commit and push your changes to deploy the new version`);
+

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Style Test Page</title>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
+  <style>
+    body { 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Arial', sans-serif;
+    }
+    
+    #map { 
+      position: absolute; 
+      top: 0; 
+      bottom: 0; 
+      width: 100%; 
+    }
+    
+    .info-panel {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      max-width: 300px;
+      z-index: 1;
+    }
+    
+    .info-panel h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+    
+    .info-panel p {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    
+    .back-button {
+      display: inline-block;
+      background: #6495ED;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 4px;
+      text-decoration: none;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  
+  <div class="info-panel">
+    <h2>Style Test Page</h2>
+    <p>This page is loading <strong>ONLY</strong> your custom style:</p>
+    <p><code>mapbox://styles/ssttuuddiioo/cmdxew05b001901ry34gb69wy</code></p>
+    <p>You should see your custom style with no modifications.</p>
+    <a href="index.html" class="back-button">Back to Main App</a>
+  </div>
+
+  <script>
+    console.log('🚀 Test page initializing...');
+    
+    // Add status updates to the info panel
+    const infoPanel = document.querySelector('.info-panel');
+    function updateStatus(message, isError = false) {
+      const statusElem = document.createElement('p');
+      statusElem.style.color = isError ? '#ff6b6b' : '#6bff6b';
+      statusElem.style.fontWeight = 'bold';
+      statusElem.textContent = message;
+      infoPanel.appendChild(statusElem);
+      console.log(message);
+    }
+    
+    updateStatus('Initializing map...');
+    
+    // Initialize Mapbox with ONLY your custom style
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic3N0dHV1ZGRpaW9vIiwiYSI6ImNtZHhveWU4bDI5djIyam9kY2I3M3pwbHcifQ.ck8h3apHSNVAmTwjz-Oc7w';
+    updateStatus('Mapbox access token set');
+    
+    try {
+      // Create map with your custom style - exact same settings as main app
+      updateStatus('Creating map with custom style...');
+      const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/ssttuuddiioo/cmdxew05b001901ry34gb69wy', // Your custom style only
+        center: [-83.0776, 42.3289], // Michigan Central
+        zoom: 16.9, // Exact same as main app
+        pitch: 75, // Exact same as main app
+        bearing: 185, // Exact same as main app (185 degrees)
+        antialias: true, // Added this from main app
+        transformRequest: (url, resourceType) => {
+          console.log(`Resource request: ${resourceType} - ${url}`);
+          return { url };
+        }
+      });
+      
+      updateStatus('Map instance created');
+      
+      // Add navigation controls
+      map.addControl(new mapboxgl.NavigationControl());
+      updateStatus('Navigation controls added');
+      
+      // Add load event
+      map.on('load', () => {
+        updateStatus('Map base loaded!');
+      });
+      
+      // Log when style is loaded
+      map.on('style.load', () => {
+        updateStatus('✅ Custom style loaded successfully');
+        
+        // Get and log style information
+        try {
+          const style = map.getStyle();
+          console.log('Style name:', style.name);
+          console.log('Style owner:', style.owner);
+          console.log('Style ID:', style.id);
+          console.log('Style sprite:', style.sprite);
+          
+          // Log layer count
+          console.log('Total layers:', style.layers.length);
+          updateStatus(`Style loaded with ${style.layers.length} layers`);
+          
+          // Check for specific layers
+          const buildingLayers = style.layers.filter(l => l.id.includes('building'));
+          updateStatus(`Found ${buildingLayers.length} building layers`);
+        } catch (styleError) {
+          updateStatus(`Error accessing style: ${styleError.message}`, true);
+        }
+      });
+      
+      // Log any style errors
+      map.on('error', (e) => {
+        updateStatus(`❌ Map error: ${e.error ? e.error.message : 'Unknown error'}`, true);
+        console.error('❌ Map error:', e);
+      });
+      
+      // Add a fallback style if the custom style fails to load
+      setTimeout(() => {
+        if (document.querySelector('.mapboxgl-canvas-container').childElementCount === 0) {
+          updateStatus('Map failed to render after 5 seconds, trying fallback style...', true);
+          map.setStyle('mapbox://styles/mapbox/streets-v12');
+        }
+      }, 5000);
+      
+    } catch (e) {
+      updateStatus(`❌ Error creating map: ${e.message}`, true);
+      console.error('Error creating map:', e);
+    }
+  </script>
+</body>
+</html>

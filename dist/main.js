@@ -1138,11 +1138,11 @@ const LOCATIONS = {
 
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/standard',
+  style: 'mapbox://styles/ssttuuddiioo/cmdxew05b001901ry34gb69wy',
   center: [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat],
-  zoom: 17.5,
+  zoom: 16.9, // Initial zoom level
   pitch: 75, // Increased pitch by another 5 degrees
-  bearing: 180, // Start the orbit 180 degrees around
+  bearing: 185, // Panned 2 degrees to the left (180 + 2)
   antialias: true
 });
 
@@ -1324,8 +1324,8 @@ const ENHANCED_MARKER_DATA = {
 map.on('load', async () => {
     dbg("MAP_LOAD", "Map fully loaded");
 
-    // Start the orbit animation
-    startOrbitAnimation();
+    // Orbit animation disabled - no spinning
+    // startOrbitAnimation();
 
     // Configure map settings for a cleaner look
     map.getCanvas().style.cursor = 'pointer';
@@ -1352,6 +1352,67 @@ map.on('load', async () => {
 
     // Start syncing markers with the map's render cycle
     map.on('render', syncMarkers);
+});
+
+// Ensure we keep the custom style, markers, and SVGs
+map.on('load', () => {
+    console.log('🗺️ Map loaded, ensuring correct style and elements...');
+    
+    // Make sure we're using the correct style
+    const currentStyle = map.getStyle();
+    const targetStyleUrl = 'mapbox://styles/ssttuuddiioo/cmdxew05b001901ry34gb69wy';
+    
+    // Check if we need to change the style
+    if (currentStyle.sprite && !currentStyle.sprite.includes('ssttuuddiioo/cmdxew05b001901ry34gb69wy')) {
+        console.log('⚠️ Current style is not the target style. Setting correct style...');
+        
+        // When style changes, we need to restore markers and SVGs
+        map.once('styledata', () => {
+            console.log('✅ Style loaded, restoring markers and SVGs...');
+            
+            // Re-add all markers
+            if (window.currentMarkers && window.currentMarkers.length > 0) {
+                console.log('🔄 Restoring markers...');
+                window.currentMarkers.forEach(marker => {
+                    // Re-add markers if needed
+                    if (marker && marker.addTo) {
+                        marker.addTo(map);
+                    }
+                });
+            }
+            
+            // Re-add SVGs after style change
+            console.log('🔄 Restoring SVGs...');
+            if (multiSvgManager && multiSvgManager.placedSvgs) {
+                multiSvgManager.placedSvgs.forEach(svg => {
+                    loadSvgOnMap(svg);
+                });
+            }
+            
+            // Re-add blue SVG boundary
+            console.log('🔄 Restoring blue SVG boundary...');
+            if (svgEditorState && svgEditorState.currentFile) {
+                setTimeout(() => {
+                    loadSVGPolygon(svgEditorState.currentFile);
+                }, 500);
+            }
+            
+            // Re-initialize building highlighting
+            setTimeout(() => {
+                initializeBuildingHighlighting();
+            }, 1000);
+            
+            // Re-add Michigan Central SVG
+            setTimeout(() => {
+                loadMichiganCentralSVG();
+            }, 1500);
+        });
+        
+        // Set the style to your custom style
+        map.setStyle(targetStyleUrl);
+    } else {
+        console.log('✅ Already using the correct custom style');
+    }
 });
 
 // Pre-cache essential map resources for 3D buildings
@@ -2368,15 +2429,11 @@ let highlightOpacity = 0.9;
 function initializeBuildingHighlighting() {
   console.log('🏢 Initializing Building Highlighting for Michigan Central');
   
-  // Check if we're in light mode (buildings work best in light mode)
-  const currentStyle = map.getStyle();
-  const isLightMode = currentStyle.sprite && currentStyle.sprite.includes('light');
+  // Always add building layers regardless of style
+  addBuildingLayers();
   
-  if (isLightMode) {
-    addBuildingLayers();
-  } else {
-    console.log('⚠️ Building highlighting works best in Light mode');
-  }
+  // Add click handler for buildings
+  addBuildingClickHandler();
 }
 
 function addBuildingLayers() {
@@ -2515,6 +2572,83 @@ function removeBuildingLayers() {
       // Layer doesn't exist, that's fine
     }
   });
+}
+
+// Add click handler for buildings
+function addBuildingClickHandler() {
+  // Remove any existing handler first
+  map.off('click', '3d-buildings');
+  map.off('click', 'michigan-central-highlight');
+  
+  // Add mouseover cursor change
+  map.on('mouseenter', '3d-buildings', () => {
+    map.getCanvas().style.cursor = 'pointer';
+  });
+  
+  map.on('mouseleave', '3d-buildings', () => {
+    map.getCanvas().style.cursor = '';
+  });
+  
+  // Add click handler for buildings
+  map.on('click', '3d-buildings', (e) => {
+    console.log('🏢 Building clicked!', e.features[0].properties);
+    
+    // Prevent the map click from firing
+    e.originalEvent.preventDefault();
+    e.originalEvent.stopPropagation();
+    
+    // Get the clicked building properties
+    const feature = e.features[0];
+    const buildingId = feature.id;
+    
+    // Change the building color
+    map.setPaintProperty('3d-buildings', 'fill-extrusion-color', [
+      'case',
+      ['==', ['id'], buildingId],
+      '#FF6B35', // Orange highlight for clicked building
+      '#aaa' // Default color for other buildings
+    ]);
+    
+    // Increase opacity for better visibility
+    map.setPaintProperty('3d-buildings', 'fill-extrusion-opacity', [
+      'case',
+      ['==', ['id'], buildingId],
+      0.9, // Higher opacity for clicked building
+      0.7 // Default opacity for other buildings
+    ]);
+    
+    // Log the interaction
+    dbg("BUILDING_CLICK", {
+      id: buildingId,
+      properties: feature.properties,
+      coordinates: e.lngLat
+    });
+  });
+  
+  // Also add handler for michigan-central-highlight layer
+  map.on('click', 'michigan-central-highlight', (e) => {
+    console.log('🏢 Michigan Central building clicked!', e.features[0].properties);
+    
+    // Prevent the map click from firing
+    e.originalEvent.preventDefault();
+    e.originalEvent.stopPropagation();
+    
+    // Toggle the highlight color between blue and orange
+    const currentColor = map.getPaintProperty('michigan-central-highlight', 'fill-extrusion-color');
+    const newColor = currentColor === '#0066ff' ? '#FF6B35' : '#0066ff';
+    
+    // Change the color
+    map.setPaintProperty('michigan-central-highlight', 'fill-extrusion-color', newColor);
+    
+    // Log the interaction
+    dbg("MC_BUILDING_CLICK", {
+      color: newColor,
+      properties: e.features[0].properties,
+      coordinates: e.lngLat
+    });
+  });
+  
+  console.log('✅ Building click handlers added');
 }
 
 // --- MICHIGAN CENTRAL SVG LOADER ---
@@ -5141,28 +5275,39 @@ document.getElementById('style-controls').addEventListener('click', (e) => {
     // Handled by setupSVGEditorEvents - do nothing here
     return;
   } else if (e.target.dataset.style) {
-    dbg("STYLE_CHANGE", {style: e.target.dataset.style});
-    map.setStyle(e.target.dataset.style);
+    // Only allow changing to our specific style
+    const targetStyleUrl = 'mapbox://styles/ssttuuddiioo/cmdxew05b001901ry34gb69wy';
+    const requestedStyle = e.target.dataset.style;
     
-    // Re-apply label visibility after style change
-    map.once('styledata', () => {
-      if (!labelsVisible) {
-        hideAllLabels();
-      }
-      // Re-add all SVGs after style change
-      multiSvgManager.placedSvgs.forEach(svg => {
-        loadSvgOnMap(svg);
-      });
-      // Re-initialize building highlighting
-      setTimeout(() => {
-        initializeBuildingHighlighting();
-      }, 500);
+    dbg("STYLE_CHANGE_REQUEST", {requested: requestedStyle, allowed: targetStyleUrl});
+    
+    // Only change if it's our target style
+    if (requestedStyle === targetStyleUrl) {
+      console.log('🎨 Changing to allowed custom style');
+      map.setStyle(targetStyleUrl);
       
-      // Re-add Michigan Central SVG
-      setTimeout(() => {
-        loadMichiganCentralSVG();
-      }, 1000);
-    });
+      // Re-apply label visibility after style change
+      map.once('styledata', () => {
+        if (!labelsVisible) {
+          hideAllLabels();
+        }
+        // Re-add all SVGs after style change
+        multiSvgManager.placedSvgs.forEach(svg => {
+          loadSvgOnMap(svg);
+        });
+        // Re-initialize building highlighting
+        setTimeout(() => {
+          initializeBuildingHighlighting();
+        }, 500);
+        
+        // Re-add Michigan Central SVG
+        setTimeout(() => {
+          loadMichiganCentralSVG();
+        }, 1000);
+      });
+    } else {
+      console.log('⚠️ Attempted to change to non-allowed style. Using custom style only.');
+    }
   }
 });
 
@@ -5267,16 +5412,22 @@ const zoomOutBtn = document.getElementById('zoom-out');
 if (zoomOutBtn) {
   zoomOutBtn.addEventListener('click', () => {
   const currentZoom = map.getZoom();
-  const newZoom = Math.max(currentZoom - 1, 0); // Min zoom level is 0
+  const newZoom = Math.max(currentZoom - 2, 0); // Zoom out 2x, min zoom level is 0
+  
+  // Stop orbit animation
+  stopOrbitAnimation();
+  
   map.easeTo({
     zoom: newZoom,
-    duration: 300
+    duration: 500
   });
   // Update navState to maintain consistency
   navState.targetZoom = newZoom;
   dbg("ZOOM_OUT", {from: currentZoom, to: newZoom});
 });
 }
+
+// Auto zoom out removed - starting with correct zoom level
 
 // --- Orange markers removed - using legend navigation instead ---
 
@@ -5331,7 +5482,7 @@ function navigateToLocation(key) {
     // Center camera on the clicked marker
     map.easeTo({
       center: [markerData.lng, markerData.lat],
-      zoom: 17.5, // Same zoom level as initial
+      zoom: 17, // Zoom in 1 level from initial 16
       duration: 1000 // Smooth 1-second transition
     });
     
@@ -5358,9 +5509,9 @@ function startSidePanelAutoClose() {
     clearTimeout(sidePanelAutoCloseTimer);
   }
   
-  // Set new timer for 45 seconds
+  // Set new timer for 10 seconds
   sidePanelAutoCloseTimer = setTimeout(() => {
-    console.log('⏰ Auto-closing side panel after 45 seconds of inactivity');
+    console.log('⏰ Auto-closing side panel after 10 seconds of inactivity');
     
     // Return camera to original home position (Michigan Central Station)
     if (map) {
@@ -5369,9 +5520,9 @@ function startSidePanelAutoClose() {
       
       map.easeTo({
         center: [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat],
-        zoom: 17.5,
+        zoom: 16, // Zoom back to initial level
         pitch: 75,
-        bearing: 180,
+        bearing: 182,
         duration: 2000 // Smooth 2-second transition back home
       });
       
@@ -5382,7 +5533,7 @@ function startSidePanelAutoClose() {
     }
     
     closeSidePanel();
-  }, 45000); // 45 seconds
+  }, 10000); // 10 seconds
 }
 
 // Function to reset auto-close timer (call on any interaction)
@@ -5739,6 +5890,9 @@ async function openSidePanel(labelId, displayText) {
         placeholder.textContent = '📷 No photo available';
     }
     
+    // Populate marker navigation
+    populateMarkerNavigation(labelId);
+    
     // Show panel with correct class
     panel.classList.add('panel-open');
     
@@ -5757,6 +5911,100 @@ function closeSidePanel() {
     }
     
     // Orbit continues running while panel is open, no need to resume here
+}
+
+// Function to populate marker navigation grid with main locations only
+function populateMarkerNavigation(currentMarkerId) {
+    const navigationGrid = document.getElementById('marker-navigation');
+    if (!navigationGrid) return;
+    
+    // Clear existing navigation items
+    navigationGrid.innerHTML = '';
+    
+    // Define the main locations (first row)
+    const mainLocations = [
+        { id: '1', name: 'The Station' },
+        { id: '2', name: 'Newlab' },
+        { id: '3', name: 'The Factory' }
+    ];
+    
+    // Define other locations (second row)
+    const otherLocations = [
+        { id: '4', name: 'Digital Fab' },
+        { id: '5', name: 'Wood Shop' },
+        { id: '6', name: 'Metal Shop' }
+    ];
+    
+    // Create first row container
+    const firstRow = document.createElement('div');
+    firstRow.className = 'marker-nav-row';
+    
+    // Create second row container
+    const secondRow = document.createElement('div');
+    secondRow.className = 'marker-nav-row';
+    
+    // Create navigation items for main locations (first row)
+    mainLocations.forEach(location => {
+        const navItem = document.createElement('div');
+        navItem.className = 'marker-nav-item';
+        
+        // Add active class if this is the current location
+        const isActive = currentMarkerId == location.id;
+        if (isActive) {
+            navItem.classList.add('active');
+        }
+        
+        // Create navigation item content
+        navItem.innerHTML = `
+            <div class="marker-nav-label">${location.name}</div>
+        `;
+        
+        // Add click handler
+        navItem.addEventListener('click', () => {
+            navigateToLocation(location.id);
+        });
+        
+        firstRow.appendChild(navItem);
+    });
+    
+    // Create navigation items for other locations (second row)
+    otherLocations.forEach(location => {
+        const navItem = document.createElement('div');
+        navItem.className = 'marker-nav-item marker-nav-item-secondary';
+        
+        // Add active class if this is the current location
+        const isActive = currentMarkerId == location.id;
+        if (isActive) {
+            navItem.classList.add('active');
+        }
+        
+        // Create navigation item content
+        navItem.innerHTML = `
+            <div class="marker-nav-label">${location.name}</div>
+        `;
+        
+        // Add click handler
+        navItem.addEventListener('click', () => {
+            navigateToLocation(location.id);
+        });
+        
+        secondRow.appendChild(navItem);
+    });
+    
+    // Add rows to navigation grid
+    navigationGrid.appendChild(firstRow);
+    navigationGrid.appendChild(secondRow);
+}
+
+function isMarkerInLocation(markerId, locationId) {
+    // Simple mapping for now - can be enhanced with more complex logic
+    const locationMapping = {
+        'home': ['home'],
+        'newlab': ['newlab'],
+        'michiganCentral': ['michiganCentral']
+    };
+    
+    return locationMapping[locationId] && locationMapping[locationId].includes(markerId.toString());
 }
 
 // ADMIN PANEL FUNCTIONALITY

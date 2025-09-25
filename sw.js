@@ -1,8 +1,10 @@
-// Production-Ready Service Worker with Smart Caching
-const CACHE_VERSION = '2024092301'; // Auto-updated by version manager
-const STATIC_CACHE = `orbit-demo-static-v${CACHE_VERSION}`;
+// Enhanced Service Worker for Complete Offline Support
+const CACHE_VERSION = '001'; // Match with version.json
+const STATIC_CACHE = `orbit-static-v${CACHE_VERSION}`;
 const MAPBOX_CACHE = `mapbox-v${CACHE_VERSION}`;
-const API_CACHE = `api-cache-v${CACHE_VERSION}`;
+const API_CACHE = `api-v${CACHE_VERSION}`;
+const IMAGE_CACHE = `images-v${CACHE_VERSION}`;
+const FONT_CACHE = `fonts-v${CACHE_VERSION}`;
 const MAPBOX_HOST = 'api.mapbox.com';
 
 // Cache strategies
@@ -13,14 +15,24 @@ const CACHE_STRATEGIES = {
   NETWORK_ONLY: 'network-only'
 };
 
-// Resources to cache for offline use
-const STATIC_RESOURCES = [
+// Core resources that must be cached for the app to work offline
+const CORE_RESOURCES = [
   '/',
   '/index.html',
   '/main.js',
   '/style.css',
   '/sw.js',
+  '/version.json',
+  '/version-check.js'
+];
+
+// Static resources to cache
+const STATIC_RESOURCES = [
+  ...CORE_RESOURCES,
+  '/public/v.svg',
   '/public/v1.svg',
+  '/public/vector2.svg',
+  '/public/map.png',
   '/public/about/team1.jpg',
   '/public/about/team2.jpg',
   '/public/about/slide1.jpg',
@@ -30,15 +42,32 @@ const STATIC_RESOURCES = [
   '/public/about/slideshow2.jpg',
   '/public/about/slideshow3.jpg',
   '/public/about/slideshow4.webp',
-  '/public/about/slideshow5.webp'
+  '/public/about/slideshow5.webp',
+  '/public/circles.fbx',
+  '/public/tubes.fbx'
+];
+
+// Font resources to cache
+const FONT_RESOURCES = [
+  '/public/fonts/MichiganCentralMonumentGrotesk-Bold.otf',
+  '/public/fonts/MichiganCentralMonumentGrotesk-BoldItalic.otf',
+  '/public/fonts/MichiganCentralMonumentGrotesk-Light.otf',
+  '/public/fonts/MichiganCentralMonumentGrotesk-LightItalic.otf',
+  '/public/fonts/MichiganCentralMonumentGrotesk-Medium.otf',
+  '/public/fonts/MichiganCentralMonumentGrotesk-MediumItalic.otf',
+  '/public/fonts/MichiganCentralMonumentGrotesk-Regular.otf',
+  '/public/fonts/MichiganCentralMonumentGrotesk-RegularItalic.otf'
 ];
 
 // External CDN resources to cache
 const CDN_RESOURCES = [
-  'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js',
-  'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css',
+  'https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js',
+  'https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
 ];
+
+// Mapbox style resources to pre-cache
+const MAPBOX_STYLE_URL = 'https://api.mapbox.com/styles/v1/ssttuuddiioo/cmdxew05b001901ry34gb69wy?access_token=pk.eyJ1Ijoic3N0dHV1ZGRpaW9vIiwiYSI6ImNtZHhlc2hsNjI1MWQyaXB0ZnU3NzE0ejMifQ.bxWkQ9zjw_a9C3cHag86Rg';
 
 // Install event - cache resources
 self.addEventListener('install', event => {
@@ -52,6 +81,12 @@ self.addEventListener('install', event => {
         return cache.addAll(STATIC_RESOURCES);
       }),
       
+      // Cache font resources
+      caches.open(FONT_CACHE).then(cache => {
+        console.log('💾 Caching font resources...');
+        return cache.addAll(FONT_RESOURCES);
+      }),
+      
       // Cache CDN resources
       caches.open(STATIC_CACHE).then(cache => {
         console.log('💾 Caching CDN resources...');
@@ -60,10 +95,23 @@ self.addEventListener('install', event => {
             cache.add(url).catch(err => console.log(`⚠️ Failed to cache ${url}:`, err))
           )
         );
+      }),
+      
+      // Pre-cache Mapbox style
+      caches.open(MAPBOX_CACHE).then(cache => {
+        console.log('💾 Pre-caching Mapbox style...');
+        return fetch(MAPBOX_STYLE_URL)
+          .then(response => {
+            if (response.ok) {
+              cache.put(MAPBOX_STYLE_URL, response);
+              console.log('✅ Mapbox style cached successfully');
+            }
+          })
+          .catch(err => console.log('⚠️ Failed to cache Mapbox style:', err));
       })
     ]).then(() => {
       console.log('✅ Service Worker installed and resources cached');
-      self.skipWaiting(); // Activate immediately
+      return self.skipWaiting(); // Activate immediately
     })
   );
 });
@@ -76,7 +124,11 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== STATIC_CACHE && cacheName !== MAPBOX_CACHE) {
+          // Only keep current version caches
+          if (
+            !cacheName.includes(CACHE_VERSION) && 
+            !cacheName.endsWith('-v1.0.0') // Keep legacy caches for compatibility
+          ) {
             console.log('🗑️ Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
@@ -89,7 +141,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-/* Production-Ready Caching Strategies */
+/* Enhanced Caching Strategies */
 
 // Cache-first strategy - for static assets
 async function cacheFirst(req, cacheName, limit = 1000) {
@@ -127,6 +179,15 @@ async function networkFirst(req, cacheName, limit = 100) {
     console.log('Network failed, trying cache:', error);
     const hit = await cache.match(req);
     if (hit) return hit;
+    
+    // For API calls, return empty data when offline
+    if (req.url.includes('/rest/v1/') || req.url.includes('/api/')) {
+      return new Response('[]', {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
     return new Response('Offline', { status: 503 });
   }
 }
@@ -136,18 +197,20 @@ async function staleWhileRevalidate(req, cacheName, limit = 500) {
   const cache = await caches.open(cacheName);
   const hit = await cache.match(req);
   
-  // Return cached version immediately
+  // Start fetch in background
   const fetchPromise = fetch(req).then(net => {
     if (net.ok) {
       cache.put(req, net.clone());
-      const keys = await cache.keys();
-      if (keys.length > limit) cache.delete(keys[0]);
+      cache.keys().then(keys => {
+        if (keys.length > limit) cache.delete(keys[0]);
+      });
     }
     return net;
   }).catch(error => {
     console.error('Background fetch failed:', error);
   });
   
+  // Return cached version immediately if available
   return hit || fetchPromise;
 }
 
@@ -172,7 +235,7 @@ async function handleRequest(req, strategy, cacheName, limit) {
   }
 }
 
-// Production-Ready Fetch Event Handler
+// Enhanced Fetch Event Handler
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   const request = event.request;
@@ -192,7 +255,7 @@ self.addEventListener('fetch', event => {
 
   if (isMapboxResource) {
     event.respondWith(
-      handleRequest(request, CACHE_STRATEGIES.CACHE_FIRST, MAPBOX_CACHE, 1000)
+      handleRequest(request, CACHE_STRATEGIES.CACHE_FIRST, MAPBOX_CACHE, 2000)
     );
     return;
   }
@@ -205,7 +268,19 @@ self.addEventListener('fetch', event => {
 
   if (isImage) {
     event.respondWith(
-      handleRequest(request, CACHE_STRATEGIES.STALE_WHILE_REVALIDATE, 'images-v1.0.0', 50)
+      handleRequest(request, CACHE_STRATEGIES.STALE_WHILE_REVALIDATE, IMAGE_CACHE, 200)
+    );
+    return;
+  }
+
+  // Handle font files with cache-first
+  const isFont = 
+    request.destination === 'font' ||
+    url.pathname.match(/\.(woff|woff2|ttf|otf|eot)$/i);
+
+  if (isFont) {
+    event.respondWith(
+      handleRequest(request, CACHE_STRATEGIES.CACHE_FIRST, FONT_CACHE, 50)
     );
     return;
   }
@@ -215,7 +290,7 @@ self.addEventListener('fetch', event => {
     // For versioned files, check version parameter
     if (url.pathname.includes('main.js') || url.pathname.includes('style.css')) {
       const version = url.searchParams.get('v');
-      if (version === CACHE_VERSION) {
+      if (version === CACHE_VERSION || !version) {
         event.respondWith(
           handleRequest(request, CACHE_STRATEGIES.CACHE_FIRST, STATIC_CACHE, 1000)
         );
@@ -244,13 +319,33 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Default: network-only for external resources
-  event.respondWith(fetch(request));
+  // Default: cache-first for external resources
+  event.respondWith(
+    handleRequest(request, CACHE_STRATEGIES.CACHE_FIRST, STATIC_CACHE, 500)
+  );
 });
 
 // Handle messages from main thread
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  
+  // Handle cache invalidation message
+  if (event.data && event.data.type === 'CLEAR_CACHES') {
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          console.log('🗑️ Clearing cache by request:', cacheName);
+          return caches.delete(cacheName);
+        })
+      );
+    }).then(() => {
+      // Notify the client that caches were cleared
+      event.source.postMessage({
+        type: 'CACHES_CLEARED',
+        timestamp: Date.now()
+      });
+    });
   }
 });
