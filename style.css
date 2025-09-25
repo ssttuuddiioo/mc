@@ -17,6 +17,219 @@ body {
   position: relative;
 }
 
+/* Home Button */
+.map-control-button {
+  position: fixed; /* Changed to fixed for consistent positioning */
+  bottom: 30px;
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Center horizontally */
+  z-index: 1000; /* Significantly increased z-index to ensure visibility above all elements */
+  width: 90px; /* 2x larger */
+  height: 90px; /* 2x larger */
+  background: white;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  display: flex; /* Always visible */
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  opacity: 0.9; /* Slight transparency */
+}
+
+.map-control-button svg {
+  color: white; /* Changed from #333 to white for better visibility */
+  transition: all 0.3s ease;
+  width: 48px; /* 2x larger */
+  height: 48px; /* 2x larger */
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5)); /* Add shadow to make it stand out */
+}
+
+.map-control-button:hover {
+  background: #f0f0f0;
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  opacity: 1;
+}
+
+.map-control-button:active {
+  transform: translateX(-50%) translateY(1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Home button styling */
+#home-button {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); /* Enhanced shadow for better visibility */
+  border: 3px solid rgba(255, 255, 255, 0.9); /* White stroke (more visible) */
+}
+
+/* Full Map Button */
+.full-map-button {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  z-index: 1000;
+  border: 2px solid #fff;
+  padding: 15px 30px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  stroke: 1px solid #ffffff;
+  font-size: 36px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+.full-map-button:hover {
+  background: rgba(0, 0, 0, 0.85);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.full-map-button:active {
+  transform: translateY(1px);
+  stroke: 1px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Info Button */
+.info-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1000;
+  border: 2px solid #fff;
+  padding: 15px 30px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  stroke: 1px solid #ffffff;
+  font-size: 36px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+.info-button:hover {
+  background: rgba(0, 0, 0, 0.85);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.info-button:active {
+  transform: translateY(1px);
+  stroke: 1px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Camera Position Button */
+.camera-position-button {
+  position: fixed;
+  bottom: 30px;
+  left: 200px;
+  z-index: 1000;
+  padding: 15px 30px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 24px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+  opacity: 0.7;
+  display: none; /* Hidden by default */
+}
+
+.camera-position-button:hover {
+  background: rgba(0, 0, 0, 0.85);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  opacity: 1;
+}
+
+/* Fullscreen Image Viewer */
+.fullscreen-viewer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.95);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.fullscreen-viewer img {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain;
+}
+
+.exit-fullscreen-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: white;
+  font-size: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2100;
+  transition: all 0.3s ease;
+}
+
+.exit-fullscreen-btn:hover {
+  background: rgba(255, 0, 0, 0.5);
+  transform: scale(1.1);
+}
+
+/* Back Button in Fullscreen Viewer */
+.back-button {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  z-index: 2100;
+  padding: 15px 30px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 36px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: rgba(0, 0, 0, 0.85);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.back-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
 /* Mapbox Marker Styles */
 .marker {
   display: flex;
@@ -223,6 +436,20 @@ body {
   margin-bottom: 0;
 }
 
+/* Special styling for Roosevelt Park legend item */
+.legend-item[data-location="rooseveltPark"] {
+  background-color: #2E8B57; /* Green background */
+  color: white; /* White text */
+  font-weight: 600; /* Slightly bolder */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow */
+}
+
+.legend-item[data-location="rooseveltPark"]:hover {
+  background-color: #3CB371; /* Lighter green on hover */
+  color: white; /* Keep text white on hover */
+  transform: translateX(4px);
+}
+
 /* Side Panel - Modern Dark Design */
 .side-panel {
   position: fixed;
@@ -269,37 +496,74 @@ body {
   box-shadow: 0 4px 16px rgba(100, 149, 237, 0.2);
 }
 
+/* Close Panel Button (bottom right) */
+.close-panel-button {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  z-index: 2100;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  font-size: 36px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.close-panel-button:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.close-panel-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 /* Panel Container */
 .panel-container {
-  padding: 60px; /* Equal padding on all sides */
+  padding: 40px; /* Reduced padding to save space */
   min-height: 100vh;
   background: #0A0A0B;
 }
 
-/* Title Section */
-.panel-title-section {
-  margin-bottom: 64px; /* Double the spacing */
+/* Title Overlay */
+.panel-title-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 30px;
+  z-index: 10;
+  max-width: 80%;
+  background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+  border-top-left-radius: 24px;
 }
 
 .panel-title {
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
   font-weight: 900; /* Extra bold */
-  font-size: 64px; /* Reduced from 96px for better proportions */
+  font-size: 36px; /* Decreased size */
   line-height: 0.9;
   color: white;
   margin: 0;
-  text-shadow: 0 4px 20px rgba(100, 149, 237, 0.15);
-  letter-spacing: -2px;
+  text-shadow: 0 4px 8px rgba(0,0,0,0.8);
+  letter-spacing: -1px;
 }
 
 /* Hero Image Section */
 .panel-hero {
   position: relative;
   width: 860px;
-  height: 456px;
+  height: 400px; /* Slightly reduced height */
   background: linear-gradient(135deg, #1A1B23 0%, #2A2B33 100%);
   border-radius: 24px; /* More rounded */
-  margin-bottom: 80px;
+  margin-bottom: 40px; /* Reduced margin */
   overflow: hidden;
   box-shadow: 0 12px 32px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
   border: 1px solid rgba(255,255,255,0.1);
@@ -330,11 +594,15 @@ body {
   font-size: 18px;
 }
 
+/* Category Section */
+.category-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
 /* Category Badge */
 .category-badge {
-  position: absolute;
-  top: 28px;
-  left: 28px;
   background: rgba(100, 149, 237, 0.15);
   border: 1px solid #6495ED;
   border-radius: 16px;
@@ -348,7 +616,9 @@ body {
   letter-spacing: 1px;
   backdrop-filter: blur(12px);
   box-shadow: 0 4px 16px rgba(100, 149, 237, 0.2);
+  display: inline-block;
 }
+
 
 /* Stats Badges */
 .stats-badges {
@@ -381,13 +651,282 @@ body {
 
 /* Panel Sections */
 .panel-section {
-  margin-bottom: 80px; /* Double the spacing */
+  margin-bottom: 40px; /* Reduced spacing */
+}
+
+/* Bottom Button Container */
+.panel-button-container {
+  margin-top: 60px;
+  margin-bottom: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Action Button */
+.panel-action-button {
+  background: #6495ED;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 16px 32px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(100, 149, 237, 0.3);
+}
+
+.panel-action-button:hover {
+  background: #4A90E2;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(100, 149, 237, 0.4);
+}
+
+.panel-action-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(100, 149, 237, 0.2);
+}
+
+/* Home Button */
+.map-control-button {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 60px;
+  height: 60px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.map-control-button:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: translateX(-50%) scale(1.1);
+}
+
+.map-control-button:active {
+  transform: translateX(-50%) scale(0.95);
+}
+
+.map-control-button svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* Full Map Button */
+.full-map-button {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  font-size: 36px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.full-map-button:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.full-map-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Info Button */
+.info-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  font-size: 36px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.info-button:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.info-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Fullscreen Image Viewer */
+.fullscreen-viewer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.95);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.fullscreen-viewer img {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain;
+}
+
+.exit-fullscreen-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: white;
+  font-size: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 2100;
+}
+
+.exit-fullscreen-btn:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+.back-button {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  z-index: 2100;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  font-size: 36px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.back-button:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.back-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Top Location Buttons */
+.top-buttons {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  max-width: 100%;
+  z-index: 1000;
+}
+
+.top-buttons .button-row {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  margin-bottom: 0;
+  width: auto;
+}
+
+.location-button {
+  background-color: #000000;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-family: 'MichiganCentralMonumentGrotesk-Bold', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  width: 240px;
+  height: 70px;
+  white-space: normal;
+  line-height: 1.3;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin: 0;
+  border-radius: 0;
+}
+
+.location-button:nth-child(1) {
+  background-color: #000000;
+}
+
+.location-button:nth-child(2) {
+  background-color: #000000;
+}
+
+.location-button:nth-child(3) {
+  background-color: #000000;
+}
+
+.location-button:nth-child(4) {
+  background-color: #000000;
+}
+
+.location-button:hover {
+  background-color: #333333;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.location-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .section-title {
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 42px; /* Larger */
+  font-size: 32px; /* Smaller */
   line-height: 1;
   color: white;
   margin: 0 0 32px 0;
@@ -432,7 +971,7 @@ body {
 .description-content p {
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
   font-weight: 400;
-  font-size: 27px; /* Increased from 18px to 27px (1.5x) */
+  font-size: 24px; /* 1.2x bigger (20px * 1.2 = 24px) */
   line-height: 1.6;
   color: rgba(255,255,255,0.9);
   margin: 0;
@@ -440,43 +979,142 @@ body {
 
 /* Features Grid - Individual Boxes */
 .features-grid {
-  display: grid;
-  grid-template-columns: 1fr; /* Single column for full width */
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Reduced gap for tighter list */
   width: 100%; /* Full width of panel */
 }
 
+/* Marker Navigation Grid */
+.marker-navigation-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.marker-nav-row {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+.marker-nav-item {
+  flex: 1;
+  background: rgba(100, 149, 237, 0.15);
+  border: 1px solid #6495ED;
+  border-radius: 16px;
+  padding: 10px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(100, 149, 237, 0.2);
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-nav-item:hover {
+  background: rgba(100, 149, 237, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(100, 149, 237, 0.3);
+}
+
+.marker-nav-item.active {
+  background: rgba(135, 206, 235, 0.15);
+  border-color: #87CEEB;
+  box-shadow: 0 4px 16px rgba(135, 206, 235, 0.2);
+}
+
+.marker-nav-item.active:hover {
+  background: rgba(135, 206, 235, 0.25);
+  box-shadow: 0 6px 20px rgba(135, 206, 235, 0.3);
+}
+
+.marker-nav-label {
+  font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  color: #6495ED;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-nav-item.active .marker-nav-label {
+  color: #87CEEB;
+}
+
+/* Secondary navigation items (second row) */
+.marker-nav-item-secondary {
+  background: rgba(135, 206, 235, 0.1);
+  border: 1px solid #87CEEB;
+  box-shadow: 0 2px 8px rgba(135, 206, 235, 0.15);
+}
+
+.marker-nav-item-secondary:hover {
+  background: rgba(135, 206, 235, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(135, 206, 235, 0.25);
+}
+
+.marker-nav-item-secondary .marker-nav-label {
+  color: #87CEEB;
+  font-size: 14px;
+}
+
+.marker-nav-item-secondary.active {
+  background: rgba(100, 149, 237, 0.2);
+  border-color: #6495ED;
+  box-shadow: 0 4px 16px rgba(100, 149, 237, 0.3);
+}
+
+.marker-nav-item-secondary.active .marker-nav-label {
+  color: #6495ED;
+}
+
 .feature-item {
-  min-height: 120px;
-  background: linear-gradient(135deg, #1A1B23 0%, #242530 100%);
-  border-radius: 12px;
-  padding: 20px;
+  min-height: auto;
+  padding: 2px 10px 2px 20px; /* Reduced vertical padding */
   box-sizing: border-box;
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  border: 1px solid rgba(100, 149, 237, 0.1);
-  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-  cursor: pointer;
+  gap: 8px;
   position: relative;
   overflow: hidden;
+  /* Bullet point styling */
+  position: relative;
+  margin-bottom: 0; /* Removed bottom margin for tighter spacing */
 }
 
 .feature-item::before {
-  content: '';
+  content: '•';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(100, 149, 237, 0.2), transparent);
+  top: 2px; /* Adjusted for reduced padding */
+  left: 8px;
+  font-size: 16px;
+  color: #6495ED;
 }
 
 .feature-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(0,0,0,0.15);
-  border-color: rgba(100, 149, 237, 0.3);
+  transform: translateY(-1px); /* Reduced hover movement */
+}
+
+.bullet-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 8px; /* Reduced top margin */
 }
 
 .feature-icon {
@@ -497,7 +1135,7 @@ body {
 .feature-text {
   font-family: 'MichiganCentral_Monument_Grotesk', 'Michigan Central Monument Grotesk', sans-serif;
   font-weight: 500;
-  font-size: 24px; /* Increased from 16px to 24px (1.5x) */
+  font-size: 18px; /* Smaller text */
   line-height: 1.5;
   color: rgba(255,255,255,0.9);
   margin: 0;
@@ -1263,10 +1901,56 @@ select:focus {
   justify-content: center;
   color: white;
   font-family: 'MichiganCentralMonumentGrotesk-Bold', Arial, sans-serif;
+  font-size: 14px; /* Already 14px */
+  padding: 10px 16px; /* Increased padding for more space around text */
+}
+
+/* Consolidated Newlab Card Styles */
+.newlab-consolidated {
+  width: auto;
+  min-width: 200px;
+  height: auto;
+  padding: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  background-color: #000000;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.newlab-consolidated .marker-title {
+  font-size: 14px;
   font-weight: bold;
-  font-size: 14px; /* Reduced from 18px */
+  margin-bottom: 8px;
+  width: 100%;
+  text-align: left;
+  color: white;
+}
+
+.newlab-consolidated .subfacility-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+}
+
+.newlab-consolidated .subfacility-list li {
+  font-size: 12px;
+  padding: 4px 0;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.8);
+  transition: color 0.2s ease;
+}
+
+.newlab-consolidated .subfacility-list li:hover {
+  color: white;
+  text-decoration: underline;
+  font-weight: bold;
+  font-size: 12px; /* Reduced from 18px */
   border-radius: 2px;
-  padding: 8px 12px;
+  padding: 4px 12px; /* Reduced vertical padding from 8px to 4px */
   white-space: nowrap;
   will-change: transform; /* Performance hint for the browser */
   backface-visibility: hidden; /* Helps prevent flickering during transforms */
@@ -1278,129 +1962,4 @@ select:focus {
 .marker-label {
   /* This class is no longer needed with the new marker style */
   display: none;
-}
-
-/* ===== PRODUCTION-READY STYLES ===== */
-
-/* Loading States */
-.loading-content {
-  text-align: center;
-  max-width: 300px;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid #4A90E2;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loading-text {
-  font-size: 18px;
-  margin-bottom: 20px;
-  font-weight: 500;
-}
-
-.loading-progress {
-  width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #4A90E2, #7B68EE);
-  border-radius: 2px;
-  transition: width 0.3s ease;
-  width: 0%;
-}
-
-/* Connection Status */
-#connection-status {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-/* Toast Notifications */
-.toast {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Performance Optimizations */
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Hardware acceleration for smooth animations */
-.side-panel,
-.custom-marker,
-.loading-overlay,
-#connection-status {
-  transform: translateZ(0);
-  will-change: transform;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .side-panel {
-    width: 100vw;
-    right: 0;
-  }
-  
-  .panel-container {
-    padding: 20px;
-  }
-  
-  .panel-title {
-    font-size: 32px;
-  }
-  
-  .description-content p {
-    font-size: 16px;
-  }
-  
-  .feature-text {
-    font-size: 14px;
-  }
-}
-
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .loading-spinner {
-    animation: none;
-  }
-  
-  .side-panel {
-    transition: none;
-  }
-  
-  .custom-marker {
-    transition: none;
-  }
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .custom-marker {
-    border: 3px solid #fff;
-    background: #000;
-    color: #fff;
-  }
-  
-  .side-panel {
-    border: 2px solid #000;
-  }
 }

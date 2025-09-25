@@ -6,33 +6,11 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  
-  <!-- Security Headers -->
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    script-src 'self' 'unsafe-inline' https://api.mapbox.com https://cdn.jsdelivr.net;
-    style-src 'self' 'unsafe-inline' https://api.mapbox.com;
-    img-src 'self' data: https: blob:;
-    connect-src 'self' https://api.mapbox.com https://*.supabase.co;
-    font-src 'self' data:;
-    object-src 'none';
-    base-uri 'self';
-    form-action 'self';
-  ">
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="X-Frame-Options" content="DENY">
-  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-  
   <title>Orbit Demo - SVG Placement Tool</title>
   <link rel="stylesheet" href="style.css?v=2024092301">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
-  <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
-  
-  <!-- Production Configuration -->
-  <script src="config.js?v=2024092301"></script>
-  <script src="version-manager.js?v=2024092301"></script>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css" rel="stylesheet">
   
   <!-- Custom Font -->
   <style>
@@ -178,40 +156,6 @@
     </div>
   </div>
 
-  <!-- Building Settings Panel (Hidden) -->
-  <div id="building-settings" class="editor-hidden">
-    <div class="editor-header">
-      <h3>Building Highlight Settings</h3>
-      <div id="building-mode-indicator">🏢 Light Mode Only</div>
-      <button id="close-building-settings-btn">✕</button>
-    </div>
-    <div class="editor-content">
-      <div class="editor-section">
-        <label>Target Building:</label>
-        <select id="building-target-select">
-          <option value="michiganCentral">Michigan Central Station</option>
-        </select>
-      </div>
-      <div class="editor-section">
-        <label>Highlight Color:</label>
-        <input type="color" id="building-color" value="#0066ff">
-        <div class="color-preview" id="color-preview"></div>
-      </div>
-      <div class="editor-section">
-        <label>Opacity: <span id="building-opacity-value">0.8</span></label>
-        <input type="range" id="building-opacity" min="0.1" max="1.0" step="0.1" value="0.8">
-      </div>
-      <div class="editor-section">
-        <label>Enable Highlighting:</label>
-        <input type="checkbox" id="building-highlight-enabled" checked>
-        <span>Only works in Light Mode</span>
-      </div>
-      <div class="editor-actions">
-        <button id="apply-building-settings">Apply Settings</button>
-        <button id="reset-building-settings">Reset to Default</button>
-      </div>
-    </div>
-  </div>
 
   <!-- SVG Editor Panel - Redesigned for Logical Workflow -->
   <div id="svg-editor" class="editor-hidden">
@@ -466,33 +410,26 @@ Feature 3"></textarea>
   <div id="label-info-panel" class="side-panel">
     <button id="close-panel" class="close-btn-overlay">×</button>
     
+    <!-- Close Panel Button (positioned at bottom right) -->
+    <button id="close-panel-button" class="close-panel-button">CLOSE PANEL</button>
+    
     <!-- Panel Content Container -->
     <div class="panel-container">
-      <!-- Title Section -->
-      <div class="panel-title-section">
-        <h1 class="panel-title" id="location-title">Loading Location...</h1>
-      </div>
       
-      <!-- Hero Image with Category Badge -->
+      <!-- Hero Image with Overlaid Title -->
       <div class="panel-hero" id="location-image">
         <img id="location-photo" src="" alt="" style="display: none;">
         <div class="image-placeholder"></div>
-        <div class="category-badge" id="location-category">LOADING...</div>
-        <div class="stats-badges" id="location-stats">
-          <div class="stats-badge">
-            <span class="stats-icon">🏢</span>
-            <span id="building-floors">18 floors</span>
-          </div>
-          <div class="stats-badge">
-            <span class="stats-icon">📏</span>
-            <span id="building-size">500K sq ft</span>
-          </div>
+        <!-- Overlaid Title -->
+        <div class="panel-title-overlay">
+          <h1 class="panel-title" id="location-title">Loading Location...</h1>
         </div>
       </div>
       
-      <!-- Description Section -->
+      <!-- Category Info removed as requested -->
+      
+      <!-- Description Section (title removed) -->
       <div class="panel-section">
-        <h2 class="section-title">Description</h2>
         <div class="description-content">
           <p id="location-description">Loading description...</p>
         </div>
@@ -507,13 +444,92 @@ Feature 3"></textarea>
           </div>
         </div>
       </div>
+      
+      <!-- Marker Navigation Section -->
+      <div class="panel-section">
+        <h2 class="section-title">Explore Locations</h2>
+        <div class="marker-navigation-grid" id="marker-navigation">
+          <!-- Markers will be populated by JavaScript -->
+        </div>
+      </div>
+      
+      <!-- Bottom Button removed as requested -->
     </div>
   </div>
 
-  <script src="main.js?v=2024092301"></script>
+  <!-- Home button -->
+  <button id="home-button" class="map-control-button">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+    </svg>
+  </button>
   
-  <!-- Cache clearing utility for development -->
+  <!-- Full Map button -->
+  <button id="full-map-button" class="full-map-button">FULL MAP</button>
+  
+  <!-- Info button -->
+  <button id="info-button" class="info-button">INFO</button>
+  
+  <!-- Fullscreen Image Viewer Overlay -->
+  <div id="fullscreen-viewer" class="fullscreen-viewer">
+    <button id="exit-fullscreen" class="exit-fullscreen-btn">×</button>
+    <img id="fullscreen-image" src="" alt="Fullscreen Map">
+    <button id="back-button" class="back-button">BACK</button>
+  </div>
+  
+  <!-- Top Location Buttons -->
+  <div class="top-buttons">
+    <div class="button-row">
+      <button class="location-button" data-location="tiz">Transportation<br>Innovation Zone (TIZ)</button>
+      <button class="location-button" data-location="aair">Advanced Aerial<br>Innovation Region (AAIR)</button>
+      <button class="location-button" data-location="port-monroe">Port of Monroe</button>
+      <button class="location-button" data-location="newlab-manufacturing">The 23rd (Newlab<br>Manufacturing Space)</button>
+    </div>
+  </div>
+
+  <!-- Version check script -->
+  <script src="version-check.js"></script>
+  
+  <!-- Main application script -->
+  <script src="main.js?v=001"></script>
+  
+  <!-- Service worker registration and cache management -->
   <script>
+    // Current app version - must match version.json
+    const APP_VERSION = '001';
+    
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('🚀 Service Worker registered with scope:', registration.scope);
+            
+            // Check if there's an update available
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              console.log('🔄 New service worker installing...');
+              
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('🔔 New service worker installed and waiting to activate');
+                  showUpdateNotification();
+                }
+              });
+            });
+          })
+          .catch(error => {
+            console.error('❌ Service Worker registration failed:', error);
+          });
+          
+        // Listen for controller change events
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          console.log('🔄 Service Worker controller changed');
+        });
+      });
+    }
+    
     // Function to clear all caches and reload
     window.clearAllCaches = async function() {
       console.log('🧹 Clearing all caches...');
@@ -529,6 +545,13 @@ Feature 3"></textarea>
         );
       }
       
+      // Send message to service worker to clear caches
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'CLEAR_CACHES'
+        });
+      }
+      
       // Unregister service worker
       if ('serviceWorker' in navigator) {
         const registrations = await navigator.serviceWorker.getRegistrations();
@@ -540,14 +563,104 @@ Feature 3"></textarea>
         );
       }
       
+      // Clear local storage version data
+      localStorage.removeItem('app_version');
+      localStorage.removeItem('version_last_checked');
+      
       console.log('✅ All caches cleared! Reloading...');
       window.location.reload(true);
     };
     
-    // Auto-clear cache if we detect old version
+    // Function to show update notification
+    function showUpdateNotification() {
+      const updateNotification = document.createElement('div');
+      updateNotification.className = 'update-notification';
+      updateNotification.innerHTML = `
+        <div class="update-content">
+          <p>A new version is available!</p>
+          <button id="update-now">Update Now</button>
+        </div>
+      `;
+      document.body.appendChild(updateNotification);
+      
+      // Add styles
+      const style = document.createElement('style');
+      style.textContent = `
+        .update-notification {
+          position: fixed;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 15px 20px;
+          border-radius: 8px;
+          z-index: 10000;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .update-content {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+        }
+        .update-content p {
+          margin: 0;
+        }
+        #update-now {
+          background: #4A90E2;
+          border: none;
+          color: white;
+          padding: 8px 15px;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // Add click handler
+      document.getElementById('update-now').addEventListener('click', () => {
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'SKIP_WAITING'
+          });
+        }
+        window.location.reload(true);
+      });
+    }
+    
+    // Auto-clear cache if we detect old version or if requested
     if (window.location.search.includes('clearcache')) {
       clearAllCaches();
     }
+    
+    // Listen for messages from service worker
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data && event.data.type === 'CACHES_CLEARED') {
+        console.log('✅ Service worker cleared caches at:', new Date(event.data.timestamp));
+      }
+    });
+    
+    // Preload key resources for offline use
+    function preloadResources() {
+      const resources = [
+        '/public/map.png',
+        '/public/v1.svg',
+        '/public/about/team1.jpg',
+        '/public/about/team2.jpg'
+      ];
+      
+      resources.forEach(url => {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = url;
+        document.head.appendChild(link);
+      });
+    }
+    
+    // Run preload after page load
+    window.addEventListener('load', () => {
+      setTimeout(preloadResources, 2000); // Wait 2 seconds after load to preload
+    });
   </script>
 </body>
 </html>

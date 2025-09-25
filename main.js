@@ -1,300 +1,5 @@
-// --- Production Error Handling & Monitoring ---
-class ErrorHandler {
-  constructor() {
-    this.setupGlobalErrorHandling();
-    this.setupPerformanceMonitoring();
-  }
-
-  setupGlobalErrorHandling() {
-    // Global JavaScript error handler
-    window.addEventListener('error', (event) => {
-      this.logError('JavaScript Error', {
-        message: event.message,
-        filename: event.filename,
-        lineno: event.lineno,
-        colno: event.colno,
-        error: event.error?.stack
-      });
-    });
-
-    // Unhandled promise rejection handler
-    window.addEventListener('unhandledrejection', (event) => {
-      this.logError('Unhandled Promise Rejection', {
-        reason: event.reason,
-        promise: event.promise
-      });
-    });
-
-    // Service worker error handler
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('error', (event) => {
-        this.logError('Service Worker Error', {
-          message: event.message,
-          filename: event.filename,
-          lineno: event.lineno,
-          colno: event.colno
-        });
-      });
-    }
-  }
-
-  setupPerformanceMonitoring() {
-    // Core Web Vitals monitoring
-    if ('PerformanceObserver' in window) {
-      // Largest Contentful Paint
-      new PerformanceObserver((entryList) => {
-        for (const entry of entryList.getEntries()) {
-          if (entry.entryType === 'largest-contentful-paint') {
-            this.logPerformance('LCP', entry.startTime);
-          }
-        }
-      }).observe({ entryTypes: ['largest-contentful-paint'] });
-
-      // First Input Delay
-      new PerformanceObserver((entryList) => {
-        for (const entry of entryList.getEntries()) {
-          if (entry.entryType === 'first-input') {
-            this.logPerformance('FID', entry.processingStart - entry.startTime);
-          }
-        }
-      }).observe({ entryTypes: ['first-input'] });
-    }
-  }
-
-  logError(type, details) {
-    const errorData = {
-      type,
-      details,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      url: window.location.href
-    };
-
-    console.error('🚨 Production Error:', errorData);
-    
-    // In production, send to monitoring service
-    if (this.isProduction()) {
-      this.sendToMonitoring(errorData);
-    }
-  }
-
-  logPerformance(metric, value) {
-    const perfData = {
-      metric,
-      value,
-      timestamp: new Date().toISOString()
-    };
-
-    console.log('📊 Performance Metric:', perfData);
-    
-    if (this.isProduction()) {
-      this.sendToMonitoring(perfData);
-    }
-  }
-
-  isProduction() {
-    return window.location.hostname !== 'localhost' && 
-           !window.location.hostname.includes('127.0.0.1');
-  }
-
-  sendToMonitoring(data) {
-    // Placeholder for monitoring service integration
-    // Could integrate with Sentry, LogRocket, or custom analytics
-    try {
-      // Example: fetch('/api/monitoring', { method: 'POST', body: JSON.stringify(data) });
-    } catch (error) {
-      console.error('Failed to send monitoring data:', error);
-    }
-  }
-}
-
-// Initialize error handling
-const errorHandler = new ErrorHandler();
-
-// --- Production UX & Loading States ---
-class UXManager {
-  constructor() {
-    this.loadingStates = new Map();
-    this.setupLoadingIndicators();
-  }
-
-  setupLoadingIndicators() {
-    // Create loading overlay
-    this.createLoadingOverlay();
-    
-    // Create connection status indicator
-    this.createConnectionStatus();
-    
-    // Setup network status monitoring
-    this.setupNetworkMonitoring();
-  }
-
-  createLoadingOverlay() {
-    const overlay = document.createElement('div');
-    overlay.id = 'loading-overlay';
-    overlay.innerHTML = `
-      <div class="loading-content">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Loading Map...</div>
-        <div class="loading-progress">
-          <div class="progress-bar"></div>
-        </div>
-      </div>
-    `;
-    
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      color: white;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    `;
-    
-    document.body.appendChild(overlay);
-  }
-
-  createConnectionStatus() {
-    const status = document.createElement('div');
-    status.id = 'connection-status';
-    status.innerHTML = `
-      <span id="connection-icon">🌐</span>
-      <span id="connection-text">Online</span>
-    `;
-    
-    status.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(46, 204, 113, 0.9);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 12px;
-      font-weight: 500;
-      z-index: 1001;
-      display: none;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      transition: all 0.3s ease;
-    `;
-    
-    document.body.appendChild(status);
-  }
-
-  setupNetworkMonitoring() {
-    window.addEventListener('online', () => {
-      this.updateConnectionStatus(true);
-    });
-    
-    window.addEventListener('offline', () => {
-      this.updateConnectionStatus(false);
-    });
-    
-    // Initial status
-    this.updateConnectionStatus(navigator.onLine);
-  }
-
-  updateConnectionStatus(isOnline) {
-    const status = document.getElementById('connection-status');
-    const icon = document.getElementById('connection-icon');
-    const text = document.getElementById('connection-text');
-    
-    if (isOnline) {
-      status.style.background = 'rgba(46, 204, 113, 0.9)';
-      icon.textContent = '🌐';
-      text.textContent = 'Online';
-    } else {
-      status.style.background = 'rgba(231, 76, 60, 0.9)';
-      icon.textContent = '📡';
-      text.textContent = 'Offline';
-    }
-    
-    status.style.display = 'block';
-    
-    // Hide after 3 seconds if online
-    if (isOnline) {
-      setTimeout(() => {
-        status.style.display = 'none';
-      }, 3000);
-    }
-  }
-
-  showLoading(message = 'Loading...', progress = 0) {
-    const overlay = document.getElementById('loading-overlay');
-    const text = overlay.querySelector('.loading-text');
-    const progressBar = overlay.querySelector('.progress-bar');
-    
-    text.textContent = message;
-    progressBar.style.width = `${progress}%`;
-    overlay.style.display = 'flex';
-  }
-
-  hideLoading() {
-    const overlay = document.getElementById('loading-overlay');
-    overlay.style.display = 'none';
-  }
-
-  updateProgress(progress, message) {
-    const overlay = document.getElementById('loading-overlay');
-    const text = overlay.querySelector('.loading-text');
-    const progressBar = overlay.querySelector('.progress-bar');
-    
-    if (message) text.textContent = message;
-    progressBar.style.width = `${progress}%`;
-  }
-
-  showToast(message, type = 'info', duration = 3000) {
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.textContent = message;
-    
-    toast.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: ${type === 'error' ? '#e74c3c' : type === 'success' ? '#27ae60' : '#3498db'};
-      color: white;
-      padding: 12px 20px;
-      border-radius: 6px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 14px;
-      z-index: 1002;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // Animate in
-    setTimeout(() => {
-      toast.style.transform = 'translateX(0)';
-    }, 100);
-    
-    // Auto remove
-    setTimeout(() => {
-      toast.style.transform = 'translateX(100%)';
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
-        }
-      }, 300);
-    }, duration);
-  }
-}
-
-// Initialize UX manager
-const uxManager = new UXManager();
-
 // --- Supabase Configuration ---
-const SUPABASE_URL = 'https://hzzcioecccskyywnvvbn.supabase.co';
+  const SUPABASE_URL = 'https://hzzcioecccskyywnvvbn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6emNpb2VjY2Nza3l5d252dmJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0Nzc1MjgsImV4cCI6MjA3NDA1MzUyOH0.2x3-B32F-osawrdCYjMD9KF-UMGMGLYopLWtPSJzwGY';
 
 // Safe Supabase client creation - handle offline case
@@ -327,86 +32,27 @@ try {
 
 // initializeIdleMode function removed
 
-// --- Production-Ready Supabase Functions with Retry Logic ---
-class ApiClient {
-  constructor() {
-    this.maxRetries = 3;
-    this.retryDelay = 1000; // 1 second
-  }
-
-  async fetchWithRetry(fetchFunction, retries = this.maxRetries) {
-    try {
-      return await fetchFunction();
-    } catch (error) {
-      if (retries > 0) {
-        console.log(`🔄 Retrying API call, ${retries} attempts left...`);
-        await this.delay(this.retryDelay);
-        return this.fetchWithRetry(fetchFunction, retries - 1);
-      }
-      throw error;
-    }
-  }
-
-  delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  async fetchMarkers() {
-    if (!supabaseClient) {
-      console.warn('⚠️ Supabase client not available, using cached data');
-      return this.getCachedMarkers();
-    }
-    
-    return this.fetchWithRetry(async () => {
-      const { data, error } = await supabaseClient.from('markers').select('*');
-      if (error) throw error;
-      
-      // Cache the fresh data
-      this.cacheMarkers(data);
-      
-      // Store in global variable for easier access
-      allSupabaseMarkers = data;
-    
-      return data;
-    });
-  }
-
-  getCachedMarkers() {
-    try {
-      const cached = localStorage.getItem('cached-markers');
-      return cached ? JSON.parse(cached) : [];
-    } catch (error) {
-      console.error('❌ Failed to get cached markers:', error);
-      return [];
-    }
-  }
-
-  cacheMarkers(data) {
-    try {
-      localStorage.setItem('cached-markers', JSON.stringify(data));
-      localStorage.setItem('cached-markers-timestamp', Date.now().toString());
-    } catch (error) {
-      console.error('❌ Failed to cache markers:', error);
-    }
-  }
-
-  isCacheValid(maxAge = 5 * 60 * 1000) { // 5 minutes
-    try {
-      const timestamp = localStorage.getItem('cached-markers-timestamp');
-      if (!timestamp) return false;
-      return Date.now() - parseInt(timestamp) < maxAge;
-    } catch (error) {
-      return false;
-    }
-  }
-}
-
-// Initialize API client
-const apiClient = new ApiClient();
-
-// Legacy function for backward compatibility
+// --- Supabase Functions ---
 async function fetchMarkersFromSupabase() {
-  return apiClient.fetchMarkers();
+  if (!supabaseClient) return [];
+  
+  try {
+    const { data, error } = await supabaseClient.from('markers').select('*');
+    if (error) throw error;
+    
+    // Debugging removed
+    
+    // Cache the fresh data
+    cacheManager.cacheMarkers(data);
+    
+    // Store in global variable for easier access
+    allSupabaseMarkers = data;
+    
+    return data;
+  } catch (error) {
+    console.error('❌ Supabase fetch error:', error);
+    return []; // Return empty array on error
+  }
 }
 
 // --- CSV Data Processing ---
@@ -973,8 +619,9 @@ async function createNewMarkerInSupabase(markerData) {
 function createMarkerElement(markerData, source = 'hardcoded') {
   const el = document.createElement('div');
   el.className = 'custom-marker';
-
-  // Debugging removed
+  
+  // Store the marker ID as a data attribute for easier reference
+  el.setAttribute('data-id', markerData.id);
 
   // Try multiple possible column names for the marker text (case-sensitive!)
   const displayText = markerData.Label || 
@@ -985,6 +632,50 @@ function createMarkerElement(markerData, source = 'hardcoded') {
                      markerData.location_name ||
                      markerData.text || 
                      markerData.id.toString();
+  
+  // Special handling for Newlab consolidated card (ID 2)
+  if (markerData.id == 2) {
+    el.className = 'custom-marker newlab-consolidated';
+    
+    // Create a more complex marker with sub-facility list
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'marker-title';
+    titleDiv.textContent = "Newlab at Michigan Central";
+    el.appendChild(titleDiv);
+    
+    // Get the enhanced data for Newlab
+    const enhancedData = ENHANCED_MARKER_DATA[2];
+    if (enhancedData && enhancedData.subFacilities) {
+      const subList = document.createElement('ul');
+      subList.className = 'subfacility-list';
+      
+      // Add each sub-facility to the list
+      enhancedData.subFacilities.forEach(facility => {
+        const listItem = document.createElement('li');
+        listItem.textContent = facility.title;
+        listItem.dataset.facilityId = facility.id;
+        
+        // Add click handler for each sub-facility
+        listItem.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openSubFacilityPanel(facility.id, facility.title);
+        });
+        
+        subList.appendChild(listItem);
+      });
+      
+      el.appendChild(subList);
+    }
+    
+    // Main click handler for the entire card
+    el.addEventListener('click', (e) => {
+      if (e.target === el || e.target === titleDiv) {
+        e.stopPropagation();
+        navigateToLocation(markerData.id);
+      }
+    });
+  } else {
+    // Standard marker for other locations
   el.textContent = displayText;
 
   // Add click listener to go directly to side panel
@@ -993,6 +684,7 @@ function createMarkerElement(markerData, source = 'hardcoded') {
     const key = markerData.id || markerData.label;
     navigateToLocation(key);
   });
+  }
   
   el.title = markerData.label || `Marker ${markerData.id}`;
   
@@ -1003,6 +695,23 @@ function addMarkersToMap(markers, source = 'hardcoded') {
   let validMarkersCount = 0;
   
   markers.forEach(markerData => {
+    // Check for empty labels in Supabase markers
+    if (source === 'supabase') {
+      // Check all possible label fields
+      const hasLabel = !!(markerData.Label || 
+                         markerData.label || 
+                         markerData.name || 
+                         markerData.title || 
+                         markerData.facility_name || 
+                         markerData.location_name ||
+                         markerData.text);
+      
+      if (!hasLabel) {
+        console.warn(`⚠️ Skipping marker with empty label:`, markerData);
+        return; // Skip this marker
+      }
+    }
+    
     // Validate coordinates before creating marker
     const lat = parseFloat(markerData.lat);
     const lng = parseFloat(markerData.lng);
@@ -1020,9 +729,15 @@ function addMarkersToMap(markers, source = 'hardcoded') {
     
     const el = createMarkerElement(markerData, source);
     
+    // Get height/elevation if specified, default to 0
+    const height = parseFloat(markerData.height) || 0;
+    
     // Create the Mapbox marker but DON'T add to map yet
     const marker = new mapboxgl.Marker(el)
       .setLngLat([lng, lat]);
+      
+    // Store height with the marker for use during rendering
+    marker._height = height;
 
     // Add to our custom array for synced rendering
     syncedMarkers.push({ element: el, marker: marker });
@@ -1030,6 +745,176 @@ function addMarkersToMap(markers, source = 'hardcoded') {
   });
   
   console.log(`✅ Queued ${validMarkersCount}/${markers.length} valid ${source} markers for synced rendering`);
+}
+
+// Function to create elevated labels using symbol-z-elevate
+function createElevatedLabels() {
+  console.log('🏷️ Creating elevated labels with symbol-z-elevate');
+  
+  // Create a GeoJSON source for our elevated labels
+  const elevatedLabelsData = {
+    type: 'FeatureCollection',
+    features: []
+  };
+  
+  // Add features for each marker that has a height property
+  newMarkers.forEach(marker => {
+    if (marker.height) {
+      elevatedLabelsData.features.push({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [marker.lng, marker.lat]
+        },
+        properties: {
+          id: marker.id,
+          title: getMarkerTitle(marker),
+          height: marker.height,
+          color: marker.color || '#000000'
+        }
+      });
+    }
+  });
+  
+  // Add the source to the map
+  if (map.getSource('elevated-labels')) {
+    map.removeSource('elevated-labels');
+  }
+  
+  map.addSource('elevated-labels', {
+    type: 'geojson',
+    data: elevatedLabelsData
+  });
+  
+  console.log(`✅ Added ${elevatedLabelsData.features.length} elevated labels`);
+  
+  // Now add the symbol layer with z-elevate
+  addElevatedSymbolLayer();
+}
+
+// Helper function to get marker title
+function getMarkerTitle(marker) {
+  return marker.Label || 
+         marker.label || 
+         marker.name || 
+         marker.title || 
+         marker.facility_name || 
+         marker.location_name ||
+         marker.text || 
+         `Marker ${marker.id}`;
+}
+
+// Function to add the elevated symbol layer
+function addElevatedSymbolLayer() {
+  // Remove existing layer if it exists
+  if (map.getLayer('elevated-labels')) {
+    map.removeLayer('elevated-labels');
+  }
+  
+  // Add the symbol layer with z-elevate
+  map.addLayer({
+    id: 'elevated-labels',
+    type: 'symbol',
+    source: 'elevated-labels',
+    layout: {
+      'text-field': ['get', 'title'],
+      'text-size': 14,
+      'text-anchor': 'center',
+      'text-offset': [0, -1], // Offset text slightly above the point
+      'symbol-placement': 'point',
+      'symbol-z-elevate': true, // This is the key property for elevation
+      'text-allow-overlap': true,
+      'text-ignore-placement': true
+    },
+    paint: {
+      'text-color': ['get', 'color'],
+      'text-halo-color': '#ffffff',
+      'text-halo-width': 1
+    }
+  });
+  
+  console.log('✅ Added elevated symbol layer with z-elevate');
+  
+  // Add a helper function to toggle elevated labels
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'h' || e.key === 'H') && 
+        document.activeElement.tagName !== 'INPUT' && 
+        document.activeElement.tagName !== 'TEXTAREA') {
+      toggleElevatedLabels();
+    }
+  });
+}
+
+// Function to toggle elevated labels
+function toggleElevatedLabels() {
+  if (map.getLayer('elevated-labels')) {
+    const visibility = map.getLayoutProperty('elevated-labels', 'visibility');
+    const newVisibility = visibility === 'visible' ? 'none' : 'visible';
+    map.setLayoutProperty('elevated-labels', 'visibility', newVisibility);
+    console.log(`🏷️ Elevated labels ${newVisibility === 'visible' ? 'shown' : 'hidden'} (H key)`);
+  }
+}
+
+// Function to adjust marker elevation and update the map
+function adjustMarkerElevation(markerId, newHeight) {
+  console.log(`🔼 Adjusting elevation of marker ${markerId} to ${newHeight}`);
+  
+  // Find the marker in the newMarkers array
+  const marker = newMarkers.find(m => m.id == markerId);
+  if (marker) {
+    // Update the height in the array
+    marker.height = newHeight;
+    console.log(`✅ Updated marker ${markerId} height in newMarkers array`);
+  }
+  
+  // Also update using the existing function that handles the GeoJSON source
+  updateMarkerHeight(markerId, newHeight);
+  
+  // Recreate the elevated labels to apply the change
+  createElevatedLabels();
+  
+  return `Marker ${markerId} elevation adjusted to ${newHeight}`;
+}
+
+// Make the function available globally for console access
+window.adjustMarkerElevation = adjustMarkerElevation;
+window.adjustStationElevation = function(height) {
+  return adjustMarkerElevation(1, height);
+};
+
+// Function to update a marker's height
+function updateMarkerHeight(markerId, newHeight) {
+  // Find the marker by ID
+  const markerItem = syncedMarkers.find(item => {
+    const id = item.marker._element.getAttribute('data-id') || 
+               item.marker._element.textContent;
+    return id == markerId;
+  });
+  
+  if (markerItem) {
+    // Update the height
+    markerItem.marker._height = newHeight;
+    console.log(`✅ Updated marker ${markerId} height to ${newHeight}`);
+    
+    // Also update the GeoJSON source if it exists
+    if (map.getSource('elevated-labels')) {
+      const source = map.getSource('elevated-labels');
+      const data = source._data;
+      
+      // Find and update the feature
+      const feature = data.features.find(f => f.properties.id == markerId);
+      if (feature) {
+        feature.properties.height = newHeight;
+        source.setData(data);
+        console.log(`✅ Updated elevated label height for ${markerId}`);
+      }
+    }
+    
+    return true;
+  } else {
+    console.warn(`⚠️ Marker with ID ${markerId} not found`);
+    return false;
+  }
 }
 
 function syncMarkers() {
@@ -1059,8 +944,21 @@ function syncMarkers() {
         return; // Skip this marker
       }
       
-      // Update the element's transform for smooth animation
-      item.element.style.transform = `translate(${screenPos.x}px, ${screenPos.y}px)`;
+      // Apply height offset if specified (adjust Y coordinate)
+      const heightOffset = item.marker._height || 0;
+      
+      // Calculate the visual height offset based on the map's pitch and zoom
+      // This formula adjusts the offset to look more natural in 3D perspective
+      const pitch = map.getPitch();
+      const zoom = map.getZoom();
+      const pitchFactor = Math.sin(pitch * Math.PI / 180); // Convert pitch to radians
+      const zoomFactor = Math.pow(2, zoom - 10) * 0.5; // Scale based on zoom level
+      
+      // Calculate the effective Y offset
+      const effectiveYOffset = heightOffset * pitchFactor * zoomFactor;
+      
+      // Update the element's transform for smooth animation with height offset
+      item.element.style.transform = `translate(${screenPos.x}px, ${screenPos.y - effectiveYOffset}px)`;
     } catch (error) {
       console.error(`❌ Error syncing marker ${index}:`, error);
     }
@@ -1129,40 +1027,48 @@ function filterHardcodedMarkers(hardcodedMarkers) {
 mapboxgl.accessToken = 'pk.eyJ1Ijoic3N0dHV1ZGRpaW9vIiwiYSI6ImNtZHhveWU4bDI5djIyam9kY2I3M3pwbHcifQ.ck8h3apHSNVAmTwjz-Oc7w';
 
 const LOCATIONS = {
-  rooseveltPark:    {lng: -83.0755, lat: 42.3235, label: 'Roosevelt Park'},
+  rooseveltPark:    {lng: -83.07715093189609, lat: 42.330376609412085, label: 'Roosevelt Park'},
   michiganCentral:  {lng: -83.0776, lat: 42.3289, label: 'Michigan Central'},
   campusMartius:    {lng: -83.0466, lat: 42.3317, label: 'Campus Martius'},
   newlab:           {lng: -83.07242451005243, lat: 42.33118076021261, label: 'The Factory'},
   michiganCentralSVG: {lng: -83.0776, lat: 42.3289, label: 'Michigan Central SVG', address: '2001 15th St, Detroit, MI 48216'}
 };
 
+// Define home position for reference - set to specific coordinates for optimal view
+const HOME_POSITION = {
+  center: [-83.076549, 42.329612],
+  zoom: 17.19,
+  pitch: 65.50,
+  bearing: 154.60
+};
+
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/standard',
-  center: [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat],
-  zoom: 17.5,
-  pitch: 75, // Increased pitch by another 5 degrees
-  bearing: 180, // Start the orbit 180 degrees around
-  antialias: true
+  style: 'mapbox://styles/ssttuuddiioo/cmdxew05b001901ry34gb69wy',
+  center: HOME_POSITION.center,
+  zoom: HOME_POSITION.zoom,
+  pitch: HOME_POSITION.pitch,
+  bearing: HOME_POSITION.bearing,
+  antialias: true,
+  dragPan: false // Disable free roaming/dragging
 });
 
 let orbitAnimation; // To hold the animation frame ID
 let syncedMarkers = []; // For smooth marker animation
-let orbitPaused = false; // Track if orbit is paused
-let orbitCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat]; // Dynamic orbit center
+// orbitPaused removed - orbit always continues
+let orbitCenter = HOME_POSITION.center; // Use the home position as orbit center
 
 function startOrbitAnimation() {
   const initialBearing = map.getBearing();
   let bearing = initialBearing;
 
   function animate() {
-    // Only animate if not paused
-    if (!orbitPaused) {
-      bearing += 0.015; // Adjust for speed
-      map.setBearing(bearing);
-      map.setPitch(75); // Lower angle to see horizon
-      map.setCenter(orbitCenter); // Use dynamic orbit center
-    }
+    // Always animate - no pausing
+    bearing += 0.015; // Adjust for speed
+    map.setBearing(bearing);
+    map.setPitch(75); // Lower angle to see horizon
+    map.setCenter(orbitCenter); // Use dynamic orbit center
+    
     orbitAnimation = requestAnimationFrame(animate);
   }
 
@@ -1171,7 +1077,19 @@ function startOrbitAnimation() {
     cancelAnimationFrame(orbitAnimation);
   }
   animate();
+  console.log('🚀 Orbit animation started/restarted');
 }
+
+// Failsafe mechanism to ensure orbit always continues
+function ensureOrbitRunning() {
+  if (!orbitAnimation) {
+    console.log('⚠️ Orbit stopped unexpectedly, restarting...');
+    startOrbitAnimation();
+  }
+}
+
+// Orbit animation disabled - no auto-restart
+// setInterval(ensureOrbitRunning, 2000);
 
 function stopOrbitAnimation() {
   if (orbitAnimation) {
@@ -1180,30 +1098,22 @@ function stopOrbitAnimation() {
   }
 }
 
-function pauseOrbitAnimation() {
-  orbitPaused = true;
-  console.log('⏸️ Orbit animation paused');
-}
-
-function resumeOrbitAnimation() {
-  orbitPaused = false;
-  console.log('▶️ Orbit animation resumed');
-}
+// Pause/resume functions removed - orbit always continues
 
 function updateOrbitCenter(lng, lat) {
   orbitCenter = [lng, lat];
   console.log('🎯 Orbit center updated to:', orbitCenter);
 }
 
-// Stop orbiting on user interaction
-map.on('dragstart', stopOrbitAnimation);
+// Stop orbiting on user interaction (drag disabled)
+// map.on('dragstart', stopOrbitAnimation); // Removed as dragging is disabled
 map.on('touchstart', stopOrbitAnimation);
 
 const newMarkers = [
-    { id: 1, lat: 42.32887642685346, lng: -83.07771868841701, color: '#4A90E2' },
-    { id: 2, lat: 42.3287336553628, lng: -83.07563729423877, color: '#4A90E2' },
-    { id: 3, lat: 42.331049686201276, lng: -83.07221479556428, color: '#4A90E2' },
-    { id: 11, text: "4-11", lat: 42.328154634328776, lng: -83.07535834450363, color: '#E74C3C' },
+    { id: 1, lat: 42.32887642685346, lng: -83.07771868841701, color: '#4A90E2', height: 300 }, // The Station with height offset (100m higher)
+    { id: 2, lat: 42.3289336553628, lng: -83.07563729423877, color: '#4A90E2', height: 100 }, // Consolidated Newlab marker with height offset
+    { id: 3, lat: 42.331049686201276, lng: -83.07221479556428, color: '#4A90E2', height: 150 }, // The Factory with height offset
+    // Removed individual Newlab facilities in favor of consolidated card
     { id: 12, lat: 42.32698343914925, lng: -83.0809899182321, color: '#E74C3C' },
     { id: 16, lat: 42.326498496839065, lng: -83.07267505001451, color: '#9B59B6' },
     { id: 17, lat: 42.32933148027947, lng: -83.07537518116047, color: '#9B59B6' },
@@ -1212,10 +1122,6 @@ const newMarkers = [
     { id: 20, lat: 42.32828839662688, lng: -83.07564165737065, color: '#9B59B6' },
     { id: 22, lat: 42.32706378807067, lng: -83.06791695933897, color: '#9B59B6' },
     { id: 23, lat: 42.3263690476279, lng: -83.07403300892324, color: '#9B59B6' },
-    { id: 24, lat: 42.32698033777906, lng: -83.06843791965021, color: '#27AE60' },
-    { id: 25, lat: 42.32787627141858, lng: -83.07998978637444, color: '#27AE60' },
-    { id: 26, lat: 42.315049168497396, lng: -83.06827804205345, color: '#27AE60' },
-    { id: 27, lat: 42.31732332003473, lng: -83.06413034764108, color: '#27AE60' },
     { id: 28, text: "28", lat: 42.32904224480186, lng: -83.08086956713913, color: '#5DADE2' },
     { id: 28, text: "28", lat: 42.33016060731937, lng: -83.07923878407165, color: '#5DADE2' },
     { id: 28, text: "28", lat: 42.331914452617156, lng: -83.0736844064228, color: '#5DADE2' },
@@ -1225,6 +1131,71 @@ const newMarkers = [
 
 // ENHANCED MARKER DATA - Admin Configurable Information
 const ENHANCED_MARKER_DATA = {
+    // Info panel data
+    info: {
+        title: "Michigan Central",
+        description: "Explore the Michigan Central map and facilities.",
+        image: "public/mc.jpg",
+        features: []
+    },
+    
+    // Top right button locations
+    "newlab-manufacturing": {
+        category: "MAKING & BUILDING SPACES",
+        title: "The 23rd (Newlab Manufacturing Space)",
+        description: "The 23rd is Newlab's advanced manufacturing facility designed to support hardware startups and scale-stage companies. This state-of-the-art space provides access to cutting-edge equipment, prototyping resources, and manufacturing expertise.",
+        features: [
+            "Advanced prototyping and small-batch manufacturing capabilities",
+            "CNC machines, 3D printers, and precision tooling",
+            "Expert staff providing technical support and manufacturing guidance",
+            "Dedicated space for hardware startups to scale production",
+            "Flexible manufacturing layouts to accommodate diverse production needs"
+        ],
+        image: "public/about/slide2.jpg"
+    },
+    
+    "tiz": {
+        category: "TESTING & INNOVATION ZONES",
+        title: "Transportation Innovation Zone (TIZ)",
+        description: "The Transportation Innovation Zone (TIZ) is a designated area for testing and deploying next-generation mobility solutions in real-world conditions. This controlled environment allows companies to validate autonomous vehicles, smart infrastructure, and connected mobility technologies.",
+        features: [
+            "Dedicated lanes for autonomous vehicle testing",
+            "Smart infrastructure with V2X communication capabilities",
+            "Variable road conditions for diverse testing scenarios",
+            "Real-time data collection and analytics systems",
+            "Secure testing environment with safety protocols"
+        ],
+        image: "public/about/slideshow1.jpg"
+    },
+    
+    "aair": {
+        category: "TESTING & INNOVATION ZONES",
+        title: "Advanced Aerial Innovation Region (AAIR)",
+        description: "The Advanced Aerial Innovation Region (AAIR) is a specialized testing zone for unmanned aerial systems and drone technologies. This controlled airspace allows for the development and validation of aerial mobility solutions, delivery systems, and infrastructure inspection technologies.",
+        features: [
+            "FAA-approved drone testing corridor",
+            "Drone delivery testing facilities",
+            "Urban air mobility simulation environment",
+            "Charging and docking infrastructure for aerial systems",
+            "Advanced air traffic management systems"
+        ],
+        image: "public/about/slideshow3.jpg"
+    },
+    
+    "port-monroe": {
+        category: "STRATEGIC LOCATION ADVANTAGES",
+        title: "Port of Monroe",
+        description: "The Port of Monroe is Michigan's only port on Lake Erie, providing critical maritime transportation infrastructure for the region. This strategic asset connects Michigan Central to international shipping routes and supports multimodal transportation solutions for manufacturing and logistics operations.",
+        features: [
+            "Deep-water port facilities for international shipping",
+            "Intermodal connections to rail and highway networks",
+            "Warehousing and distribution capabilities",
+            "Sustainable shipping practices and green port initiatives",
+            "Gateway to the Great Lakes shipping network and St. Lawrence Seaway"
+        ],
+        image: "public/about/slideshow4.webp"
+    },
+    
     // Blue - Transportation/Logistics  
     1: {
         category: "🏢 MAIN BUILDINGS & WORKSPACES",
@@ -1242,15 +1213,102 @@ const ENHANCED_MARKER_DATA = {
         categoryColor: "#4A90E2",
         image: "public/about/team1.jpg"
     },
+    
+    // Add explicit data for all locations in the Explore Locations panel - CORRECT MAPPING
+    12: {
+        category: "MAKING & BUILDING SPACES",
+        title: "Manufacturing Space for Scale-Stage Companies",
+        description: "Advanced manufacturing facility designed for companies transitioning from prototype to production scale.",
+        features: [
+            {icon: "🏭", text: "Flexible manufacturing space"},
+            {icon: "🔧", text: "Advanced tooling and equipment"},
+            {icon: "📦", text: "Production scaling resources"}
+        ],
+        image: "public/about/slideshow1.jpg"
+    },
+    16: {
+        category: "TRANSPORTATION HUB",
+        title: "Bagley Mobility Hub",
+        description: "Multi-modal transportation center connecting various mobility options.",
+        features: [
+            {icon: "🚗", text: "EV charging stations"},
+            {icon: "🚲", text: "Bike and scooter sharing"},
+            {icon: "🚌", text: "Public transit connections"}
+        ],
+        image: "public/about/slideshow3.jpg"
+    },
+    17: {
+        category: "TESTING & INNOVATION ZONES",
+        title: "America's First Electrified Public Road",
+        description: "Pioneering roadway with embedded wireless charging for electric vehicles.",
+        features: [
+            {icon: "⚡", text: "Wireless EV charging"},
+            {icon: "🛣️", text: "Smart road infrastructure"},
+            {icon: "🔋", text: "Sustainable transportation"}
+        ],
+        image: "public/about/slideshow2.jpg"
+    },
+    19: {
+        category: "TESTING & INNOVATION ZONES",
+        title: "Scaled Launch Facility",
+        description: "Dedicated space for launching and scaling mobility startups and innovations.",
+        features: [
+            {icon: "🚀", text: "Startup incubation"},
+            {icon: "💼", text: "Business development resources"},
+            {icon: "🔍", text: "Market testing facilities"}
+        ],
+        image: "public/about/slideshow1.jpg"
+    },
+    22: {
+        category: "DATA & TECHNOLOGY INFRASTRUCTURE",
+        title: "Edge Server Platform",
+        description: "Distributed computing infrastructure supporting real-time data processing for mobility applications.",
+        features: [
+            {icon: "💻", text: "Low-latency computing"},
+            {icon: "📊", text: "Real-time data analytics"},
+            {icon: "🔒", text: "Secure edge computing"}
+        ],
+        image: "public/about/slideshow1.jpg"
+    },
+    23: {
+        category: "DATA & TECHNOLOGY INFRASTRUCTURE",
+        title: "Smart Light Posts",
+        description: "Connected lighting infrastructure with integrated sensors and technology.",
+        features: [
+            {icon: "💡", text: "Energy-efficient LED lighting"},
+            {icon: "🔌", text: "Integrated IoT sensors"},
+            {icon: "📡", text: "WiFi connectivity points"}
+        ],
+        image: "public/about/slideshow2.jpg"
+    },
+    25: {
+        category: "TRANSPORTATION HUB",
+        title: "Railway",
+        description: "Historic railway connection reimagined for modern mobility solutions.",
+        features: [
+            {icon: "🚆", text: "Multi-modal transportation hub"},
+            {icon: "🏙️", text: "Urban connectivity"},
+            {icon: "🔄", text: "Sustainable transit options"}
+        ],
+        image: "public/about/slideshow3.jpg"
+    },
     2: {
         category: "🚂 TRANSPORTATION/LOGISTICS",
         title: "Newlab at Michigan Central", 
         description: "Newlab at Michigan Central is a collaborative workspace and platform for technology development, focusing on connected and autonomous vehicles, smart cities, and advanced manufacturing.",
         features: [
-            {icon: "🔬", text: "R&D Facilities"},
-            {icon: "🤝", text: "Collaboration Spaces"},
-            {icon: "🧪", text: "Testing Labs"},
-            {icon: "🚀", text: "Startup Incubator"}
+            {icon: "🔬", text: "Digital Fabrication Lab"},
+            {icon: "🪚", text: "Wood Shop"},
+            {icon: "⚡", text: "Electronics Lab"},
+            {icon: "🏭", text: "Transitional Manufacturing Space"},
+            {icon: "🚀", text: "The Launchpad"}
+        ],
+        subFacilities: [
+            {id: "newlab-fab", title: "Digital Fabrication Lab", description: "Our Digital Fabrication Lab features the latest in 3D printing, CNC machining, and digital design tools, enabling rapid prototyping and small-batch production."},
+            {id: "newlab-wood", title: "Wood Shop", description: "A fully equipped woodworking shop combining traditional craftsmanship with modern CNC capabilities for furniture, prototypes, and architectural elements."},
+            {id: "newlab-electronics", title: "Electronics Lab", description: "State-of-the-art electronics lab for circuit design, microcontroller programming, and IoT device development."},
+            {id: "newlab-manufacturing", title: "Transitional Manufacturing Space", description: "Flexible manufacturing space designed for scaling production from prototype to small batch manufacturing."},
+            {id: "newlab-launchpad", title: "The Launchpad", description: "Dedicated space for startups and entrepreneurs to develop and launch mobility innovations."}
         ],
         size: "30,000 sq ft",
         address: "2001 15th St, Detroit, MI 48216",
@@ -1273,37 +1331,7 @@ const ENHANCED_MARKER_DATA = {
         image: "public/about/slide1.jpg"
     },
     
-    // Red/Orange - Manufacturing/Workshop Facilities
-    4: {
-        category: "🏭 MANUFACTURING/WORKSHOP",
-        title: "Digital Fabrication Shop",
-        description: "Our Digital Fabrication Shop features the latest in 3D printing, CNC machining, and digital design tools, enabling rapid prototyping and small-batch production.",
-        features: [
-            {icon: "🖨️", text: "3D Printing"},
-            {icon: "⚙️", text: "CNC Machining"}, 
-            {icon: "⚡", text: "Laser Cutting"},
-            {icon: "💻", text: "Digital Design"}
-        ],
-        size: "5,000 sq ft",
-        address: "Building A, Michigan Central Campus",
-        categoryColor: "#E74C3C",
-        image: "public/about/slide2.jpg"
-    },
-    5: {
-        category: "🏭 MANUFACTURING/WORKSHOP",
-        title: "Wood Shop",
-        description: "A fully equipped woodworking shop combining traditional craftsmanship with modern CNC capabilities for furniture, prototypes, and architectural elements.",
-        features: [
-            {icon: "🪚", text: "Traditional Tools"},
-            {icon: "🤖", text: "CNC Router"},
-            {icon: "💨", text: "Dust Collection"},
-            {icon: "🎨", text: "Finishing Booth"}
-        ],
-        size: "3,500 sq ft",
-        address: "Building A, Michigan Central Campus",
-        categoryColor: "#E74C3C", 
-        image: "public/about/slide3.jpg"
-    },
+    // Individual sub-facility entries removed - now part of consolidated Newlab card
     6: {
         category: "🏭 MANUFACTURING/WORKSHOP",
         title: "Metal Shop",
@@ -1324,8 +1352,8 @@ const ENHANCED_MARKER_DATA = {
 map.on('load', async () => {
     dbg("MAP_LOAD", "Map fully loaded");
 
-    // Start the orbit animation
-    startOrbitAnimation();
+    // Orbit animation disabled - no spinning
+    // startOrbitAnimation();
 
     // Configure map settings for a cleaner look
     map.getCanvas().style.cursor = 'pointer';
@@ -1343,8 +1371,7 @@ map.on('load', async () => {
     // Setup side panel close functionality
     setupSidePanel();
 
-    // Initialize building highlighting for Michigan Central
-    initializeBuildingHighlighting();
+    // Building highlighting removed as requested
 
     // Initialize Multi-SVG Editor system
     console.log('🎯 About to initialize SVG Editor...');
@@ -2345,8 +2372,98 @@ map.on('load', async () => {
   // Map loaded and ready for navigation
   console.log('🗺️ Map loaded successfully');
   
-  // Initialize building highlighting for Michigan Central
+  // Initialize building highlighting with Interactions API
   initializeBuildingHighlighting();
+  
+  // Set up top right location buttons
+  setupLocationButtons();
+  
+  // Create elevated labels using symbol-z-elevate
+  createElevatedLabels();
+  
+  // Set up home button functionality
+  const homeButton = document.getElementById('home-button');
+  
+  // Set up camera position button
+  const cameraPositionButton = document.getElementById('camera-position-button');
+  if (cameraPositionButton) {
+    cameraPositionButton.addEventListener('click', printCameraPosition);
+  }
+  if (homeButton) {
+    console.log('🏠 Home button found, adding event listener');
+    homeButton.addEventListener('click', returnToHomePosition);
+  } else {
+    console.error('❌ Home button not found in DOM');
+  }
+  
+  // Set up full map button functionality
+  const fullMapButton = document.getElementById('full-map-button');
+  const infoButton = document.getElementById('info-button');
+  const fullscreenViewer = document.getElementById('fullscreen-viewer');
+  const fullscreenImage = document.getElementById('fullscreen-image');
+  const exitFullscreenBtn = document.getElementById('exit-fullscreen');
+  const backButton = document.getElementById('back-button');
+  
+  // Set up info button functionality
+  if (infoButton) {
+    console.log('ℹ️ Info button found, adding event listener');
+    infoButton.addEventListener('click', () => {
+      // Open the info panel
+      openSidePanel('info');
+    });
+  } else {
+    console.error('❌ Info button not found in DOM');
+  }
+  
+  if (fullMapButton && fullscreenViewer && fullscreenImage && exitFullscreenBtn && backButton) {
+    console.log('🗺️ Full map button and viewer found, adding event listeners');
+    
+    // Global function to close the fullscreen viewer
+    window.closeFullscreenViewer = function() {
+      fullscreenViewer.style.display = 'none';
+      
+      // Clear auto-close timer
+      if (fullscreenViewerAutoCloseTimer) {
+        clearTimeout(fullscreenViewerAutoCloseTimer);
+        fullscreenViewerAutoCloseTimer = null;
+      }
+    };
+    
+    // Open fullscreen map image
+    fullMapButton.addEventListener('click', () => {
+      // Set the image source to map.png
+      fullscreenImage.src = 'public/map.png';
+      
+      // Show the fullscreen viewer
+      fullscreenViewer.style.display = 'flex';
+      
+      // Start auto-close timer
+      startFullscreenViewerAutoClose();
+      
+      // Close any open panels
+      closeSidePanel();
+    });
+    
+    // Close fullscreen viewer when exit button is clicked
+    exitFullscreenBtn.addEventListener('click', closeFullscreenViewer);
+    
+    // Close fullscreen viewer when BACK button is clicked
+    backButton.addEventListener('click', closeFullscreenViewer);
+    
+    // Also close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && fullscreenViewer.style.display === 'flex') {
+        closeFullscreenViewer();
+      }
+    });
+    
+    // Add event listeners to reset auto-close timer on interaction
+    fullscreenViewer.addEventListener('click', resetFullscreenViewerAutoClose);
+    fullscreenViewer.addEventListener('mousemove', resetFullscreenViewerAutoClose);
+    fullscreenViewer.addEventListener('touchstart', resetFullscreenViewerAutoClose);
+  } else {
+    console.error('❌ Full map button or viewer elements not found in DOM');
+  }
   
   // Initialize Multi-SVG Editor system
   console.log('🎯 About to initialize SVG Editor...');
@@ -2360,161 +2477,197 @@ function dbg(tag, obj) {
   console.log(tag, JSON.stringify(obj));
 }
 
-// --- BUILDING HIGHLIGHTING SYSTEM (Michigan Central Only) ---
-let buildingHighlightEnabled = true;
-let highlightColor = '#0066ff'; // Blue highlight
-let highlightOpacity = 0.9;
+// --- BUILDING HIGHLIGHTING SYSTEM USING INTERACTIONS API ---
+// Track the currently highlighted and selected buildings
+let hoveredBuildingId = null;
+let selectedBuildingId = null;
 
+// Initialize building highlighting using Mapbox Interactions API
 function initializeBuildingHighlighting() {
-  console.log('🏢 Initializing Building Highlighting for Michigan Central');
+  console.log('🏢 Initializing building highlighting with Interactions API');
   
-  // Check if we're in light mode (buildings work best in light mode)
-  const currentStyle = map.getStyle();
-  const isLightMode = currentStyle.sprite && currentStyle.sprite.includes('light');
-  
-  if (isLightMode) {
-    addBuildingLayers();
-  } else {
-    console.log('⚠️ Building highlighting works best in Light mode');
+  try {
+    // Ensure buildings appear on top of SVGs by moving them to the top of the layer stack
+    ensureBuildingsOnTop();
+    
+    // Add mouseenter interaction for hover effect
+    map.addInteraction('building-mouseenter', {
+      type: 'mouseenter',
+      target: {featuresetId: 'buildings', importId: 'basemap'},
+      handler: (e) => {
+        console.log('🏢 Building mouseenter:', e.feature.id);
+        
+        // Prevent event from reaching SVGs underneath
+        e.originalEvent.stopPropagation();
+        
+        // Set hover state to true
+        map.setFeatureState(e.feature, {highlight: true});
+        
+        // Track the hovered building ID
+        hoveredBuildingId = e.feature.id;
+      }
+    });
+    
+    // Add mouseleave interaction to remove hover effect
+    map.addInteraction('building-mouseleave', {
+      type: 'mouseleave',
+      target: {featuresetId: 'buildings', importId: 'basemap'},
+      handler: (e) => {
+        console.log('🏢 Building mouseleave');
+        
+        // Prevent event from reaching SVGs underneath
+        e.originalEvent.stopPropagation();
+        
+        // Only remove highlight if this building is not selected
+        if (hoveredBuildingId !== selectedBuildingId) {
+          map.setFeatureState(
+            {id: hoveredBuildingId, featuresetId: 'buildings', importId: 'basemap'},
+            {highlight: false}
+          );
+        }
+        
+        // Clear the hovered building ID
+        hoveredBuildingId = null;
+      }
+    });
+    
+    // Add click interaction for selection
+    map.addInteraction('building-click', {
+      type: 'click',
+      target: {featuresetId: 'buildings', importId: 'basemap'},
+      handler: (e) => {
+        console.log('🏢 Building click:', e.feature.id);
+        
+        // Prevent event from reaching SVGs underneath
+        e.originalEvent.stopPropagation();
+        
+        // Clear previous selection if exists
+        if (selectedBuildingId) {
+          map.setFeatureState(
+            {id: selectedBuildingId, featuresetId: 'buildings', importId: 'basemap'},
+            {selected: false, highlight: false}
+          );
+        }
+        
+        // If clicking the same building, just clear selection
+        if (selectedBuildingId === e.feature.id) {
+          selectedBuildingId = null;
+          return;
+        }
+        
+        // Set new selection
+        selectedBuildingId = e.feature.id;
+        map.setFeatureState(e.feature, {selected: true, highlight: true});
+      }
+    });
+    
+    // Add map click handler to clear selection when clicking elsewhere
+    map.on('click', (e) => {
+      // Only clear if we have a selection and didn't click on a building
+      // (building clicks are handled by the interaction above)
+      if (selectedBuildingId && !e.defaultPrevented) {
+        console.log('🏢 Clearing building selection');
+        
+        map.setFeatureState(
+          {id: selectedBuildingId, featuresetId: 'buildings', importId: 'basemap'},
+          {selected: false, highlight: false}
+        );
+        
+        selectedBuildingId = null;
+      }
+    });
+    
+    console.log('✅ Building highlighting initialized successfully');
+  } catch (error) {
+    console.error('❌ Error initializing building highlighting:', error);
   }
 }
 
-function addBuildingLayers() {
+// Ensure buildings appear on top of SVGs
+function ensureBuildingsOnTop() {
+  console.log('🔍 Ensuring buildings appear on top of SVGs');
+  
   try {
-    // Check if buildings layer already exists
-    if (map.getLayer('3d-buildings')) {
-      console.log('🏢 Buildings layer already exists');
+    // Get all layers in the map style
+    const layers = map.getStyle().layers || [];
+    
+    // Find SVG layers
+    const svgLayers = layers.filter(layer => 
+      layer.id.includes('svg-') || 
+      layer.id.includes('-svg-')
+    );
+    
+    if (svgLayers.length === 0) {
+      console.log('ℹ️ No SVG layers found to reorder');
       return;
     }
-
-    // Find the first symbol layer in the map style
-    const layers = map.getStyle().layers;
-    let labelLayerId;
-    for (let i = 0; i < layers.length; i++) {
-      if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
-        labelLayerId = layers[i].id;
-        break;
-      }
-    }
-
-    console.log('🏗️ Adding building layers');
-
-    // Add base 3D buildings layer (all buildings in light gray)
-    map.addLayer({
-      'id': '3d-buildings',
-      'source': 'composite',
-      'source-layer': 'building',
-      'filter': ['==', 'extrude', 'true'],
-      'type': 'fill-extrusion',
-      'minzoom': 14,
-      'layout': {
-        'visibility': 'visible'
-      },
-      'paint': {
-        'fill-extrusion-color': '#cccccc', // Light gray for all buildings
-        'fill-extrusion-height': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          14, 0,
-          14.05, ['get', 'height']
-        ],
-        'fill-extrusion-base': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          14, 0,
-          14.05, ['get', 'min_height']
-        ],
-        'fill-extrusion-opacity': 0.7
-      }
-    }, labelLayerId);
-
-    // Add Michigan Central highlight layer
-    map.addLayer({
-      'id': 'michigan-central-highlight',
-      'source': 'composite',
-      'source-layer': 'building',
-      'filter': ['==', 'extrude', 'true'],
-      'type': 'fill-extrusion',
-      'minzoom': 14,
-      'layout': {
-        'visibility': 'visible'
-      },
-      'paint': {
-        'fill-extrusion-color': highlightColor, // Blue highlight
-        'fill-extrusion-height': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          14, 0,
-          14.05, ['get', 'height']
-        ],
-        'fill-extrusion-base': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          14, 0,
-          14.05, ['get', 'min_height']
-        ],
-        'fill-extrusion-opacity': highlightOpacity
-      }
-    }, labelLayerId);
-
-    console.log('✅ Building layers added successfully');
-
-    // Auto-highlight Michigan Central
-    setTimeout(() => {
-      highlightMichiganCentral();
-    }, 1000);
-
-  } catch (error) {
-    console.error('❌ Error adding building layers:', error);
-  }
-}
-
-function highlightMichiganCentral() {
-  try {
-    if (!map.getLayer('michigan-central-highlight')) {
-      console.warn('⚠️ Michigan Central highlight layer not found');
+    
+    // For each SVG layer, move it before the first symbol layer
+    // This ensures buildings (which are typically rendered before symbols)
+    // will appear on top of SVGs
+    const firstSymbolId = getFirstSymbolLayerId();
+    if (!firstSymbolId) {
+      console.log('ℹ️ No symbol layers found, cannot reorder');
       return;
     }
-
-    console.log('🎯 Highlighting Michigan Central Station');
     
-    // Create a filter to highlight buildings near Michigan Central Station
-    const location = LOCATIONS.michiganCentral;
-    const buffer = 0.0005; // Small radius around Michigan Central
+    console.log(`🔄 Moving SVG layers before ${firstSymbolId} to ensure buildings appear on top`);
     
-    // Filter to highlight buildings in the Michigan Central area
-    const filter = [
-      'all',
-      ['==', 'extrude', 'true']
-      // For now, highlight all buildings - we can make this more specific later
-    ];
+    svgLayers.forEach(layer => {
+      if (map.getLayer(layer.id)) {
+        // Remove and re-add the layer before the first symbol layer
+        const layerDef = map.getLayer(layer.id);
+        map.moveLayer(layer.id, firstSymbolId);
+        console.log(`✅ Moved layer ${layer.id} before ${firstSymbolId}`);
+      }
+    });
     
-    map.setFilter('michigan-central-highlight', filter);
-    
-    console.log('✅ Michigan Central highlighted in blue');
-    
+    console.log('✅ Layer reordering complete');
   } catch (error) {
-    console.error('❌ Error highlighting Michigan Central:', error);
+    console.error('❌ Error ensuring buildings on top:', error);
   }
 }
 
-function removeBuildingLayers() {
-  const layersToRemove = ['3d-buildings', 'michigan-central-highlight'];
-  
-  layersToRemove.forEach(layerId => {
-    try {
-      if (map.getLayer(layerId)) {
-        map.removeLayer(layerId);
-        console.log('🗑️ Removed building layer:', layerId);
-      }
-    } catch (error) {
-      // Layer doesn't exist, that's fine
+// Helper function to get the first symbol layer ID
+function getFirstSymbolLayerId() {
+  const layers = map.getStyle().layers;
+  // Find the index of the first symbol layer in the map style
+  for (let i = 0; i < layers.length; i++) {
+    if (layers[i].type === 'symbol') {
+      return layers[i].id;
     }
+  }
+  return null;
+}
+
+// Set up click handlers for the top right location buttons
+function setupLocationButtons() {
+  console.log('🔘 Setting up location buttons');
+  
+  const locationButtons = document.querySelectorAll('.location-button');
+  
+  locationButtons.forEach(button => {
+    const locationId = button.getAttribute('data-location');
+    
+    button.addEventListener('click', () => {
+      console.log(`🔘 Location button clicked: ${locationId}`);
+      
+      // Open side panel with the location data
+      openSidePanel(locationId);
+      
+      // Fly to a position that gives a good view of the area
+      // Using a generic position for all buttons since they're conceptual locations
+      map.flyTo({
+        center: [-83.076549, 42.329612], // Michigan Central area
+        zoom: 17.5,
+        pitch: 60,
+        bearing: 150,
+        duration: 2000
+      });
+    });
   });
+  
+  console.log('✅ Location buttons initialized');
 }
 
 // --- MICHIGAN CENTRAL SVG LOADER ---
@@ -4989,17 +5142,17 @@ function convertSVGPathWithTransforms(pathData, centerLat, centerLng, scale, rot
 
 // --- NAVIGATION CONTROLLER ---
 let navState = {
-  targetCenter: [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat],
-  targetZoom: 14,
-  targetPitch: 45,
-  targetBearing: 0,
+  targetCenter: HOME_POSITION.center,
+  targetZoom: HOME_POSITION.zoom,
+  targetPitch: HOME_POSITION.pitch,
+  targetBearing: HOME_POSITION.bearing,
   spinning: true
 };
 
 // --- orbit ---- (COMMENTED OUT)
-let bearing = 180, spinning = false; // Start 180 degrees around - ORBIT DISABLED
+let bearing = HOME_POSITION.bearing, spinning = false; // Start at the home bearing - ORBIT DISABLED
 // orbitCenter is now declared globally above
-let targetOrbitCenter = [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat];
+let targetOrbitCenter = HOME_POSITION.center;
 let orbitTransitionSpeed = 0.015; // Normal speed
 
 // --- Interactive Orbit Control ---
@@ -5055,20 +5208,20 @@ function orbit() {
 updateCamera();
 
 // --- Interactive Orbit Override ---
-// Detect when user starts interacting
-map.on('mousedown', () => {
-  userInteracting = true;
-  lastInteractionTime = Date.now();
-  clearTimeout(interactionTimeout);
-  dbg("ORBIT_OVERRIDE", {action: "start", userInteracting: true});
-});
+// Old interaction detection code removed to prevent orbit interference
+// map.on('mousedown', () => {
+//   userInteracting = true;
+//   lastInteractionTime = Date.now();
+//   clearTimeout(interactionTimeout);
+//   dbg("ORBIT_OVERRIDE", {action: "start", userInteracting: true});
+// });
 
-map.on('touchstart', () => {
-  userInteracting = true;
-  lastInteractionTime = Date.now();
-  clearTimeout(interactionTimeout);
-  dbg("ORBIT_OVERRIDE", {action: "start_touch", userInteracting: true});
-});
+// map.on('touchstart', () => {
+//   userInteracting = true;
+//   lastInteractionTime = Date.now();
+//   clearTimeout(interactionTimeout);
+//   dbg("ORBIT_OVERRIDE", {action: "start_touch", userInteracting: true});
+// });
 
 // Detect when user stops interacting
 map.on('mouseup', () => {
@@ -5079,10 +5232,10 @@ map.on('touchend', () => {
   scheduleOrbitResume();
 });
 
-// Also detect drag end
-map.on('dragend', () => {
-  scheduleOrbitResume();
-});
+// Also detect drag end (drag disabled)
+// map.on('dragend', () => {
+//   scheduleOrbitResume();
+// });
 
 // Function to schedule orbit resumption
 function scheduleOrbitResume() {
@@ -5116,14 +5269,14 @@ function scheduleOrbitResume() {
   }, 2000);
 }
 
-// Update interaction state during drag
-map.on('drag', () => {
-  if (!userInteracting) {
-    userInteracting = true;
-    dbg("ORBIT_OVERRIDE", {action: "drag_start", userInteracting: true});
-  }
-  lastInteractionTime = Date.now();
-});
+// Update interaction state during drag (drag disabled)
+// map.on('drag', () => {
+//   if (!userInteracting) {
+//     userInteracting = true;
+//     dbg("ORBIT_OVERRIDE", {action: "drag_start", userInteracting: true});
+//   }
+//   lastInteractionTime = Date.now();
+// });
 
 // --- Label Control State ---
 let labelsVisible = true;
@@ -5153,10 +5306,7 @@ document.getElementById('style-controls').addEventListener('click', (e) => {
       multiSvgManager.placedSvgs.forEach(svg => {
         loadSvgOnMap(svg);
       });
-      // Re-initialize building highlighting
-      setTimeout(() => {
-        initializeBuildingHighlighting();
-      }, 500);
+      // Building highlighting removed as requested
       
       // Re-add Michigan Central SVG
       setTimeout(() => {
@@ -5218,10 +5368,313 @@ function toggleLabels() {
   dbg("LABELS_TOGGLE", {visible: labelsVisible, hiddenCount: hiddenLayers.length});
 }
 
+// Add keyboard shortcut for toggling labels (L key) and printing camera position (P key)
+// Track SVG visibility state
+let svgLayersVisible = true;
+
+document.addEventListener('keydown', (e) => {
+  // Only handle if we're not in an input field
+  if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+    if (e.key === 'l' || e.key === 'L') {
+      toggleLabels();
+      console.log('🏷️ Labels toggled with keyboard shortcut (L key)');
+    }
+    
+    // Print camera position when P key is pressed
+    if (e.key === 'p' || e.key === 'P') {
+      printCameraPosition();
+    }
+    
+    // Test all markers when T key is pressed
+    if (e.key === 't' || e.key === 'T') {
+      testAllMarkers();
+    }
+    
+    // Toggle SVG visibility when S key is pressed
+    if (e.key === 's' || e.key === 'S') {
+      toggleSVGVisibility();
+    }
+  }
+});
+
+// Function to toggle all SVG elements visibility
+function toggleSVGVisibility() {
+  svgLayersVisible = !svgLayersVisible;
+  console.log(`🖼️ SVG visibility: ${svgLayersVisible ? 'VISIBLE' : 'HIDDEN'}`);
+  
+  let found = false;
+  
+  // Method 0: Check for SVG layers in the map
+  try {
+    const svgLayers = [];
+    const style = map.getStyle();
+    if (style && style.layers) {
+      style.layers.forEach(layer => {
+        if (layer.id && (
+          layer.id.includes('svg') || 
+          layer.id.includes('michigan-central-svg') ||
+          layer.id.includes('-svg-')
+        )) {
+          svgLayers.push(layer.id);
+          map.setLayoutProperty(layer.id, 'visibility', svgLayersVisible ? 'visible' : 'none');
+          found = true;
+        }
+      });
+    }
+    
+    if (svgLayers.length > 0) {
+      console.log(`🖼️ SVG Map Layers: ${svgLayersVisible ? 'VISIBLE' : 'HIDDEN'} (${svgLayers.length} layers)`);
+      console.log('Affected layers:', svgLayers);
+    }
+  } catch (error) {
+    console.error('Error toggling map SVG layers:', error);
+  }
+  
+  // Method 1: Try to find SVG container
+  const svgContainer = document.getElementById('svg-container');
+  if (svgContainer) {
+    svgContainer.style.display = svgLayersVisible ? 'block' : 'none';
+    found = true;
+  }
+  
+  // Method 2: Try to find SVG elements
+  const svgElements = document.querySelectorAll('svg');
+  if (svgElements.length > 0) {
+    console.log(`Found ${svgElements.length} SVG elements, toggling visibility...`);
+    svgElements.forEach(svg => {
+      svg.style.display = svgLayersVisible ? 'block' : 'none';
+    });
+    found = true;
+  }
+  
+  // Method 3: Try to find common containers that might hold SVGs
+  const possibleContainers = [
+    document.querySelector('.svg-overlay'),
+    document.querySelector('.svg-wrapper'),
+    document.getElementById('overlay-container'),
+    document.querySelector('.map-overlay'),
+    document.getElementById('svg-editor')
+  ];
+  
+  const container = possibleContainers.find(c => c !== null);
+  if (container) {
+    container.style.display = svgLayersVisible ? 'block' : 'none';
+    found = true;
+  }
+  
+  // Method 4: Check for placedSVGs (from your SVG editor)
+  if (typeof placedSVGs !== 'undefined' && placedSVGs && placedSVGs.size > 0) {
+    console.log(`Toggling visibility of ${placedSVGs.size} placed SVGs`);
+    placedSVGs.forEach(svg => {
+      const element = document.getElementById(svg.id);
+      if (element) {
+        element.style.display = svgLayersVisible ? 'block' : 'none';
+      }
+    });
+    found = true;
+  }
+  
+  // Show indicator if anything was found
+  if (found) {
+    showSVGToggleIndicator(svgLayersVisible);
+  } else {
+    console.log('No SVG elements found to toggle');
+  }
+}
+
+// Visual indicator for SVG toggle
+function showSVGToggleIndicator(visible) {
+  let indicator = document.getElementById('svg-toggle-indicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'svg-toggle-indicator';
+    indicator.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px 40px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      border-radius: 10px;
+      z-index: 100000;
+      pointer-events: none;
+    `;
+    document.body.appendChild(indicator);
+  }
+  
+  indicator.textContent = visible ? '🖼️ SVG LAYERS VISIBLE' : '🖼️ SVG LAYERS HIDDEN';
+  indicator.style.display = 'block';
+  
+  setTimeout(() => {
+    indicator.style.display = 'none';
+  }, 1500);
+}
+
+// Function to print camera position details to console
+function printCameraPosition() {
+  if (!map) {
+    console.error('❌ Map not initialized');
+    return;
+  }
+  
+  const center = map.getCenter();
+  const zoom = map.getZoom();
+  const pitch = map.getPitch();
+  const bearing = map.getBearing();
+  
+  const cameraPosition = {
+    center: [center.lng, center.lat],
+    zoom: parseFloat(zoom.toFixed(2)),
+    pitch: parseFloat(pitch.toFixed(2)),
+    bearing: parseFloat(bearing.toFixed(2))
+  };
+  
+  // Print formatted JSON for easy copy-paste
+  console.log('📸 Current Camera Position:');
+  console.log(JSON.stringify(cameraPosition, null, 2));
+  
+  // Also print as a code snippet for direct use
+}
+
+// Debug function to test all markers
+function testAllMarkers() {
+  console.log('🧪 Testing all markers:');
+  
+  // First, log all markers with their positions and IDs
+  console.log('\n--- MARKER DATA ---');
+  newMarkers.forEach(marker => {
+    const id = marker.id;
+    console.log(`Marker ID: ${id}, Position: [${marker.lng}, ${marker.lat}]`);
+  });
+  
+  // Then, log all enhanced marker data to see titles
+  console.log('\n--- ENHANCED MARKER DATA ---');
+  Object.keys(ENHANCED_MARKER_DATA).forEach(id => {
+    const data = ENHANCED_MARKER_DATA[id];
+    console.log(`ID: ${id}, Title: "${data.title || 'Untitled'}"`);
+  });
+  
+  // Log the current mapping in specificLocations
+  console.log('\n--- CURRENT BUTTON MAPPING ---');
+  const specificLocations = [
+    { name: "Manufacturing Space for Scale-Stage Companies", id: "12" },
+    { name: "Scaled Launch Facility", id: "19" },
+    { name: "Railway", id: "25" },
+    { name: "The Factory", id: "3" },
+    { name: "America's First Electrified Public Road", id: "17" },
+    { name: "Newlab", id: "2" },
+    { name: "Smart Light Posts", id: "23" },
+    { name: "Bagley Mobility Hub", id: "16" },
+    { name: "Edge Server Platform", id: "22" },
+    { name: "Transportation Innovation Zone (TIZ)", id: "tiz" },
+    { name: "Advanced Aerial Innovation Region (AAIR)", id: "aair" },
+    { name: "Port of Monroe", id: "port-monroe" },
+    { name: "The 23rd (Newlab Manufacturing Space)", id: "newlab-manufacturing" },
+    { name: "The Station", id: "1" }
+  ];
+  
+  specificLocations.forEach(loc => {
+    console.log(`Button: "${loc.name}" maps to ID: ${loc.id}`);
+  });
+  
+  // Direct verification of each location
+  console.log('\n--- DIRECT VERIFICATION OF EACH LOCATION ---');
+  console.log('Checking "Manufacturing Space for Scale-Stage Companies" (ID: 12):');
+  verifyLocation(12, "Manufacturing Space for Scale-Stage Companies");
+  
+  console.log('\nChecking "Scaled Launch Facility" (ID: 19):');
+  verifyLocation(19, "Scaled Launch Facility");
+  
+  console.log('\nChecking "Railway" (ID: 25):');
+  verifyLocation(25, "Railway");
+  
+  console.log('\nChecking "The Station" (ID: 1):');
+  verifyLocation(1, "The Station");
+  
+  console.log('\nChecking "America\'s First Electrified Public Road" (ID: 17):');
+  verifyLocation(17, "America's First Electrified Public Road");
+  
+  console.log('\nChecking "Newlab" (ID: 2):');
+  verifyLocation(2, "Newlab");
+  
+  console.log('\nChecking "Smart Light Posts" (ID: 23):');
+  verifyLocation(23, "Smart Light Posts");
+  
+  console.log('\nChecking "Bagley Mobility Hub" (ID: 16):');
+  verifyLocation(16, "Bagley Mobility Hub");
+  
+  console.log('\nChecking "Edge Server Platform" (ID: 22):');
+  verifyLocation(22, "Edge Server Platform");
+  
+  console.log('\nChecking "The Factory" (ID: 3):');
+  verifyLocation(3, "The Factory");
+}
+
+// Helper function to verify a location by ID
+function verifyLocation(id, expectedName) {
+  // Check if marker exists
+  const marker = newMarkers.find(m => m.id == id);
+  if (!marker) {
+    console.error(`❌ No marker found with ID ${id}`);
+    return;
+  }
+  console.log(`✓ Found marker with ID ${id} at [${marker.lng}, ${marker.lat}]`);
+  
+  // Check enhanced data
+  const enhancedData = ENHANCED_MARKER_DATA[id];
+  if (!enhancedData) {
+    console.log(`⚠️ No enhanced data for ID ${id}, will use generated data`);
+    
+    // Try to get generated data
+    const generatedData = generateLabelData(id, expectedName);
+    console.log(`Generated title: "${generatedData.title}"`);
+    return;
+  }
+  
+  // Log the actual title
+  console.log(`✓ Enhanced data title: "${enhancedData.title || 'Untitled'}"`);
+  
+  // Check if title matches expected name
+  if (enhancedData.title === expectedName) {
+    console.log(`✓ Title matches expected name "${expectedName}"`);
+  } else {
+    console.log(`⚠️ Title "${enhancedData.title}" does not match expected name "${expectedName}"`);
+  }
+  
+  // Check what happens when navigating to this location
+  console.log(`When clicking this location, openSidePanel(${id}) will be called`);
+}
+
+// Print camera position as code snippet
+function printCameraPositionCode() {
+  if (!map) return;
+  
+  const center = map.getCenter();
+  const zoom = map.getZoom();
+  const pitch = map.getPitch();
+  const bearing = map.getBearing();
+  
+  console.log(`
+// Camera Position Settings
+const CAMERA_POSITION = {
+  center: [${center.lng.toFixed(6)}, ${center.lat.toFixed(6)}],
+  zoom: ${zoom.toFixed(2)},
+  pitch: ${pitch.toFixed(2)},
+  bearing: ${bearing.toFixed(2)}
+};
+  `);
+  
+  console.log('Press P at any time to print the current camera position');
+}
+
 function hideAllLabels() {
   hiddenLayers = [];
   const style = map.getStyle();
   
+  // Hide map labels (symbol layers with text)
   if (style && style.layers) {
     style.layers.forEach(layer => {
       if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
@@ -5234,9 +5687,18 @@ function hideAllLabels() {
       }
     });
   }
+  
+  // Hide all marker elements (black rectangles with text)
+  const markerElements = document.querySelectorAll('.mapboxgl-marker');
+  markerElements.forEach(marker => {
+    marker.style.display = 'none';
+  });
+  
+  console.log(`🏷️ Hidden ${hiddenLayers.length} map label layers and ${markerElements.length} marker elements`);
 }
 
 function showAllLabels() {
+  // Show map label layers
   hiddenLayers.forEach(layerId => {
     try {
       map.setLayoutProperty(layerId, 'visibility', 'visible');
@@ -5245,6 +5707,14 @@ function showAllLabels() {
     }
   });
   hiddenLayers = [];
+  
+  // Show all marker elements
+  const markerElements = document.querySelectorAll('.mapboxgl-marker');
+  markerElements.forEach(marker => {
+    marker.style.display = 'block';
+  });
+  
+  console.log(`🏷️ Restored visibility for map labels and ${markerElements.length} marker elements`);
 }
 
 // --- Zoom Controls ---
@@ -5267,16 +5737,22 @@ const zoomOutBtn = document.getElementById('zoom-out');
 if (zoomOutBtn) {
   zoomOutBtn.addEventListener('click', () => {
   const currentZoom = map.getZoom();
-  const newZoom = Math.max(currentZoom - 1, 0); // Min zoom level is 0
+  const newZoom = Math.max(currentZoom - 2, 0); // Zoom out 2x, min zoom level is 0
+  
+  // Stop orbit animation
+  stopOrbitAnimation();
+  
   map.easeTo({
     zoom: newZoom,
-    duration: 300
+    duration: 500
   });
   // Update navState to maintain consistency
   navState.targetZoom = newZoom;
   dbg("ZOOM_OUT", {from: currentZoom, to: newZoom});
 });
 }
+
+// Auto zoom out removed - starting with correct zoom level
 
 // --- Orange markers removed - using legend navigation instead ---
 
@@ -5314,31 +5790,45 @@ function getCurrentKey(title) {
 // --- STANDARDIZED NAVIGATION CONTROLLER ---
 function navigateToLocation(key) {
   dbg("NAV_CLICK", {key: key});
+  console.log('🎯 Navigating to marker:', key, 'orbitAnimation before:', orbitAnimation);
 
   // Clear any existing popups
   closeActivePopup();
 
-  // Pause orbit animation to allow camera movement
-  pauseOrbitAnimation();
+  // Keep orbit animation running - no pausing
+  // pauseOrbitAnimation();
 
   // Find the marker data to center camera on it
   const markerData = newMarkers.find(m => m.id == key);
+  console.log('🔍 Marker lookup for key:', key, 'found:', !!markerData, 'data:', markerData);
+  
+  // Additional debug info to verify marker IDs
+  console.log('📍 All markers with ID ' + key + ':', newMarkers.filter(m => m.id == key));
   
   if (markerData && map) {
-    // Update orbit center to the clicked marker's location
-    updateOrbitCenter(markerData.lng, markerData.lat);
+    // Calculate final position with 50m offset to the left (0.00045 degrees)
+    const offsetLng = markerData.lng - 0.00045; // ~50m to the left
+    const finalCenter = [offsetLng, markerData.lat];
     
-    // Center camera on the clicked marker
+    // Update orbit center to match the final camera position (no jump)
+    updateOrbitCenter(offsetLng, markerData.lat);
+    
+    // Get current zoom level and increase it by 1.1x (with min and max limits)
+    const currentZoom = map.getZoom();
+    const targetZoom = Math.min(Math.max(currentZoom * 1.05, 17), 20); // Zoom in by 1.1x, but between 17 and 20
+    
+    console.log('🔍 Zooming from', currentZoom, 'to', targetZoom);
+    
+    // Move camera directly to the final offset position with zoom transition
     map.easeTo({
-      center: [markerData.lng, markerData.lat],
-      zoom: 17.5, // Same zoom level as initial
-      duration: 1000 // Smooth 1-second transition
+      center: finalCenter,
+      zoom: targetZoom, // Zoom in by 1.1x
+      pitch: 75, // Maintain the cinematic angle
+      duration: 1500 // Smooth 1.5-second transition
     });
     
-    // Resume orbit animation after camera movement completes
-    setTimeout(() => {
-      resumeOrbitAnimation();
-    }, 1000); // Wait for camera transition to complete
+    // Orbit continues running - no need to resume
+    console.log('🎯 Camera moving to marker:', key, 'orbit continues running');
   }
 
   // Open the main side panel with full details
@@ -5349,7 +5839,9 @@ function navigateToLocation(key) {
 let activeMarkerPopup = null;
 
 // Auto-close timer for side panel
+// Auto-close timers
 let sidePanelAutoCloseTimer = null;
+let fullscreenViewerAutoCloseTimer = null;
 
 // Function to start auto-close timer for side panel
 function startSidePanelAutoClose() {
@@ -5358,31 +5850,29 @@ function startSidePanelAutoClose() {
     clearTimeout(sidePanelAutoCloseTimer);
   }
   
-  // Set new timer for 45 seconds
+  // Set new timer for 10 seconds
   sidePanelAutoCloseTimer = setTimeout(() => {
-    console.log('⏰ Auto-closing side panel after 45 seconds of inactivity');
+    console.log('⏰ Auto-closing side panel after 10 seconds of inactivity');
     
-    // Return camera to original home position (Michigan Central Station)
+    // Return camera to home position
     if (map) {
-      // Reset orbit center back to Michigan Central Station
-      updateOrbitCenter(LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat);
+      // Reset orbit center to home position
+      updateOrbitCenter(HOME_POSITION.center[0], HOME_POSITION.center[1]);
       
       map.easeTo({
-        center: [LOCATIONS.michiganCentral.lng, LOCATIONS.michiganCentral.lat],
-        zoom: 17.5,
-        pitch: 75,
-        bearing: 180,
-        duration: 2000 // Smooth 2-second transition back home
+        center: HOME_POSITION.center,
+        zoom: HOME_POSITION.zoom,
+        pitch: HOME_POSITION.pitch,
+        bearing: HOME_POSITION.bearing,
+        duration: 2500 // Smooth 2.5-second transition back home
       });
       
-      // Resume orbit animation after camera movement completes
-      setTimeout(() => {
-        resumeOrbitAnimation();
-      }, 2000); // Wait for camera transition to complete
+      // Orbit continues running - no need to resume
+      console.log('🏠 Returning to home position, orbit continues running');
     }
     
     closeSidePanel();
-  }, 45000); // 45 seconds
+  }, 10000); // 10 seconds
 }
 
 // Function to reset auto-close timer (call on any interaction)
@@ -5390,6 +5880,30 @@ function resetSidePanelAutoClose() {
   if (sidePanelAutoCloseTimer) {
     clearTimeout(sidePanelAutoCloseTimer);
     startSidePanelAutoClose(); // Restart the timer
+  }
+}
+
+// Function to start auto-close timer for fullscreen viewer (uses same timeout as side panel)
+function startFullscreenViewerAutoClose() {
+  // Clear any existing timer
+  if (fullscreenViewerAutoCloseTimer) {
+    clearTimeout(fullscreenViewerAutoCloseTimer);
+  }
+  
+  // Set new timer for 10 seconds (same as side panel)
+  fullscreenViewerAutoCloseTimer = setTimeout(() => {
+    console.log('⏰ Auto-closing fullscreen viewer after 10 seconds of inactivity');
+    
+    // Close the fullscreen viewer
+    closeFullscreenViewer();
+  }, 10000); // 10 seconds - same as side panel timer
+}
+
+// Function to reset fullscreen viewer auto-close timer (call on any interaction)
+function resetFullscreenViewerAutoClose() {
+  if (fullscreenViewerAutoCloseTimer) {
+    clearTimeout(fullscreenViewerAutoCloseTimer);
+    startFullscreenViewerAutoClose(); // Restart the timer
   }
 }
 
@@ -5423,45 +5937,114 @@ document.getElementById('legend-toggle').addEventListener('click', () => {
 document.getElementById('legend').addEventListener('click', (e) => {
   if (e.target.tagName === 'BUTTON') {
     const key = e.target.dataset.key;
-    navigateToLocation(key);  // Use new controller
+    const locationId = e.target.dataset.location;
+    
+    if (locationId && LOCATIONS[locationId]) {
+      // If it's a location button with data-location attribute
+      console.log(`🔘 Legend location clicked: ${locationId}`);
+      
+      if (locationId === 'rooseveltPark') {
+        // For Roosevelt Park, only open the side panel without moving the camera
+        console.log('🏞️ Roosevelt Park clicked - opening panel without camera movement');
+        openSidePanel(locationId);
+      } else {
+        // For other locations, fly to the location
+        const location = LOCATIONS[locationId];
+        
+        // Fly to the specific location
+        map.flyTo({
+          center: [location.lng, location.lat],
+          zoom: 18,
+          pitch: 60,
+          bearing: 150,
+          duration: 1500
+        });
+        
+        // Open side panel with the location data
+        openSidePanel(locationId);
+      }
+    } 
+    else if (key) {
+      // Handle regular marker navigation
+      navigateToLocation(key);  // Use new controller
+    }
     // Don't auto-close legend - only toggle with lupe
   }
 });
 
-// resume orbit on map click (outside popup) - but only if not dragging
+// resume orbit on map click (outside popup) - drag is now disabled
 let isDragging = false;
 
-map.on('dragstart', () => {
-  isDragging = true;
-});
-
-map.on('dragend', () => {
-  setTimeout(() => {
-    isDragging = false;
-  }, 100); // Small delay to prevent click after drag
-});
-
-map.on('click', (e) => {
-  // Only navigate home if it's a genuine click (not after dragging)
-  if (!isDragging && !e.originalEvent.defaultPrevented) {
-    dbg("MAP_CLICK", {action: "resume_orbit", isDragging: isDragging});
-    navigateToLocation('home');  // Use new controller
+// Set up Roosevelt Park special handling
+document.addEventListener('DOMContentLoaded', () => {
+  // Set up click handler specifically for Roosevelt Park
+  const rooseveltParkButton = document.querySelector('.legend-item[data-location="rooseveltPark"]');
+  if (rooseveltParkButton) {
+    // Remove any existing event listeners (just to be safe)
+    rooseveltParkButton.replaceWith(rooseveltParkButton.cloneNode(true));
+    
+    // Get the fresh reference after replacement
+    const freshRooseveltParkButton = document.querySelector('.legend-item[data-location="rooseveltPark"]');
+    
+    // Make Roosevelt Park unclickable by preventing all click actions
+    freshRooseveltParkButton.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent event bubbling
+      e.preventDefault(); // Prevent default action
+      console.log('🏞️ Roosevelt Park click prevented - button is now unclickable');
+      // No action performed - the button is now unclickable
+    });
+    
+    // Apply the styling directly to make it look unclickable but still visible
+    freshRooseveltParkButton.style.backgroundColor = '#2E8B57'; // Green background
+    freshRooseveltParkButton.style.color = 'white'; // White text
+    freshRooseveltParkButton.style.fontWeight = '600'; // Slightly bolder
+    freshRooseveltParkButton.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'; // Subtle shadow
+    freshRooseveltParkButton.style.opacity = '0.85'; // Slightly dimmed to indicate it's not clickable
+    freshRooseveltParkButton.style.cursor = 'default'; // Default cursor instead of pointer
+    
+    // Remove hover effects since it's not clickable
+    // Add a tooltip to explain why it's not clickable
+    freshRooseveltParkButton.title = "Roosevelt Park - Information label only";
+    
+    console.log('✅ Roosevelt Park button styling and click handler set up successfully');
+  } else {
+    console.error('❌ Roosevelt Park button not found in the DOM');
   }
 });
 
-// Add moveend logging
-map.on('moveend', () => {
-  const state = {
-    center: [map.getCenter().lng, map.getCenter().lat],
-    orbitCenter: orbitCenter,
-    targetOrbitCenter: targetOrbitCenter,
-    isEasing: map.isEasing && map.isEasing(),
-    zoom: map.getZoom(),
-    pitch: map.getPitch(),
-    bearing: map.getBearing()
-  };
-  dbg("MOVEEND", state);
+// Drag handlers removed as dragging is disabled
+// map.on('dragstart', () => {
+//   isDragging = true;
+// });
+// 
+// map.on('dragend', () => {
+//   setTimeout(() => {
+//     isDragging = false;
+//   }, 100); // Small delay to prevent click after drag
+// });
+
+map.on('click', (e) => {
+  // Since dragging is disabled, we don't need to check isDragging
+  if (!e.originalEvent.defaultPrevented) {
+    dbg("MAP_CLICK", {action: "open_info_panel"});
+    // Open the info panel instead of navigating home
+    openSidePanel('info');
+  }
 });
+
+// Add moveend logging (disabled to reduce console noise)
+// map.on('moveend', () => {
+//   const state = {
+//     center: [map.getCenter().lng, map.getCenter().lat],
+//     orbitCenter: orbitCenter,
+//     targetOrbitCenter: targetOrbitCenter,
+//     isEasing: map.isEasing && map.isEasing(),
+//     zoom: map.getZoom(),
+//     pitch: map.getPitch(),
+//     bearing: map.getBearing()
+//   };
+//   dbg("MOVEEND", state);
+// });
 
 // Current selected location for detail view
 let currentDetailLocation = null;
@@ -5471,9 +6054,11 @@ const DETAIL_DATA = {
   home: {
     title: 'Detroit Overview',
     image: 'public/mc.jpg',
-    description: `Detroit, the Motor City, stands as a testament to American industrial innovation and urban resilience. From its historic neighborhoods to modern innovation districts, Detroit continues to evolve as a center for technology, manufacturing, and cultural renaissance. The city's transformation from industrial powerhouse to innovation hub represents one of the most compelling urban renewal stories in modern America.
-
-    Key features include the historic downtown core, the emerging technology corridor, and the revitalized riverfront districts. Each area tells a unique story of Detroit's past, present, and future vision.`
+  },
+  info: {
+    title: 'Michigan Central',
+    image: 'public/mc.jpg',
+    description: 'Explore the Michigan Central map and facilities.'
   },
   michiganCentral: {
     title: 'Michigan Central Station',
@@ -5640,10 +6225,7 @@ function generateLabelData(id, displayText) {
         ]
     ];
     
-    // Use existing data if available, otherwise generate
-    if (labelData[id]) {
-        return labelData[id];
-    }
+    // Generate new data (removed reference to undefined labelData)
     
     const categoryIndex = (id - 1) % categories.length;
     const titleIndex = (id - 1) % titles.length;
@@ -5661,9 +6243,19 @@ function generateLabelData(id, displayText) {
 
 // Side Panel Functions
 function setupSidePanel() {
+    // Set up the X button at the top right
     const closeBtn = document.getElementById('close-panel');
     if (closeBtn) {
         closeBtn.addEventListener('click', closeSidePanel);
+    }
+    
+    // Set up the CLOSE PANEL button at the bottom right
+    const closePanelBtn = document.getElementById('close-panel-button');
+    if (closePanelBtn) {
+        closePanelBtn.addEventListener('click', () => {
+            closeSidePanel();
+            returnToHomePosition();
+        });
     }
     
     // Add event listeners to reset auto-close timer on interaction
@@ -5677,6 +6269,114 @@ function setupSidePanel() {
     }
 }
 
+// Function to return to home position
+function returnToHomePosition() {
+    console.log('🏠 Returning to home position');
+    
+    // Close the side panel if it's open
+    closeSidePanel();
+    
+    // Fly to the home position
+    map.flyTo({
+        center: HOME_POSITION.center,
+        zoom: HOME_POSITION.zoom,
+        pitch: HOME_POSITION.pitch,
+        bearing: HOME_POSITION.bearing,
+        duration: 2000, // Animation duration in milliseconds
+        essential: true
+    });
+}
+
+// Function to handle clicks on sub-facilities in the consolidated Newlab card
+async function openSubFacilityPanel(facilityId, facilityTitle) {
+    const panel = document.getElementById('label-info-panel');
+    
+    // Clean white theme styling to match Figma
+    panel.style.background = 'white';
+    panel.style.color = 'black';
+    
+    // Home button is now always visible, no need to show it here
+    
+    // Find the sub-facility data from the Newlab enhanced data
+    const newlabData = ENHANCED_MARKER_DATA[2];
+    let subFacilityData = null;
+    
+    if (newlabData && newlabData.subFacilities) {
+        subFacilityData = newlabData.subFacilities.find(facility => facility.id === facilityId);
+    }
+    
+    if (!subFacilityData) {
+        console.error(`Sub-facility data not found for ID: ${facilityId}`);
+        return;
+    }
+    
+    // Update panel content with sub-facility data (without category)
+    document.getElementById('location-title').textContent = subFacilityData.title;
+    document.getElementById('location-description').textContent = subFacilityData.description || 'No description available';
+    
+    // Update features with bullet points (if any)
+    const featuresContainer = document.getElementById('location-features');
+    featuresContainer.innerHTML = '';
+    
+    // Get the Key Features section title
+    const keyFeaturesTitle = document.querySelector('.panel-section h2.section-title');
+    const keyFeaturesSection = keyFeaturesTitle ? keyFeaturesTitle.parentElement : null;
+    
+    // Check if we have bullet points to display
+    let hasBulletPoints = false;
+    let allBulletPoints = [];
+    
+    if (subFacilityData.description) {
+        // Create bullet points from semicolon-separated text in description
+        const textParts = subFacilityData.description.split(';').map(part => part.trim()).filter(part => part);
+        
+        if (textParts.length > 1) {
+            // First part is the main description, rest are features
+            document.getElementById('location-description').textContent = textParts[0];
+            
+            // Add the rest to bullet points
+            allBulletPoints = textParts.slice(1);
+            hasBulletPoints = allBulletPoints.length > 0;
+        }
+    }
+    
+    if (hasBulletPoints) {
+        // Show the Key Features section if it was hidden
+        if (keyFeaturesSection) {
+            keyFeaturesSection.style.display = 'block';
+        }
+        
+        // Create a single container for all bullet points
+        const bulletContainer = document.createElement('div');
+        bulletContainer.className = 'bullet-container';
+        
+        // Create bullet points for the rest
+        allBulletPoints.forEach(part => {
+            const featureDiv = document.createElement('div');
+            featureDiv.className = 'feature-item';
+            
+            featureDiv.innerHTML = `
+                <span class="feature-text">${part}</span>
+            `;
+            
+            bulletContainer.appendChild(featureDiv);
+        });
+        
+        featuresContainer.appendChild(bulletContainer);
+    } else {
+        // Hide the Key Features section when there are no features
+        if (keyFeaturesSection) {
+            keyFeaturesSection.style.display = 'none';
+        }
+    }
+    
+    // Show panel with correct class
+    panel.classList.add('panel-open');
+    
+    // Start auto-close timer
+    startSidePanelAutoClose();
+}
+
 async function openSidePanel(labelId, displayText) {
     const panel = document.getElementById('label-info-panel');
     
@@ -5684,41 +6384,89 @@ async function openSidePanel(labelId, displayText) {
     panel.style.background = 'white';
     panel.style.color = 'black';
     
+    // Home button is now always visible, no need to show it here
+    
     // Try to get data from Supabase first, then fallback to hardcoded
     let data = await getMarkerDataFromSupabase(labelId);
     if (!data) {
         data = getEnhancedMarkerData(labelId, displayText);
     }
     
-    // Update panel content with enhanced data
-    const categoryElement = document.getElementById('location-category');
-    categoryElement.textContent = data.category || 'Unknown Category';
-    
+    // Update panel content with enhanced data (without category)
     document.getElementById('location-title').textContent = data.title || data.name || 'Unknown Facility';
     document.getElementById('location-description').textContent = data.description || 'No description available';
     
     // Clean styling to match Figma design - no additional styling needed
     // CSS handles all the styling now
     
-    // Update features with modern bento box design and green accents
+    // Update features with bullet points
     const featuresContainer = document.getElementById('location-features');
     featuresContainer.innerHTML = '';
     
+    // Create a container for all bullet points
+    const allBulletPoints = [];
+    
     if (data.features && Array.isArray(data.features)) {
+        // Process each feature
         data.features.forEach((feature, index) => {
+            // Get the feature text
+            const featureText = typeof feature === 'string' ? feature : (feature.text || feature);
+            
+            // Split by semicolons
+            const textParts = featureText.split(';').map(part => part.trim()).filter(part => part);
+            
+            // Add each part to our collection
+            allBulletPoints.push(...textParts);
+        });
+    }
+    
+    // Process description for additional bullet points if it contains semicolons
+    if (data.description && data.description.includes(';')) {
+        const descriptionParts = data.description.split(';').map(part => part.trim()).filter(part => part);
+        
+        // Keep the first part as the main description
+        if (descriptionParts.length > 1) {
+            document.getElementById('location-description').textContent = descriptionParts[0];
+            
+            // Add the rest to bullet points
+            allBulletPoints.push(...descriptionParts.slice(1));
+        }
+    }
+    
+    // Get the Key Features section title
+    const keyFeaturesTitle = document.querySelector('.panel-section h2.section-title');
+    const keyFeaturesSection = keyFeaturesTitle ? keyFeaturesTitle.parentElement : null;
+    
+    // Create bullet points for all collected items
+    if (allBulletPoints.length > 0) {
+        // Show the Key Features section if it was hidden
+        if (keyFeaturesSection) {
+            keyFeaturesSection.style.display = 'block';
+        }
+        
+        // Create a single container for all bullet points
+        const bulletContainer = document.createElement('div');
+        bulletContainer.className = 'bullet-container';
+        
+        // Add each bullet point
+        allBulletPoints.forEach(part => {
             const featureDiv = document.createElement('div');
             featureDiv.className = 'feature-item';
             
-            const featureText = typeof feature === 'string' ? feature : (feature.text || feature);
-            
-            // Add green checkmark icon to each feature
+            // Simple bullet-pointed feature
             featureDiv.innerHTML = `
-                <div class="feature-icon">✓</div>
-                <span class="feature-text">${featureText}</span>
+                <span class="feature-text">${part}</span>
             `;
             
-            featuresContainer.appendChild(featureDiv);
+            bulletContainer.appendChild(featureDiv);
         });
+        
+        featuresContainer.appendChild(bulletContainer);
+    } else {
+        // Hide the Key Features section when there are no features
+        if (keyFeaturesSection) {
+            keyFeaturesSection.style.display = 'none';
+        }
     }
     
     // Update image
@@ -5739,6 +6487,9 @@ async function openSidePanel(labelId, displayText) {
         placeholder.textContent = '📷 No photo available';
     }
     
+    // Populate marker navigation
+    populateMarkerNavigation(labelId);
+    
     // Show panel with correct class
     panel.classList.add('panel-open');
     
@@ -5746,9 +6497,83 @@ async function openSidePanel(labelId, displayText) {
     startSidePanelAutoClose();
 }
 
+// Function to populate marker navigation grid with all locations
+function populateMarkerNavigation(currentMarkerId) {
+    const navigationGrid = document.getElementById('marker-navigation');
+    if (!navigationGrid) return;
+    
+    // Clear existing navigation items
+    navigationGrid.innerHTML = '';
+    
+    // List of locations to show in all panels - corrected mapping based on user's confirmation
+    // These are the final correct IDs provided by the user
+    const specificLocations = [
+        { name: "Manufacturing Space for Scale-Stage Companies", id: "12" },
+        { name: "Scaled Launch Facility", id: "19" },
+        { name: "Railway", id: "25" },
+        { name: "The Factory", id: "3" },
+        { name: "America's First Electrified Public Road", id: "17" },
+        { name: "Newlab", id: "2" },
+        { name: "Smart Light Posts", id: "23" },
+        { name: "Bagley Mobility Hub", id: "16" },
+        { name: "Edge Server Platform", id: "22" },
+        { name: "Transportation Innovation Zone (TIZ)", id: "tiz" },
+        { name: "Advanced Aerial Innovation Region (AAIR)", id: "aair" },
+        { name: "Port of Monroe", id: "port-monroe" },
+        { name: "The 23rd (Newlab Manufacturing Space)", id: "newlab-manufacturing" },
+        { name: "The Station", id: "1" }
+    ];
+    
+    // Create rows with 3 items per row
+    const itemsPerRow = 3;
+    for (let i = 0; i < specificLocations.length; i += itemsPerRow) {
+        const row = document.createElement('div');
+        row.className = 'marker-nav-row';
+        
+        // Add items to this row
+        for (let j = i; j < i + itemsPerRow && j < specificLocations.length; j++) {
+            const location = specificLocations[j];
+        const navItem = document.createElement('div');
+        
+        // Add active class if this is the current location
+        const isActive = currentMarkerId == location.id;
+            navItem.className = isActive ? 'marker-nav-item active' : 'marker-nav-item';
+        
+        // Create navigation item content
+        navItem.innerHTML = `
+            <div class="marker-nav-label">${location.name}</div>
+        `;
+        
+        // Add click handler
+        navItem.addEventListener('click', () => {
+                console.log(`Navigating to ${location.name} with ID: ${location.id}`);
+            navigateToLocation(location.id);
+        });
+        
+            row.appendChild(navItem);
+        }
+        
+        navigationGrid.appendChild(row);
+    }
+}
+
+// Helper function to determine if a marker belongs to a main location
+function isMarkerInLocation(markerId, locationId) {
+    // Map marker IDs to main locations
+    const locationMapping = {
+        'home': ['1', '3'], // The Station markers
+        'newlab': ['2', '11', '12', '16', '17', '18', '19', '20', '22', '23'], // Newlab markers (2 is the consolidated card)
+        'michiganCentral': ['24', '25', '26', '27', '28'] // Michigan Central markers
+    };
+    
+    return locationMapping[locationId] && locationMapping[locationId].includes(markerId.toString());
+}
+
 function closeSidePanel() {
     const panel = document.getElementById('label-info-panel');
     panel.classList.remove('panel-open');
+    
+    // Home button is now always visible, no need to hide it here
     
     // Clear auto-close timer
     if (sidePanelAutoCloseTimer) {
