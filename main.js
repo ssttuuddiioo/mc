@@ -1370,6 +1370,11 @@ map.on('load', async () => {
     
     // Setup side panel close functionality
     setupSidePanel();
+    
+    // Hide all labels by default
+    if (!labelsVisible) {
+        hideAllLabels();
+    }
 
     // Building highlighting removed as requested
 
@@ -5279,7 +5284,7 @@ function scheduleOrbitResume() {
 // });
 
 // --- Label Control State ---
-let labelsVisible = true;
+let labelsVisible = false;
 let hiddenLayers = [];
 
 // SVG Polygon state is now managed in svgEditorState
@@ -6246,7 +6251,10 @@ function setupSidePanel() {
     // Set up the X button at the top right
     const closeBtn = document.getElementById('close-panel');
     if (closeBtn) {
-        closeBtn.addEventListener('click', closeSidePanel);
+        closeBtn.addEventListener('click', () => {
+            closeSidePanel();
+            returnToHomePosition();
+        });
     }
     
     // Set up the CLOSE PANEL button at the bottom right
