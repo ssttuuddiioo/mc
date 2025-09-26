@@ -5804,7 +5804,56 @@ function navigateToLocation(key) {
   // Keep orbit animation running - no pausing
   // pauseOrbitAnimation();
 
-  // Find the marker data to center camera on it
+  // Special handling for Roosevelt Park (ID 28)
+  if (key == 28) {
+    console.log('🏞️ Roosevelt Park (ID 28) clicked - special camera handling');
+    
+    // Check if we're already at home position
+    const currentCenter = map.getCenter();
+    const currentBearing = map.getBearing();
+    const currentPitch = map.getPitch();
+    const currentZoom = map.getZoom();
+    
+    const isAtHomePosition = (
+      Math.abs(currentCenter.lng - HOME_POSITION.center[0]) < 0.0001 &&
+      Math.abs(currentCenter.lat - HOME_POSITION.center[1]) < 0.0001 &&
+      Math.abs(currentBearing - HOME_POSITION.bearing) < 5 &&
+      Math.abs(currentPitch - HOME_POSITION.pitch) < 5 &&
+      Math.abs(currentZoom - HOME_POSITION.zoom) < 0.5
+    );
+    
+    if (isAtHomePosition) {
+      // If already at home position, zoom in by 0.5
+      console.log('🔍 Already at home position, zooming in by 0.5');
+      map.easeTo({
+        zoom: currentZoom + 0.5,
+        duration: 1000
+      });
+    } else {
+      // Otherwise, go to home position with 50m offset to the right and 5m lower to the ground
+      console.log('🏠 Moving to home position with offset');
+      
+      // Calculate 50m offset to the right (approx. 0.00045 degrees longitude)
+      const offsetLng = HOME_POSITION.center[0] + 0.00045;
+      
+      // Adjust pitch to be 5m closer to ground (approx. 5 degrees less pitch)
+      const lowerPitch = Math.max(HOME_POSITION.pitch - 5, 0);
+      
+      map.flyTo({
+        center: [offsetLng, HOME_POSITION.center[1]],
+        zoom: HOME_POSITION.zoom,
+        pitch: lowerPitch,
+        bearing: HOME_POSITION.bearing,
+        duration: 1500
+      });
+    }
+    
+    // Open the side panel
+    openSidePanel(key);
+    return;
+  }
+
+  // Standard handling for other markers
   const markerData = newMarkers.find(m => m.id == key);
   console.log('🔍 Marker lookup for key:', key, 'found:', !!markerData, 'data:', markerData);
   
@@ -5957,14 +6006,32 @@ document.getElementById('legend').addEventListener('click', (e) => {
         // For other locations, fly to the location
         const location = LOCATIONS[locationId];
         
-        // Fly to the specific location
-        map.flyTo({
-          center: [location.lng, location.lat],
-          zoom: 18,
-          pitch: 60,
-          bearing: 150,
-          duration: 1500
-        });
+        // Special handling for Michigan Central with offset
+        if (locationId === 'michiganCentral') {
+          // Calculate 50m offset to the right (approx. 0.00045 degrees longitude)
+          const offsetLng = location.lng + 0.00045;
+          
+          // Lower pitch by 5 degrees to be closer to ground
+          const lowerPitch = 55; // 60 - 5
+          
+          // Fly to Michigan Central with offset
+          map.flyTo({
+            center: [offsetLng, location.lat],
+            zoom: 18,
+            pitch: lowerPitch,
+            bearing: 150,
+            duration: 1500
+          });
+        } else {
+          // Standard handling for other locations
+          map.flyTo({
+            center: [location.lng, location.lat],
+            zoom: 18,
+            pitch: 60,
+            bearing: 150,
+            duration: 1500
+          });
+        }
         
         // Open side panel with the location data
         openSidePanel(locationId);
