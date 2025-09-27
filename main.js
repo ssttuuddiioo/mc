@@ -624,8 +624,8 @@ function createMarkerElement(markerData, source = 'hardcoded') {
   el.className = 'custom-marker';
   
   // Apply marker color only for specific markers (Roosevelt Park, Port of Monroe)
-  // IDs 28 and "port-monroe" are the ones that should be dark green
-  if (markerData.color && (markerData.id == 28 || markerData.id == "port-monroe")) {
+  // IDs 28 and 15 (Port of Monroe) are the ones that should be dark green
+  if (markerData.color && (markerData.id == 28 || markerData.id == 15 || markerData.id == "15")) {
     el.style.backgroundColor = '#1b4332'; // Dark green color
   } else {
     // All other markers remain black
@@ -5602,9 +5602,9 @@ function testAllMarkers() {
     { name: "Smart Light Posts", id: "23" },
     { name: "Bagley Mobility Hub", id: "16" },
     { name: "Edge Server Platform", id: "22" },
-    { name: "Transportation Innovation Zone (TIZ)", id: "tiz" },
-    { name: "Advanced Aerial Innovation Region (AAIR)", id: "aair" },
-    { name: "Port of Monroe", id: "port-monroe" },
+    { name: "Transportation Innovation Zone (TIZ)", id: "13" },
+    { name: "Advanced Aerial Innovation Region (AAIR)", id: "14" },
+    { name: "Port of Monroe", id: "15" },
     { name: "The 23rd (Newlab Manufacturing Space)", id: "newlab-manufacturing" },
     { name: "The Station", id: "1" }
   ];
@@ -6642,9 +6642,9 @@ function populateMarkerNavigation(currentMarkerId) {
         { name: "Smart Light Posts", id: "23" },
         { name: "Bagley Mobility Hub", id: "16" },
         { name: "Edge Server Platform", id: "22" },
-        { name: "Transportation Innovation Zone (TIZ)", id: "tiz" },
-        { name: "Advanced Aerial Innovation Region (AAIR)", id: "aair" },
-        { name: "Port of Monroe", id: "port-monroe" },
+        { name: "Transportation Innovation Zone (TIZ)", id: "13" },
+        { name: "Advanced Aerial Innovation Region (AAIR)", id: "14" },
+        { name: "Port of Monroe", id: "15" },
         { name: "The 23rd (Newlab Manufacturing Space)", id: "newlab-manufacturing" },
         { name: "The Station", id: "1" }
     ];
