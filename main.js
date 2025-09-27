@@ -146,18 +146,15 @@ async function fetchFromSupabaseWithFallback() {
   try {
     const supabaseMarkers = await fetchMarkersFromSupabase();
     if (supabaseMarkers.length > 0) {
+      console.log("✅ Successfully loaded markers from Supabase");
       return supabaseMarkers;
     }
   } catch (error) {
-    console.log("⚠️ Supabase failed, falling back to hardcoded markers");
+    console.log("⚠️ Supabase failed to load markers:", error);
   }
   
-  // Fallback to hardcoded markers if Supabase fails
-  if (TRANSITION_CONFIG.fallbackToHardcoded) {
-    console.log("🔄 Using hardcoded markers as fallback");
-    return newMarkers; // Your existing hardcoded markers
-  }
-  
+  // No fallback to hardcoded markers - Supabase only
+  console.log("ℹ️ No markers available from Supabase");
   return [];
 }
 
@@ -959,19 +956,15 @@ async function refreshMapMarkers() {
     }
   });
   
-  // Re-add markers
-  const filteredHardcodedMarkers = filterHardcodedMarkers(newMarkers);
-  if (filteredHardcodedMarkers.length > 0) {
-    addMarkersToMap(filteredHardcodedMarkers, 'hardcoded');
-  }
-  
-  // Fetch and add fresh Supabase markers
+  // Only add Supabase markers - no hardcoded markers
   try {
     const supabaseMarkers = await fetchMarkersFromSupabase();
     if (supabaseMarkers.length > 0) {
       addMarkersToMap(supabaseMarkers, 'supabase');
+      console.log(`🔄 Map refreshed with ${supabaseMarkers.length} Supabase markers`);
+    } else {
+      console.log('⚠️ No markers available from Supabase');
     }
-    console.log(`🔄 Map refreshed with ${filteredHardcodedMarkers.length} hardcoded + ${supabaseMarkers.length} Supabase markers`);
   } catch (error) {
     console.error('❌ Error refreshing Supabase markers:', error);
   }
@@ -980,9 +973,9 @@ async function refreshMapMarkers() {
 // --- Transition Helper Functions ---
 // Configuration for gradual transition
 const TRANSITION_CONFIG = {
-  useSupabaseOnly: true, // Now using only Supabase markers (CSV data)
+  useSupabaseOnly: true, // Using only Supabase markers (CSV data)
   excludeHardcodedIds: [], // Array of hardcoded marker IDs to exclude (replaced by Supabase)
-  fallbackToHardcoded: true // If Supabase fails, still show hardcoded markers
+  fallbackToHardcoded: false // Never fall back to hardcoded markers - Supabase only
 };
 
 function filterHardcodedMarkers(hardcodedMarkers) {
@@ -6468,10 +6461,16 @@ async function openSidePanel(labelId, displayText) {
     
     // Home button is now always visible, no need to show it here
     
-    // Try to get data from Supabase first, then fallback to hardcoded
+    // Only use data from Supabase - no fallback
     let data = await getMarkerDataFromSupabase(labelId);
     if (!data) {
-        data = getEnhancedMarkerData(labelId, displayText);
+        console.log(`⚠️ No Supabase data found for marker ID: ${labelId}`);
+        // Create minimal default data
+        data = {
+            title: displayText || `Location ${labelId}`,
+            description: "No information available for this location.",
+            features: []
+        };
     }
     
     // Update panel content with enhanced data (without category)
