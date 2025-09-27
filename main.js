@@ -40,7 +40,8 @@ async function fetchMarkersFromSupabase() {
     const { data, error } = await supabaseClient.from('markers').select('*');
     if (error) throw error;
     
-    // Debugging removed
+    // Debug: Log all markers from Supabase
+    console.log('📊 All Supabase markers:', data);
     
     // Cache the fresh data
     cacheManager.cacheMarkers(data);
@@ -497,15 +498,48 @@ let allSupabaseMarkers = [];
 
 // --- Marker Data Access Functions ---
 async function getMarkerDataFromSupabase(labelId) {
+  console.log(`🔍 Looking for marker with ID: ${labelId}`);
+  
   // First try from global store (faster)
-  let marker = allSupabaseMarkers.find(m => m.id == labelId || m.label == labelId);
+  let marker = allSupabaseMarkers.find(m => 
+    m.id == labelId || 
+    m.label == labelId || 
+    m.name == labelId ||
+    (typeof m.id === 'string' && m.id.toLowerCase() === labelId.toLowerCase())
+  );
   
   if (!marker) {
     // Try fetching fresh data
     try {
       const markers = await fetchMarkersFromSupabase();
       allSupabaseMarkers = markers; // Update global store
-      marker = markers.find(m => m.id == labelId || m.label == labelId);
+      
+      // More flexible matching
+      marker = markers.find(m => 
+        m.id == labelId || 
+        m.label == labelId || 
+        m.name == labelId ||
+        (typeof m.id === 'string' && m.id.toLowerCase() === labelId.toLowerCase())
+      );
+      
+      // Debug: If still not found, log all IDs for comparison
+      if (!marker) {
+        console.log(`⚠️ Marker with ID ${labelId} not found. Available IDs:`, 
+          markers.map(m => `${m.id} (${m.name || 'unnamed'})`));
+          
+        // Try matching by name (case insensitive)
+        if (typeof labelId === 'string') {
+          const normalizedLabelId = labelId.toLowerCase();
+          marker = markers.find(m => 
+            (m.name && m.name.toLowerCase().includes(normalizedLabelId)) ||
+            (m.title && m.title.toLowerCase().includes(normalizedLabelId))
+          );
+          
+          if (marker) {
+            console.log(`✅ Found marker by name match: ${marker.id} - ${marker.name}`);
+          }
+        }
+      }
     } catch (error) {
       console.log('⚠️ Could not fetch marker data from Supabase');
       return null;
@@ -6462,15 +6496,25 @@ async function openSidePanel(labelId, displayText) {
     // Home button is now always visible, no need to show it here
     
     // Only use data from Supabase - no fallback
+    console.log(`📋 Opening side panel for: ${labelId}`);
+    
+    // Try to get data from Supabase
     let data = await getMarkerDataFromSupabase(labelId);
-    if (!data) {
-        console.log(`⚠️ No Supabase data found for marker ID: ${labelId}`);
+    
+    // If we couldn't find data in Supabase but we have it in ENHANCED_MARKER_DATA, use that temporarily
+    if (!data && ENHANCED_MARKER_DATA[labelId]) {
+        console.log(`⚠️ No Supabase data found for ${labelId}, using hardcoded data temporarily`);
+        data = ENHANCED_MARKER_DATA[labelId];
+    } else if (!data) {
+        console.log(`⚠️ No data found for marker ID: ${labelId} in Supabase or hardcoded data`);
         // Create minimal default data
         data = {
             title: displayText || `Location ${labelId}`,
             description: "No information available for this location.",
             features: []
         };
+    } else {
+        console.log(`✅ Found data in Supabase for ${labelId}:`, data);
     }
     
     // Update panel content with enhanced data (without category)
