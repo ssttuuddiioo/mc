@@ -592,6 +592,11 @@ function createMarkerElement(markerData, source = 'hardcoded') {
   const el = document.createElement('div');
   el.className = 'custom-marker';
   
+  // Apply marker color if specified
+  if (markerData.color) {
+    el.style.backgroundColor = markerData.color;
+  }
+  
   // Store the marker ID as a data attribute for easier reference
   el.setAttribute('data-id', markerData.id);
 
@@ -2386,8 +2391,15 @@ map.on('load', async () => {
   if (infoButton) {
     console.log('ℹ️ Info button found, adding event listener');
     infoButton.addEventListener('click', () => {
-      // Open the info panel
-      openSidePanel('info');
+      // Check if side panel is already open
+      const panel = document.getElementById('label-info-panel');
+      if (panel.classList.contains('panel-open')) {
+        // If panel is open, close it
+        closeSidePanel();
+      } else {
+        // If panel is closed, open the info panel
+        openSidePanel('info');
+      }
     });
   } else {
     console.error('❌ Info button not found in DOM');
