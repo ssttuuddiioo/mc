@@ -1332,6 +1332,12 @@ const ENHANCED_MARKER_DATA = {
 
 map.on('load', async () => {
     dbg("MAP_LOAD", "Map fully loaded");
+    
+    // Disable fog for clearer visibility
+    if (map.setFog) {
+        map.setFog(null);
+        console.log('🌫️ Fog disabled');
+    }
 
     // Orbit animation disabled - no spinning
     // startOrbitAnimation();
@@ -2358,6 +2364,12 @@ function handleManualSVGInput() {
 map.on('load', async () => {
   // Map loaded and ready for navigation
   console.log('🗺️ Map loaded successfully');
+  
+  // Ensure fog is disabled for clearer visibility
+  if (map.setFog) {
+    map.setFog(null);
+    console.log('🌫️ Fog disabled in second load handler');
+  }
   
   // Initialize building highlighting with Interactions API
   initializeBuildingHighlighting();
