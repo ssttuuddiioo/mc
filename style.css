@@ -391,7 +391,8 @@ body {
   box-shadow: 0 4px 16px rgba(100, 149, 237, 0.2);
 }
 
-/* Close Panel Button (bottom right) */
+/* Close Panel Button removed as requested */
+/*
 .close-panel-button {
   position: absolute;
   bottom: 30px;
@@ -420,6 +421,7 @@ body {
   transform: translateY(1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
+*/
 
 /* Panel Container */
 .panel-container {
@@ -586,7 +588,7 @@ body {
 /* Home Button */
 .map-control-button {
   position: fixed;
-  bottom: 80px; /* Moved 50px higher from original 30px */
+  bottom: 280px; /* Moved 200px higher from previous position */
   left: 50%;
   transform: translateX(-50%);
   z-index: 1001; /* Higher z-index to ensure it's above other buttons */
@@ -622,7 +624,7 @@ body {
 /* Full Map Button */
 .full-map-button {
   position: fixed;
-  bottom: 80px; /* Aligned with home button */
+  bottom: 280px; /* Moved 200px higher, aligned with home button */
   left: calc(50% - 290px); /* Moved 30px to the right from previous position */
   z-index: 1000;
   background-color: rgba(0, 0, 0, 0.7);
@@ -653,7 +655,7 @@ body {
 /* Info Button */
 .info-button {
   position: fixed;
-  bottom: 80px; /* Aligned with home button */
+  bottom: 280px; /* Moved 200px higher, aligned with home button */
   left: calc(50% + 160px); /* Positioned much further to the right to avoid overlap */
   z-index: 1000;
   background-color: rgba(0, 0, 0, 0.7);
@@ -754,24 +756,24 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Top Location Buttons */
+/* Location Buttons (moved to bottom center above other buttons) */
 .top-buttons {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  bottom: 80px; /* Position at bottom */
+  left: 20px; /* Position at left */
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 0;
-  max-width: 100%;
+  width: auto; /* Auto width based on content */
   z-index: 1000;
 }
 
 .top-buttons .button-row {
   display: flex;
-  flex-direction: row;
-  gap: 20px;
+  flex-direction: column; /* Vertical layout */
+  gap: 10px; /* Gap between buttons */
   margin-bottom: 0;
-  width: auto;
+  width: auto; /* Width based on content */
 }
 
 .location-button {
@@ -780,18 +782,24 @@ body {
   border: none;
   padding: 10px 15px;
   font-family: 'MichiganCentralMonumentGrotesk-Bold', Arial, sans-serif;
-  font-size: 16px;
+  font-size: 14px; /* Slightly larger for better readability */
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  text-align: left;
-  width: 240px;
-  height: 70px;
-  white-space: normal;
-  line-height: 1.3;
+  text-align: left; /* Left-aligned text for vertical layout */
+  width: 180px; /* Fixed width for all buttons */
+  height: auto; /* Auto height to fit content */
+  min-height: 40px; /* Smaller minimum height */
+  white-space: normal; /* Allow text wrapping */
+  line-height: 1.2; /* Improved line height */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   margin: 0;
-  border-radius: 0;
+  border-radius: 8px; /* Rounded corners */
+  display: flex; /* Use flexbox for centering */
+  align-items: center; /* Vertical centering */
+  justify-content: flex-start; /* Left alignment */
+  overflow: hidden; /* Prevent overflow */
+  word-break: break-word; /* Break words if needed */
 }
 
 .location-button:nth-child(1) {

@@ -260,44 +260,16 @@ class CacheManager {
 
   updateConnectionStatus() {
     const statusEl = document.getElementById('connection-status');
-    const iconEl = document.getElementById('connection-icon');
-    const textEl = document.getElementById('connection-text');
-    const cacheInfoEl = document.getElementById('cache-info');
     
     if (!statusEl) return;
 
+    // Simple red circle when offline, hidden when online
     if (this.isOnline) {
-      statusEl.style.background = 'rgba(46, 204, 113, 0.9)';
-      iconEl.textContent = '🌐';
-      textEl.textContent = 'Online';
-      
-      // Show cache info
-      const cachedResult = this.getCachedMarkers();
-      if (cachedResult) {
-        cacheInfoEl.textContent = `(${cachedResult.markers.length} cached)`;
-      }
+      statusEl.style.background = 'rgba(46, 204, 113, 0.9)'; // Green but will be hidden
+      statusEl.style.display = 'none'; // Hide when online
     } else {
-      statusEl.style.background = 'rgba(231, 76, 60, 0.9)';
-      iconEl.textContent = '📱';
-      textEl.textContent = 'Offline';
-      
-      const cachedResult = this.getCachedMarkers();
-      if (cachedResult) {
-        cacheInfoEl.textContent = `(using ${cachedResult.markers.length} cached)`;
-      } else {
-        cacheInfoEl.textContent = '(no cache)';
-      }
-    }
-    
-    statusEl.style.display = 'block';
-    
-    // Auto-hide after 3 seconds if online
-    if (this.isOnline) {
-      setTimeout(() => {
-        if (statusEl && this.isOnline) {
-          statusEl.style.display = 'none';
-        }
-      }, 3000);
+      statusEl.style.background = 'rgba(231, 60, 60, 0.9)'; // Red circle
+      statusEl.style.display = 'block'; // Show when offline
     }
   }
 
@@ -1114,19 +1086,19 @@ const newMarkers = [
     { id: 2, lat: 42.3289336553628, lng: -83.07563729423877, color: '#4A90E2', height: 100 }, // Consolidated Newlab marker with height offset
     { id: 3, lat: 42.331049686201276, lng: -83.07221479556428, color: '#4A90E2', height: 150 }, // The Factory with height offset
     // Removed individual Newlab facilities in favor of consolidated card
-    { id: 12, lat: 42.32698343914925, lng: -83.0809899182321, color: '#E74C3C' },
-    { id: 16, lat: 42.326498496839065, lng: -83.07267505001451, color: '#9B59B6' },
+    { id: 12, lat: 42.32698343914925, lng: -83.0809899182321, color: '#1b4332' }, // Changed to dark green
+    { id: 16, lat: 42.326498496839065, lng: -83.07267505001451, color: '#1b4332' }, // Changed to dark green
     { id: 17, lat: 42.32933148027947, lng: -83.07537518116047, color: '#9B59B6' },
     { id: 18, lat: 42.32846502089401, lng: -83.0778396126792, color: '#9B59B6' },
-    { id: 19, lat: 42.32872406892148, lng: -83.08228330495663, color: '#9B59B6' },
+    { id: 19, lat: 42.32872406892148, lng: -83.08228330495663, color: '#1b4332' }, // Changed to dark green
     { id: 20, lat: 42.32828839662688, lng: -83.07564165737065, color: '#9B59B6' },
     { id: 22, lat: 42.32706378807067, lng: -83.06791695933897, color: '#9B59B6' },
     { id: 23, lat: 42.3263690476279, lng: -83.07403300892324, color: '#9B59B6' },
-    { id: 28, text: "28", lat: 42.32904224480186, lng: -83.08086956713913, color: '#5DADE2' },
-    { id: 28, text: "28", lat: 42.33016060731937, lng: -83.07923878407165, color: '#5DADE2' },
-    { id: 28, text: "28", lat: 42.331914452617156, lng: -83.0736844064228, color: '#5DADE2' },
-    { id: 28, text: "28", lat: 42.330176499429875, lng: -83.07198087929577, color: '#5DADE2' },
-    { id: 28, text: "28", lat: 42.33030901969737, lng: -83.0707049920504, color: '#5DADE2' }
+    { id: 28, text: "28", lat: 42.32904224480186, lng: -83.08086956713913, color: '#1b4332' },
+    { id: 28, text: "28", lat: 42.33016060731937, lng: -83.07923878407165, color: '#1b4332' },
+    { id: 28, text: "28", lat: 42.331914452617156, lng: -83.0736844064228, color: '#1b4332' },
+    { id: 28, text: "28", lat: 42.330176499429875, lng: -83.07198087929577, color: '#1b4332' },
+    { id: 28, text: "28", lat: 42.33030901969737, lng: -83.0707049920504, color: '#1b4332' }
 ];
 
 // ENHANCED MARKER DATA - Admin Configurable Information
@@ -2474,10 +2446,6 @@ map.on('load', async () => {
   // Initialize Multi-SVG Editor system
   console.log('🎯 About to initialize SVG Editor...');
   initializeSVGEditor();
-  
-  // Start the home position timer
-  startHomePositionTimer();
-  console.log('⏱️ Home position timer initialized - will check every minute');
   
   // Michigan Central SVG loading DISABLED - removed completely
 });
@@ -5812,11 +5780,23 @@ function navigateToLocation(key) {
   if (key == 28) {
     console.log('🏞️ Roosevelt Park (ID 28) clicked - special camera handling');
     
-    // Check if we're already at home position using the reusable function
-    if (checkIfAtHomePosition()) {
+    // Check if we're already at home position
+    const currentCenter = map.getCenter();
+    const currentBearing = map.getBearing();
+    const currentPitch = map.getPitch();
+    const currentZoom = map.getZoom();
+    
+    const isAtHomePosition = (
+      Math.abs(currentCenter.lng - HOME_POSITION.center[0]) < 0.0001 &&
+      Math.abs(currentCenter.lat - HOME_POSITION.center[1]) < 0.0001 &&
+      Math.abs(currentBearing - HOME_POSITION.bearing) < 5 &&
+      Math.abs(currentPitch - HOME_POSITION.pitch) < 5 &&
+      Math.abs(currentZoom - HOME_POSITION.zoom) < 0.5
+    );
+    
+    if (isAtHomePosition) {
       // If already at home position, zoom in by 0.5
       console.log('🔍 Already at home position, zooming in by 0.5');
-      const currentZoom = map.getZoom();
       map.easeTo({
         zoom: currentZoom + 0.5,
         duration: 1000
@@ -6317,14 +6297,14 @@ function setupSidePanel() {
         });
     }
     
-    // Set up the CLOSE PANEL button at the bottom right
-    const closePanelBtn = document.getElementById('close-panel-button');
-    if (closePanelBtn) {
-        closePanelBtn.addEventListener('click', () => {
-            closeSidePanel();
-            returnToHomePosition();
-        });
-    }
+    // CLOSE PANEL button removed as requested
+    // const closePanelBtn = document.getElementById('close-panel-button');
+    // if (closePanelBtn) {
+    //     closePanelBtn.addEventListener('click', () => {
+    //         closeSidePanel();
+    //         returnToHomePosition();
+    //     });
+    // }
     
     // Add event listeners to reset auto-close timer on interaction
     const panel = document.getElementById('label-info-panel');
@@ -6335,22 +6315,6 @@ function setupSidePanel() {
         panel.addEventListener('mousemove', resetSidePanelAutoClose);
         panel.addEventListener('touchstart', resetSidePanelAutoClose);
     }
-}
-
-// Function to check if the map is currently at the home position
-function checkIfAtHomePosition() {
-    const currentCenter = map.getCenter();
-    const currentBearing = map.getBearing();
-    const currentPitch = map.getPitch();
-    const currentZoom = map.getZoom();
-    
-    return (
-        Math.abs(currentCenter.lng - HOME_POSITION.center[0]) < 0.0001 &&
-        Math.abs(currentCenter.lat - HOME_POSITION.center[1]) < 0.0001 &&
-        Math.abs(currentBearing - HOME_POSITION.bearing) < 5 &&
-        Math.abs(currentPitch - HOME_POSITION.pitch) < 5 &&
-        Math.abs(currentZoom - HOME_POSITION.zoom) < 0.5
-    );
 }
 
 // Function to return to home position
@@ -6369,35 +6333,6 @@ function returnToHomePosition() {
         duration: 2000, // Animation duration in milliseconds
         essential: true
     });
-}
-
-// Variable to store the home position timer
-let homePositionTimer;
-
-// Function to check if we need to return to home position
-function checkAndReturnToHomePosition() {
-    console.log('⏰ Checking if map needs to return to home position...');
-    
-    // Only return to home if not already there
-    if (!checkIfAtHomePosition()) {
-        console.log('🔄 Not at home position - returning to home');
-        returnToHomePosition();
-    } else {
-        console.log('✅ Already at home position - no action needed');
-    }
-}
-
-// Function to start the home position timer
-function startHomePositionTimer() {
-    console.log('⏱️ Starting home position timer - will check every minute');
-    
-    // Clear any existing timer
-    if (homePositionTimer) {
-        clearInterval(homePositionTimer);
-    }
-    
-    // Set a new timer to check every minute (60000 ms)
-    homePositionTimer = setInterval(checkAndReturnToHomePosition, 60000);
 }
 
 // Function to handle clicks on sub-facilities in the consolidated Newlab card
@@ -6492,6 +6427,12 @@ async function openSubFacilityPanel(facilityId, facilityTitle) {
 
 async function openSidePanel(labelId, displayText) {
     const panel = document.getElementById('label-info-panel');
+    
+    // Update INFO button text to CLOSE INFO when panel is open
+    const infoButton = document.getElementById('info-button');
+    if (infoButton) {
+        infoButton.textContent = 'CLOSE INFO';
+    }
     
     // Clean white theme styling to match Figma
     panel.style.background = 'white';
@@ -6685,6 +6626,12 @@ function isMarkerInLocation(markerId, locationId) {
 function closeSidePanel() {
     const panel = document.getElementById('label-info-panel');
     panel.classList.remove('panel-open');
+    
+    // Reset INFO button text when panel is closed
+    const infoButton = document.getElementById('info-button');
+    if (infoButton) {
+        infoButton.textContent = 'INFO';
+    }
     
     // Home button is now always visible, no need to hide it here
     
