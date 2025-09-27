@@ -2475,6 +2475,10 @@ map.on('load', async () => {
   console.log('🎯 About to initialize SVG Editor...');
   initializeSVGEditor();
   
+  // Start the home position timer
+  startHomePositionTimer();
+  console.log('⏱️ Home position timer initialized - will check every minute');
+  
   // Michigan Central SVG loading DISABLED - removed completely
 });
 
@@ -5808,23 +5812,11 @@ function navigateToLocation(key) {
   if (key == 28) {
     console.log('🏞️ Roosevelt Park (ID 28) clicked - special camera handling');
     
-    // Check if we're already at home position
-    const currentCenter = map.getCenter();
-    const currentBearing = map.getBearing();
-    const currentPitch = map.getPitch();
-    const currentZoom = map.getZoom();
-    
-    const isAtHomePosition = (
-      Math.abs(currentCenter.lng - HOME_POSITION.center[0]) < 0.0001 &&
-      Math.abs(currentCenter.lat - HOME_POSITION.center[1]) < 0.0001 &&
-      Math.abs(currentBearing - HOME_POSITION.bearing) < 5 &&
-      Math.abs(currentPitch - HOME_POSITION.pitch) < 5 &&
-      Math.abs(currentZoom - HOME_POSITION.zoom) < 0.5
-    );
-    
-    if (isAtHomePosition) {
+    // Check if we're already at home position using the reusable function
+    if (checkIfAtHomePosition()) {
       // If already at home position, zoom in by 0.5
       console.log('🔍 Already at home position, zooming in by 0.5');
+      const currentZoom = map.getZoom();
       map.easeTo({
         zoom: currentZoom + 0.5,
         duration: 1000
@@ -6345,6 +6337,22 @@ function setupSidePanel() {
     }
 }
 
+// Function to check if the map is currently at the home position
+function checkIfAtHomePosition() {
+    const currentCenter = map.getCenter();
+    const currentBearing = map.getBearing();
+    const currentPitch = map.getPitch();
+    const currentZoom = map.getZoom();
+    
+    return (
+        Math.abs(currentCenter.lng - HOME_POSITION.center[0]) < 0.0001 &&
+        Math.abs(currentCenter.lat - HOME_POSITION.center[1]) < 0.0001 &&
+        Math.abs(currentBearing - HOME_POSITION.bearing) < 5 &&
+        Math.abs(currentPitch - HOME_POSITION.pitch) < 5 &&
+        Math.abs(currentZoom - HOME_POSITION.zoom) < 0.5
+    );
+}
+
 // Function to return to home position
 function returnToHomePosition() {
     console.log('🏠 Returning to home position');
@@ -6361,6 +6369,35 @@ function returnToHomePosition() {
         duration: 2000, // Animation duration in milliseconds
         essential: true
     });
+}
+
+// Variable to store the home position timer
+let homePositionTimer;
+
+// Function to check if we need to return to home position
+function checkAndReturnToHomePosition() {
+    console.log('⏰ Checking if map needs to return to home position...');
+    
+    // Only return to home if not already there
+    if (!checkIfAtHomePosition()) {
+        console.log('🔄 Not at home position - returning to home');
+        returnToHomePosition();
+    } else {
+        console.log('✅ Already at home position - no action needed');
+    }
+}
+
+// Function to start the home position timer
+function startHomePositionTimer() {
+    console.log('⏱️ Starting home position timer - will check every minute');
+    
+    // Clear any existing timer
+    if (homePositionTimer) {
+        clearInterval(homePositionTimer);
+    }
+    
+    // Set a new timer to check every minute (60000 ms)
+    homePositionTimer = setInterval(checkAndReturnToHomePosition, 60000);
 }
 
 // Function to handle clicks on sub-facilities in the consolidated Newlab card
