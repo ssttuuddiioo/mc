@@ -592,9 +592,13 @@ function createMarkerElement(markerData, source = 'hardcoded') {
   const el = document.createElement('div');
   el.className = 'custom-marker';
   
-  // Apply marker color if specified
-  if (markerData.color) {
+  // Apply marker color only for specific markers (Roosevelt Park, Largest multimodal border, Detroit River)
+  // IDs 12, 16, 19, and 28 are the ones that should be dark green
+  if (markerData.color && (markerData.id == 12 || markerData.id == 16 || markerData.id == 19 || markerData.id == 28)) {
     el.style.backgroundColor = markerData.color;
+  } else {
+    // All other markers remain black
+    el.style.backgroundColor = '#000000';
   }
   
   // Store the marker ID as a data attribute for easier reference
