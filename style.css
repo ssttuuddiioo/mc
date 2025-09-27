@@ -369,7 +369,7 @@ body {
 .close-btn-overlay {
   position: absolute;
   top: 50%;
-  left: -22px; /* Half the width to make it appear halfway out */
+  left: -30px; /* Move further left to ensure full visibility */
   transform: translateY(-50%);
   width: 44px;
   height: 44px;
@@ -384,6 +384,10 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.2);
   box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 4px; /* Offset the content slightly to center it visually */
 }
 
 .close-btn-overlay:hover {
@@ -391,6 +395,7 @@ body {
   transform: translateY(-50%) scale(1.1) rotate(90deg);
   border-color: #6495ED;
   box-shadow: -4px 0 16px rgba(100, 149, 237, 0.3);
+  padding-left: 0; /* Reset padding on hover due to rotation */
 }
 
 /* Close Panel Button removed as requested */
