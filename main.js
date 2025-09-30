@@ -698,40 +698,11 @@ function syncMarkers() {
         // If not, add it now.
         item.marker.addTo(map);
       }
-      
-      // Get the marker's current screen position
-      const pos = item.marker.getLngLat();
-      
-      // Validate position before projecting
-      if (!pos || isNaN(pos.lat) || isNaN(pos.lng)) {
-        console.warn(`⚠️ Invalid marker position:`, pos);
-        return; // Skip this marker
-      }
-      
-      const screenPos = map.project(pos);
-      
-      // Validate screen position
-      if (isNaN(screenPos.x) || isNaN(screenPos.y) || 
-          Math.abs(screenPos.x) > 10000 || Math.abs(screenPos.y) > 10000) {
-        console.warn(`⚠️ Invalid screen position for marker:`, screenPos, pos);
-        return; // Skip this marker
-      }
-      
-      // Apply height offset if specified (adjust Y coordinate)
-      const heightOffset = item.marker._height || 0;
-      
-      // Calculate the visual height offset based on the map's pitch and zoom
-      // This formula adjusts the offset to look more natural in 3D perspective
-      const pitch = map.getPitch();
-      const zoom = map.getZoom();
-      const pitchFactor = Math.sin(pitch * Math.PI / 180); // Convert pitch to radians
-      const zoomFactor = Math.pow(2, zoom - 10) * 0.5; // Scale based on zoom level
-      
-      // Calculate the effective Y offset
-      const effectiveYOffset = heightOffset * pitchFactor * zoomFactor;
-      
-      // Update the element's transform for smooth animation with height offset
-      item.element.style.transform = `translate(${screenPos.x}px, ${screenPos.y - effectiveYOffset}px)`;
+      // Ensure marker uses Mapbox's native positioning. If a height is set, use
+      // Mapbox's pixel offset rather than manual CSS transforms which caused
+      // markers to drift vertically with pitch/zoom.
+      const pixelOffset = -(item.marker._height || 0); // negative Y to nudge upward
+      item.marker.setOffset([0, pixelOffset]);
     } catch (error) {
       console.error(`❌ Error syncing marker ${index}:`, error);
     }
