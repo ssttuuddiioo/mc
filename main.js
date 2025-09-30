@@ -464,6 +464,7 @@ async function fetchFromSupabaseWithFallback() {
     const supabaseMarkers = await fetchMarkersFromSupabase();
     if (supabaseMarkers.length > 0) {
       console.log("✅ Successfully loaded markers from Supabase");
+      console.log("📷 Sample Supabase image path:", supabaseMarkers[0]?.image);
       return supabaseMarkers;
     }
   } catch (error) {
@@ -472,6 +473,7 @@ async function fetchFromSupabaseWithFallback() {
   
   // Fallback to local markers when Supabase is blocked (e.g., by Cisco Umbrella firewall)
   console.log("🔄 Using fallback marker data (Supabase may be blocked by network firewall)");
+  console.log("📷 Sample fallback image path:", FALLBACK_MARKERS[0]?.image);
   return FALLBACK_MARKERS;
 }
 
@@ -480,6 +482,17 @@ async function backgroundSyncMarkers() {
   try {
     const freshMarkers = await fetchMarkersFromSupabase();
     if (freshMarkers.length > 0) {
+      // Check if markers have Supabase URLs (would be blocked by firewall)
+      const hasSupabaseUrls = freshMarkers.some(m => m.image && m.image.includes('supabase.co'));
+      
+      // If we're using fallback markers (local paths), don't overwrite with Supabase URLs
+      const usingFallback = allSupabaseMarkers.some(m => m.image && m.image.startsWith('public/'));
+      
+      if (hasSupabaseUrls && usingFallback) {
+        console.log("⚠️ Skipping sync: Supabase URLs would be blocked, keeping fallback data");
+        return;
+      }
+      
       cacheManager.cacheMarkers(freshMarkers);
       
       // Check if data changed, if so, update display
@@ -537,7 +550,7 @@ const CACHE_KEYS = {
 
 const CACHE_CONFIG = {
   MAX_AGE: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
-  CURRENT_VERSION: '1.1.0',
+  CURRENT_VERSION: '1.1.1',
   SYNC_INTERVAL: 5 * 60 * 1000 // 5 minutes for background sync
 };
 
