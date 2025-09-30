@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Debug Info</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+    pre { background: #000; padding: 10px; border: 1px solid #0f0; }
+    button { background: #0f0; color: #000; padding: 10px 20px; font-size: 16px; cursor: pointer; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Debug PC Environment</h1>
+  <button onclick="checkEverything()">Run Full Diagnostic</button>
+  <button onclick="forceReset()">Nuclear Reset</button>
+  <pre id="output"></pre>
+
+  <script>
+    const output = document.getElementById('output');
+    
+    async function checkEverything() {
+      let report = '';
+      
+      report += '=== ENVIRONMENT ===\n';
+      report += `URL: ${window.location.href}\n`;
+      report += `User Agent: ${navigator.userAgent}\n\n`;
+      
+      report += '=== APP VERSION ===\n';
+      try {
+        report += `APP_VERSION: ${typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'NOT DEFINED'}\n\n`;
+      } catch(e) {
+        report += `APP_VERSION: ERROR - ${e.message}\n\n`;
+      }
+      
+      report += '=== SERVICE WORKERS ===\n';
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      report += `Active SWs: ${registrations.length}\n`;
+      registrations.forEach((reg, i) => {
+        report += `  [${i}] ${reg.scope} - ${reg.active?.state || 'inactive'}\n`;
+      });
+      report += '\n';
+      
+      report += '=== LOCAL STORAGE ===\n';
+      report += `Keys: ${Object.keys(localStorage).join(', ')}\n`;
+      const cacheVersion = localStorage.getItem('app_cache_version');
+      report += `Cache Version: ${cacheVersion || 'NONE'}\n`;
+      const cachedMarkers = localStorage.getItem('cached_markers');
+      if (cachedMarkers) {
+        try {
+          const markers = JSON.parse(cachedMarkers);
+          report += `Cached Markers: ${markers.length} items\n`;
+        } catch(e) {
+          report += `Cached Markers: PARSE ERROR\n`;
+        }
+      } else {
+        report += `Cached Markers: NONE\n`;
+      }
+      report += '\n';
+      
+      report += '=== LABELS STATE ===\n';
+      try {
+        report += `labelsVisible: ${typeof labelsVisible !== 'undefined' ? labelsVisible : 'NOT DEFINED'}\n`;
+      } catch(e) {
+        report += `labelsVisible: ERROR - ${e.message}\n`;
+      }
+      
+      report += '\n=== DOM CHECK ===\n';
+      const markers = document.querySelectorAll('.marker');
+      report += `Marker elements: ${markers.length}\n`;
+      const labels = document.querySelectorAll('.marker-label, .label');
+      report += `Label elements: ${labels.length}\n`;
+      let visibleLabels = 0;
+      labels.forEach(label => {
+        if (label.style.display !== 'none' && label.style.visibility !== 'hidden') {
+          visibleLabels++;
+        }
+      });
+      report += `Visible labels: ${visibleLabels}\n`;
+      
+      output.textContent = report;
+    }
+    
+    async function forceReset() {
+      output.textContent = 'RESETTING...\n';
+      
+      // Unregister all service workers
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for(let reg of registrations) {
+        await reg.unregister();
+        output.textContent += `✅ Unregistered: ${reg.scope}\n`;
+      }
+      
+      // Clear all storage
+      localStorage.clear();
+      sessionStorage.clear();
+      output.textContent += '✅ Cleared localStorage\n';
+      output.textContent += '✅ Cleared sessionStorage\n';
+      
+      // Clear all caches
+      const cacheNames = await caches.keys();
+      for(let name of cacheNames) {
+        await caches.delete(name);
+        output.textContent += `✅ Deleted cache: ${name}\n`;
+      }
+      
+      output.textContent += '\n🔄 Reloading in 2 seconds...\n';
+      setTimeout(() => {
+        window.location.href = window.location.origin + '/index.html?nocache=' + Date.now();
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
