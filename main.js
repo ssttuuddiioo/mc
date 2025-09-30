@@ -34,30 +34,318 @@ try {
 
 // FALLBACK MARKER DATA - Used when Supabase is blocked by firewall (e.g., Cisco Umbrella)
 // Images are served locally from /public/marker-images/
+// FALLBACK MARKER DATA - Used when Supabase is blocked by firewall (e.g., Cisco Umbrella)
+// Images are served locally from /public/marker-images/
+// This data was generated from Supabase on 2025-09-30T03:59:55.076Z
 const FALLBACK_MARKERS = [
-  {"id":1,"label":"The Station","Facility Name":"The Station","lat":42.32680332,"lng":-83.07638321,"color":"#4A90E2","Description":"This beautifully restored, historic 18-story train station is now the heart of the Michigan Central innovation hub. After Ford's six-year restoration, this once-abandoned Detroit landmark now holds innovation studios, flexible workspace for established and growing companies, convening areas, community programs, and hospitality. From Ford teams working on electric vehicles and software-driven services to computer science education for students, The Station is where the next generation of innovation happens.","Key Features":"- 18-story historic train station restored over 6 years by Ford\n- Houses Ford teams and Google Code Next program\n- 23,000 sq ft of youth programming space","image":"public/about/slideshow1.jpg"},
-  {"id":2,"label":"Newlab","Facility Name":"Newlab at Michigan Central","lat":42.32592547,"lng":-83.07333415,"color":"#4A90E2","Description":"A massive 270,000-square-foot workspace where over 150 startups are building the future of mobility. Think of it as a giant garage where brilliant minds work on everything from drones to electric vehicles to robotics, complete with state-of-the-art labs and manufacturing space, with Michigan Central and Newlab supporting startups with ongoing resources for every stage of their journey.","Key Features":"- 270,000 sq ft of workspace with nearly 2,000 people across 200+ startups\n- 47% have founders from underrepresented backgrounds, 40% from outside Michigan\n- Includes prototyping labs, manufacturing shops, offices, and event spaces","image":"public/marker-images/Newlab at MC.jpg"},
-  {"id":3,"label":"The Factory","Facility Name":"The Factory","lat":42.33059257,"lng":-83.07119005,"color":"#4A90E2","Description":"Workspace for Ford's Ford Pro teams that provide vehicles, charging solutions, financing, and software services to Ford's commercial customers around the world. Once home to the Chicago Hosiery and Detroit-Alaska Knitting Mills factories, this building is another example of old industrial spaces transformed for modern innovation.","Key Features":"- Ford Pro headquarters since 2017 in former knitting mills building\n- Home to Ford's commercial vehicle and government customer teams","image":"public/marker-images/Factory.jpg"},
-  {"id":4,"label":"","Facility Name":"Digital Fabrication Shop","lat":42.32839326,"lng":-83.07595378,"color":"#E74C3C","Description":"Where digital sketches and plans become reality using large-scale industrial 3D printers, precision laser cutters, and a robotic arm extruder that builds 3D objects layer by layer. Perfect for creating prototypes quickly, testing new product designs, and bringing digital concepts into the physical world.","Key Features":"- 3 large-scale 3D printers, 3 laser cutters, 5-axis robot arm extruder\n- Latest Bambu Lab and FormLabs equipment plus metal printing\n- Large format printer and vinyl cutter","image":"public/marker-images/Digital Fabrication Shop.jpg"},
-  {"id":5,"label":"","Facility Name":"Wood Shop","lat":42.32795938,"lng":-83.07483233,"color":"#E74C3C","Description":"Traditional woodworking meets modern technology. This fully-equipped shop features both computer-controlled CNC routers and classic hand tools, including precision saws, bandsaws, a lathe, planer, and jointer. Great for building prototypes, parts, and products.","Key Features":"- 2 CNC routers plus traditional tools (table saw, bandsaws, lathe)\n- Both digital and hand tool woodworking capabilities\n- Complete planer, jointer, and Festool hand tool collection","image":"public/marker-images/Newlab at MC.jpg"},
-  {"id":6,"label":"","Facility Name":"Metal Shop","lat":42.32815463,"lng":-83.07535834,"color":"#E74C3C","Description":"The place to cut, shape, and weld metal parts, this shop features a precision fiber laser for cutting, professional welders for joining metal components, a press brake for bending, bandsaws for rough cuts, and specialized tools for rolling tubes and shearing metal sheets. Essential for building anything from vehicle parts to drone frames with professional-grade results.","Key Features":"- CNC fiber laser, 2 MIG welders, 1 TIG welder\n- Press brake, bandsaws, shear, tube roller\n- Complete metalworking and welding technology","image":"public/marker-images/Metal Shop.jpg"},
-  {"id":7,"label":"","Facility Name":"Electronics Lab","lat":42.32774007,"lng":-83.07573575,"color":"#E74C3C","Description":"Where electronic parts are built and tested. This lab has equipment for creating circuit boards, testing how devices handle electricity, welding battery components, checking for overheating with thermal cameras, and assembling electronic parts with professional soldering stations.","Key Features":"- LPKF laser for circuit boards, spectrum analyzers, battery welder\n- Thermal cameras and professional soldering stations","image":"public/marker-images/Electronic Lab.jpg"},
-  {"id":8,"label":"","Facility Name":"Machine Shop","lat":42.32815463,"lng":-83.07535834,"color":"#E74C3C","Description":"Professional-grade machines that can create precise parts for products. This shop features advanced CNC mills and lathes from industry leaders like Haas and Trak, including a 5-axis mill that can cut complex shapes from multiple angles, precision lathes for round parts, and specialized milling machines for everything from prototypes to production-ready components.","Key Features":"- 5-axis Haas mill, multiple CNC lathes and mills\n- Trak precision equipment and Flexarm tapping arm\n- Professional-grade reductive manufacturing capabilities","image":"public/marker-images/machineshop.png"},
-  {"id":9,"label":"","Facility Name":"Physical Metrology Shop","lat":42.32815463,"lng":-83.07535834,"color":"#E74C3C","Description":"Shop for product measurement with a coordinate measuring arm and height gauges for exact dimensions, a 3D scanner that captures precise digital models of physical parts, a universal testing machine that checks material strength, and additional specialized tools to verify that every component meets specifications.","Key Features":"- Hexagon coordinate measuring arm, 3D scanner\n- Universal testing machine and precision height gauges","image":"public/marker-images/Physical Metrology Shop.webp"},
-  {"id":10,"label":"","Facility Name":"Casting and Finishing Shop","lat":42.32815463,"lng":-83.07535834,"color":"#E74C3C","Description":"The final stop where products get their finishing touches, this shop features a walk-in spray booth for professional painting and powder coating, plus a dedicated casting room for molding work. You'll find an injection molding machine for creating plastic components, ovens for curing and baking on durable coatings, a vacuum former for shaping plastic, specialized chambers for removing air bubbles, parts tumblers for smoothing surfaces, and all the hand tools needed to get products ready for market.","Key Features":"- Walk-in spray booth for painting and powder coating\n- Curing ovens, vacuum chamber, parts tumblers for professional finishing","image":"public/marker-images/Casting and Finishing Shop.jpg"},
-  {"id":11,"label":"","Facility Name":"Manufacturing Space","lat":42.32815463,"lng":-83.07535834,"color":"#E74C3C","Description":"A large 10,000-square-foot space for building small batches of products before full-scale manufacturing. This is where teams build prototype units 2-10 of their products and establish production flows. It features five fully-equipped assembly bays that teams can rent, plus advanced machinery including robotic wheel building, laser tube cutting, and robotic welding equipment. It's designed for creating larger products like e-bikes, motorcycles, drones, mobile robots, and EV chargers, helping companies perfect their manufacturing process before transitioning to larger batch production.","Key Features":"- 10,000 sq ft with five rentable, fully-tooled assembly bays\n- Robotic wheel building, laser tube cutting, robotic welding","image":"public/marker-images/Grounded Manufacturing Space.jpg"},
-  {"id":12,"label":"Grounded's Manufacturing Space","Facility Name":"Grounded's Manufacturing Space","lat":42.32652070,"lng":-83.08061254,"color":"#000000","Description":"After operating at Newlab at Michigan Central since 2023, Grounded, a company creating fully customizable smart electric RVs and work vans, has expanded their operations into 13,000 square feet of Michigan Central facilities on St. Anne Street. Grounded's expansion exemplifies the opportunities that the area's abundant industrial-zoned real estate provides to grow product development and manufacturing in Detroit.","Key Features":"","image":"public/marker-images/Grounded Manufacturing Space.jpg"},
-  {"id":16,"label":"Bagley Mobility Hub","Facility Name":"Bagley Mobility Hub","lat":42.32569816,"lng":-83.07151709,"color":"#000000","Description":"A modern mobility center with 1,200 parking spots that is also a testing ground for electric vehicles and transportation solutions. This facility features multiple levels of EV charging, autonomous vehicle testing areas, and e-bike/e-scooter stations where companies can test new technologies with real users. It also serves the community with outdoor plazas, the Michigan Central Info Center, and access to the Southwest Greenway.","Key Features":"- 1,200 parking spots with Level-2 and Level-3 chargers\n- Open-source data access for EV trend analysis","image":"public/marker-images/Bagleymobilityhub.JPG"},
-  {"id":17,"label":"America's First Electrified Public Road","Facility Name":"America's First Electrified Road","lat":42.32992106,"lng":-83.07398549,"color":"#9B59B6","Description":"The nation's first public road that can charge electric vehicles while they drive using wireless technology built into the pavement. In addition to the road - built in partnership with the state of Michigan, City of Detroit, and wireless charging company Electreon -- they also have parking spots nearby that charge cars wirelessly, no plugging in required.","Key Features":"- Built with Michigan DOT and Electreon technology\n- 2 nearby parking spots with wireless charging","image":"public/marker-images/America_s First Electrified Road.jpg"},
-  {"id":18,"label":"Aerial Ops Center","Facility Name":"Aerial Ops Center","lat":42.32738629,"lng":-83.07728680,"color":"#9B59B6","Description":"Mission control for drone testing, located on the 12th floor of The Station. This aerial operations center features multi-screen monitoring walls, 360-degree visual line of sight of the surrounding area, flexible command centers, and collaboration spaces that multiple companies can share simultaneously for safe, coordinated drone testing operations.","Key Features":"- 12th floor of The Station with 360-degree visual coverage\n- Large multi-screen video wall and 2 command centers","image":"public/marker-images/Aerial Ops.jpg"},
-  {"id":19,"label":"Scaled Launch Facility","Facility Name":"Scaled Launch Facility","lat":42.32872407,"lng":-83.08228330,"color":"#000000","Description":"A half-acre outdoor testing ground next to The Station for drone operations and other technology testing. This flexible space offers rentable areas with industrial power, fiber internet, and adaptable infrastructure, all coordinated with the 12th-floor operations center for safe, controlled testing of aerial mobility and other innovations.","Key Features":"- Half-acre outdoor space with up to 480-volt power\n- Fiber internet and adaptable power tray system","image":"public/marker-images/Scaled launch facility.jpeg"},
-  {"id":20,"label":"","Facility Name":"The Launchpad","lat":42.32828840,"lng":-83.07564166,"color":"#27AE60","Description":"A 900-square-foot rooftop drone launch platform where multiple companies can safely take off and land their drones. This shared-access launchpad sits at the heart of the innovation ecosystem and enables testing of small drones doing everything from food and medication delivery to building inspections.","Key Features":"- 900-sq-ft rooftop drone launch platform on Newlab\n- Fully integrated with AAIR control systems","image":"public/marker-images/Launchpad.JPG"},
-  {"id":23,"label":"Smart Light Posts","Facility Name":"Smart Light Posts","lat":42.32462487,"lng":-83.06946665,"color":"#5DADE2","Description":"Smart street lights throughout the campus equipped with power and internet connections that companies can use to test urban technologies. Teams can install sensors and other equipment on the posts, as well, in order to conduct more tailored pilots that help them improve their new technologies and solutions.","Key Features":"- Throughout 30 acres with built-in power and data connectivity\n- Ready-made infrastructure for smart city technology pilots","image":"public/marker-images/light post.jpeg"},
-  {"id":24,"label":"Urban Location","Facility Name":"Urban Location","lat":42.32698034,"lng":-83.06843792,"color":"#4C7B3B","Description":"A city location in the heart of Detroit surrounded by neighborhoods, retail, restaurants, and parks provides a testing environment with real community, traffic, and urban challenges that companies need to solve.","Key Features":"","image":"public/marker-images/Urban Location.png"},
-  {"id":25,"label":"Railroad","Facility Name":"Railroad","lat":42.32787627,"lng":-83.07998979,"color":"#4C7B3B","Description":"Located in the heart of Detroit, providing the perfect real-world testing environment with real traffic, pedestrians, and urban challenges that companies need to solve.","Key Features":"","image":"public/marker-images/Railroad.png"},
-  {"id":26,"label":"Detroit River","Facility Name":"Detroit River","lat":42.31504917,"lng":-83.06827804,"color":"#4C7B3B","Description":"Proximity to the Detroit River and Great Lakes provides access to testing maritime technologies and water-based transportation.","Key Features":"","image":"public/marker-images/River.jpg"},
-  {"id":27,"label":"US-Canada Border","Facility Name":"US-Canada Border","lat":42.31799036,"lng":-83.06186521,"color":"#4C7B3B","Description":"A location just minutes from the Canadian border can offer unique opportunities for international logistics solutions and connects Detroit innovation to global markets.","Key Features":"","image":"public/marker-images/Canada border.png"},
-  {"id":28,"label":"Roosevelt Park","Facility Name":"Roosevelt Park","lat":42.33037661,"lng":-83.07715093,"color":"#4C7B3B","Description":"Located in Michigan Ave, most people probably think of Roosevelt Park as the front lawn of Michigan Central Station. Indeed, it is it's own City of Detroit park. Nestled between two of Detroit's most vibrant neighborhoods.","Key Features":"Roosevelt Park brings southwest Detroit community together through collaboration","image":"public/marker-images/Roosevelt Park.JPG"}
+  {
+    "id": 1,
+    "label": "The Station",
+    "Facility Name": "The Station",
+    "lat": 42.32680332,
+    "lng": -83.07638321,
+    "color": "#4A90E2",
+    "Description": "This beautifully restored, historic 18-story train station is now the heart of the Michigan Central innovation hub. After Ford's six-year restoration, this once-abandoned Detroit landmark now holds innovation studios, flexible workspace for established and growing companies, convening areas, community programs, and hospitality. From Ford teams working on electric vehicles and software-driven services to computer science education for students, The Station is where the next generation of innovation happens.",
+    "Key Features": "- 18-story historic train station restored over 6 years by Ford\n- Houses Ford teams and Google Code Next program\n- 23,000 sq ft of youth programming space",
+    "image": "public/marker-images/1.png"
+  },
+  {
+    "id": 2,
+    "label": "Newlab",
+    "Facility Name": "Newlab at Michigan Central",
+    "lat": 42.32592547,
+    "lng": -83.07333415,
+    "color": "#4A90E2",
+    "Description": "A massive 270,000-square-foot workspace where over 150 startups are building the future of mobility. Think of it as a giant garage where brilliant minds work on everything from drones to electric vehicles to robotics, complete with state-of-the-art labs and manufacturing space, with Michigan Central and Newlab supporting startups with ongoing resources for every stage of their journey.",
+    "Key Features": "- 270,000 sq ft of workspace with nearly 2,000 people across 200+ startups\n- 47% have founders from underrepresented backgrounds, 40% from outside Michigan\n- Includes prototyping labs, manufacturing shops, offices, and event spaces",
+    "image": "public/marker-images/Newlab at MC.jpg"
+  },
+  {
+    "id": 3,
+    "label": "The Factory",
+    "Facility Name": "The Factory",
+    "lat": 42.33059257,
+    "lng": -83.07119005,
+    "color": "#4A90E2",
+    "Description": "Workspace for Ford's Ford Pro teams that provide vehicles, charging solutions, financing, and software services to Ford's commercial customers around the world. Once home to the Chicago Hosiery and Detroit-Alaska Knitting Mills factories, this building is another example of old industrial spaces transformed for modern innovation.",
+    "Key Features": "- Ford Pro headquarters since 2017 in former knitting mills building\n- Home to Ford's commercial vehicle and government customer teams",
+    "image": "public/marker-images/Factory.jpg"
+  },
+  {
+    "id": 4,
+    "label": "",
+    "Facility Name": "Digital Fabrication Shop",
+    "lat": 42.32839326,
+    "lng": -83.07595378,
+    "color": "#E74C3C",
+    "Description": "Where digital sketches and plans become reality using large-scale industrial 3D printers, precision laser cutters, and a robotic arm extruder that builds 3D objects layer by layer. Perfect for creating prototypes quickly, testing new product designs, and bringing digital concepts into the physical world.",
+    "Key Features": "- 3 large-scale 3D printers, 3 laser cutters, 5-axis robot arm extruder\n- Latest Bambu Lab and FormLabs equipment plus metal printing\n- Large format printer and vinyl cutter",
+    "image": "public/marker-images/Digital Fabrication Shop.jpg"
+  },
+  {
+    "id": 5,
+    "label": "",
+    "Facility Name": "Wood Shop",
+    "lat": 42.32795938,
+    "lng": -83.07483233,
+    "color": "#E74C3C",
+    "Description": "Traditional woodworking meets modern technology. This fully-equipped shop features both computer-controlled CNC routers and classic hand tools, including precision saws, bandsaws, a lathe, planer, and jointer. Great for building prototypes, parts, and products.",
+    "Key Features": "- 2 CNC routers plus traditional tools (table saw, bandsaws, lathe)\n- Both digital and hand tool woodworking capabilities\n- Complete planer, jointer, and Festool hand tool collection",
+    "image": "public/marker-images/Newlab at MC.jpg"
+  },
+  {
+    "id": 6,
+    "label": "",
+    "Facility Name": "Metal Shop",
+    "lat": 42.32815463,
+    "lng": -83.07535834,
+    "color": "#E74C3C",
+    "Description": "The place to cut, shape, and weld metal parts, this shop features a precision fiber laser for cutting, professional welders for joining metal components, a press brake for bending, bandsaws for rough cuts, and specialized tools for rolling tubes and shearing metal sheets. Essential for building anything from vehicle parts to drone frames with professional-grade results.",
+    "Key Features": "- CNC fiber laser, 2 MIG welders, 1 TIG welder\n- Press brake, bandsaws, shear, tube roller\n- Complete metalworking and welding technology",
+    "image": "public/marker-images/Metal Shop.jpg"
+  },
+  {
+    "id": 7,
+    "label": "",
+    "Facility Name": "Electronics Lab",
+    "lat": 42.32774007,
+    "lng": -83.07573575,
+    "color": "#E74C3C",
+    "Description": "Where electronic parts are built and tested. This lab has equipment for creating circuit boards, testing how devices handle electricity, welding battery components, checking for overheating with thermal cameras, and assembling electronic parts with professional soldering stations.",
+    "Key Features": "- LPKF laser for circuit boards, spectrum analyzers, battery welder\n- Thermal cameras and professional soldering stations",
+    "image": "public/marker-images/Electronic Lab.jpg"
+  },
+  {
+    "id": 8,
+    "label": "",
+    "Facility Name": "Machine Shop",
+    "lat": 42.32815463,
+    "lng": -83.07535834,
+    "color": "#E74C3C",
+    "Description": "Professional-grade machines that can create precise parts for products. This shop features advanced CNC mills and lathes from industry leaders like Haas and Trak, including a 5-axis mill that can cut complex shapes from multiple angles, precision lathes for round parts, and specialized milling machines for everything from prototypes to production-ready components.",
+    "Key Features": "- 5-axis Haas mill, multiple CNC lathes and mills\n- Trak precision equipment and Flexarm tapping arm\n- Professional-grade reductive manufacturing capabilities",
+    "image": "public/marker-images/machineshop.png"
+  },
+  {
+    "id": 9,
+    "label": "",
+    "Facility Name": "Physical Metrology Shop",
+    "lat": 42.32815463,
+    "lng": -83.07535834,
+    "color": "#E74C3C",
+    "Description": "Shop for product measurement with a coordinate measuring arm and height gauges for exact dimensions, a 3D scanner that captures precise digital models of physical parts, a universal testing machine that checks material strength, and additional specialized tools to verify that every component meets specifications.",
+    "Key Features": "- Hexagon coordinate measuring arm, 3D scanner\n- Universal testing machine and precision height gauges",
+    "image": "public/marker-images/Physical Metrology Shop.webp"
+  },
+  {
+    "id": 10,
+    "label": "",
+    "Facility Name": "Casting and Finishing Shop",
+    "lat": 42.32815463,
+    "lng": -83.07535834,
+    "color": "#E74C3C",
+    "Description": "The final stop where products get their finishing touches, this shop features a walk-in spray booth for professional painting and powder coating, plus a dedicated casting room for molding work. You'll find an injection molding machine for creating plastic components, ovens for curing and baking on durable coatings, a vacuum former for shaping plastic, specialized chambers for removing air bubbles, parts tumblers for smoothing surfaces, and all the hand tools needed to get products ready for market.",
+    "Key Features": "- Walk-in spray booth for painting and powder coating\n- Curing ovens, vacuum chamber, parts tumblers for professional finishing",
+    "image": "public/marker-images/Casting and Finishing Shop.jpg"
+  },
+  {
+    "id": 11,
+    "label": "",
+    "Facility Name": "Manufacturing Space",
+    "lat": 42.32815463,
+    "lng": -83.07535834,
+    "color": "#E74C3C",
+    "Description": "A large 10,000-square-foot space for building small batches of products before full-scale manufacturing. This is where teams build prototype units 2-10 of their products and establish production flows. It features five fully-equipped assembly bays that teams can rent, plus advanced machinery including robotic wheel building, laser tube cutting, and robotic welding equipment. It's designed for creating larger products like e-bikes, motorcycles, drones, mobile robots, and EV chargers, helping companies perfect their manufacturing process before transitioning to larger batch production.",
+    "Key Features": "- 10,000 sq ft with five rentable, fully-tooled assembly bays\n- Robotic wheel building, laser tube cutting, robotic welding",
+    "image": "public/marker-images/Grounded Manufacturing Space.jpg"
+  },
+  {
+    "id": 12,
+    "label": "Grounded's Manufacturing Space",
+    "Facility Name": "Grounded's Manufacturing Space",
+    "lat": 42.3265207,
+    "lng": -83.08061254,
+    "color": "#000000",
+    "Description": "After operating at Newlab at Michigan Central since 2023, Grounded, a company creating fully customizable smart electric RVs and work vans, has expanded their operations into 13,000 square feet of Michigan Central facilities on St. Anne Street. Grounded's expansion exemplifies the opportunities that the area's abundant industrial-zoned real estate provides to grow product development and manufacturing in Detroit.",
+    "Key Features": "",
+    "image": "public/marker-images/Grounded Manufacturing Space.jpg"
+  },
+  {
+    "id": 15,
+    "label": "Port of Monroe",
+    "Facility Name": "Port of Monroe",
+    "lat": 0,
+    "lng": 0,
+    "color": "#43825A",
+    "Description": "A unique testing ground for supply chain innovation 35 miles from Michigan Central. As the country's first state-owned container port and Michigan's only port on Lake Erie, the Port of Monroe offers an unprecedented opportunity to test freight and logistics solutions where water, rail, and road transportation converge. Through a partnership with Newlab and the State of Michigan, companies can pilot everything from autonomous boats to battery-powered rail cars in a real working port environment.",
+    "Key Features": "- Country's first state-owned container port, 35 miles away\n- Access to Lake Erie, Detroit River, and Atlantic Ocean",
+    "image": "public/marker-images/Port of Monroe.png"
+  },
+  {
+    "id": 16,
+    "label": "Bagley Mobility Hub",
+    "Facility Name": "Bagley Mobility Hub",
+    "lat": 42.32569816,
+    "lng": -83.07151709,
+    "color": "#000000",
+    "Description": "A modern mobility center with 1,200 parking spots that is also a testing ground for electric vehicles and transportation solutions. This facility features multiple levels of EV charging, autonomous vehicle testing areas, and e-bike/e-scooter stations where companies can test new technologies with real users. It also serves the community with outdoor plazas, the Michigan Central Info Center, and access to the Southwest Greenway.",
+    "Key Features": "- 1,200 parking spots with Level-2 and Level-3 chargers\n- Open-source data access for EV trend analysis",
+    "image": "public/marker-images/Bagleymobilityhub.JPG"
+  },
+  {
+    "id": 17,
+    "label": "America's First Electrified Public Road",
+    "Facility Name": "America's First Electrified Road",
+    "lat": 42.32992106,
+    "lng": -83.07398549,
+    "color": "#9B59B6",
+    "Description": "The nation's first public road that can charge electric vehicles while they drive using wireless technology built into the pavement. In addition to the road - built in partnership with the state of Michigan, City of Detroit, and wireless charging company Electreon -- they also have parking spots nearby that charge cars wirelessly, no plugging in required.",
+    "Key Features": "- Built with Michigan DOT and Electreon technology\n- 2 nearby parking spots with wireless charging",
+    "image": "public/marker-images/America_s First Electrified Road.jpg"
+  },
+  {
+    "id": 18,
+    "label": "Aerial Ops Center",
+    "Facility Name": "Aerial Ops Center",
+    "lat": 42.32738629,
+    "lng": -83.0772868,
+    "color": "#9B59B6",
+    "Description": "Mission control for drone testing, located on the 12th floor of The Station. This aerial operations center features multi-screen monitoring walls, 360-degree visual line of sight of the surrounding area, flexible command centers, and collaboration spaces that multiple companies can share simultaneously for safe, coordinated drone testing operations.",
+    "Key Features": "- 12th floor of The Station with 360-degree visual coverage\n- Large multi-screen video wall and 2 command centers",
+    "image": "public/marker-images/Aerial Ops.jpg"
+  },
+  {
+    "id": 19,
+    "label": "Scaled Launch Facility",
+    "Facility Name": "Scaled Launch Facility",
+    "lat": 42.32872407,
+    "lng": -83.0822833,
+    "color": "#000000",
+    "Description": "A half-acre outdoor testing ground next to The Station for drone operations and other technology testing. This flexible space offers rentable areas with industrial power, fiber internet, and adaptable infrastructure, all coordinated with the 12th-floor operations center for safe, controlled testing of aerial mobility and other innovations.",
+    "Key Features": "- Half-acre outdoor space with up to 480-volt power\n- Fiber internet and adaptable power tray system",
+    "image": "public/marker-images/Scaled launch facility.jpeg"
+  },
+  {
+    "id": 20,
+    "label": "",
+    "Facility Name": "The Launchpad",
+    "lat": 42.3282884,
+    "lng": -83.07564166,
+    "color": "#27AE60",
+    "Description": "A 900-square-foot rooftop drone launch platform where multiple companies can safely take off and land their drones. This shared-access launchpad sits at the heart of the innovation ecosystem and enables testing of small drones doing everything from food and medication delivery to building inspections.",
+    "Key Features": "- 900-sq-ft rooftop drone launch platform on Newlab\n- Fully integrated with AAIR control systems",
+    "image": "public/marker-images/Launchpad.JPG"
+  },
+  {
+    "id": 23,
+    "label": "Smart Light Posts",
+    "Facility Name": "Smart Light Posts",
+    "lat": 42.32462487,
+    "lng": -83.06946665,
+    "color": "#5DADE2",
+    "Description": "Smart street lights throughout the campus equipped with power and internet connections that companies can use to test urban technologies. Teams can install sensors and other equipment on the posts, as well, in order to conduct more tailored pilots that help them improve their new technologies and solutions.",
+    "Key Features": "- Throughout 30 acres with built-in power and data connectivity\n- Ready-made infrastructure for smart city technology pilots",
+    "image": "public/marker-images/light post.jpeg"
+  },
+  {
+    "id": 24,
+    "label": "Urban Location",
+    "Facility Name": "Urban Location",
+    "lat": 42.32698034,
+    "lng": -83.06843792,
+    "color": "#4A90E2",
+    "Description": "A city location in the heart of Detroit surrounded by neighborhoods, retail, restaurants, and parks provides a testing environment with real community, traffic, and urban challenges that companies need to solve.",
+    "Key Features": "",
+    "image": "public/marker-images/Urban Location.png"
+  },
+  {
+    "id": 25,
+    "label": "Railroad",
+    "Facility Name": "Railroad",
+    "lat": 42.32787627,
+    "lng": -83.07998979,
+    "color": "#F39C12",
+    "Description": "Located in the heart of Detroit, providing the perfect real-world testing environment with real traffic, pedestrians, and urban challenges that companies need to solve.",
+    "Key Features": "",
+    "image": "public/marker-images/Railroad.png"
+  },
+  {
+    "id": 26,
+    "label": "Detroit River",
+    "Facility Name": "Detroit River",
+    "lat": 42.31504917,
+    "lng": -83.06827804,
+    "color": "#43825A\n",
+    "Description": "Proximity to the Detroit River and Great Lakes provides access to testing maritime technologies and water-based transportation.",
+    "Key Features": "",
+    "image": "public/marker-images/River.jpg"
+  },
+  {
+    "id": 27,
+    "label": "US-Canada Border",
+    "Facility Name": "US-Canada Border",
+    "lat": 42.31799036,
+    "lng": -83.06186521,
+    "color": "#43825A",
+    "Description": "A location just minutes from the Canadian border can offer unique opportunities for international logistics solutions and connects Detroit innovation to global markets.",
+    "Key Features": "",
+    "image": "public/marker-images/Canada border.png"
+  },
+  {
+    "id": 28,
+    "label": "Roosevelt Park",
+    "Facility Name": "Roosevelt Park",
+    "lat": 42.33037661,
+    "lng": -83.07715093,
+    "color": "#43825A",
+    "Description": "Located in Michigan Ave, most people probably think of Roosevelt Park as the front lawn of Michigan Central Station. Indeed, it is it's own City of Detroit park. Nestled between two of Detroit's most vibrant neighborhoods.",
+    "Key Features": "Roosevelt Park brings southwest Detroit community together through collaboration",
+    "image": "public/marker-images/Roosevelt Park.JPG"
+  },
+  {
+    "id": 29,
+    "label": "",
+    "Facility Name": null,
+    "lat": 42.33016061,
+    "lng": -83.07923878,
+    "color": "#4A90E2",
+    "Description": null,
+    "Key Features": null,
+    "image": "public/marker-images/29.png"
+  },
+  {
+    "id": 30,
+    "label": "",
+    "Facility Name": "",
+    "lat": 42.33191445,
+    "lng": -83.07368441,
+    "color": "#4A90E2",
+    "Description": null,
+    "Key Features": null,
+    "image": "public/marker-images/30.png"
+  },
+  {
+    "id": 31,
+    "label": "",
+    "Facility Name": null,
+    "lat": 42.3301765,
+    "lng": -83.07198088,
+    "color": "#4A90E2",
+    "Description": null,
+    "Key Features": null,
+    "image": "public/marker-images/31.png"
+  },
+  {
+    "id": 32,
+    "label": "",
+    "Facility Name": null,
+    "lat": 42.33030902,
+    "lng": -83.07070499,
+    "color": "#4A90E2",
+    "Description": null,
+    "Key Features": null,
+    "image": "public/marker-images/32.png"
+  }
 ];
 
 // --- Supabase Functions ---
@@ -249,7 +537,7 @@ const CACHE_KEYS = {
 
 const CACHE_CONFIG = {
   MAX_AGE: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
-  CURRENT_VERSION: '1.0.9',
+  CURRENT_VERSION: '1.1.0',
   SYNC_INTERVAL: 5 * 60 * 1000 // 5 minutes for background sync
 };
 
