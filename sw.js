@@ -1,5 +1,5 @@
 // Enhanced Service Worker for Complete Offline Support
-const CACHE_VERSION = '002'; // Match with version.json
+const CACHE_VERSION = '003'; // Match with version.json
 const STATIC_CACHE = `orbit-static-v${CACHE_VERSION}`;
 const MAPBOX_CACHE = `mapbox-v${CACHE_VERSION}`;
 const API_CACHE = `api-v${CACHE_VERSION}`;
@@ -306,9 +306,15 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Handle API calls with network-first strategy
+  // Handle API calls - BYPASS service worker for Supabase to avoid empty array issue
+  const isSupabaseApiCall = url.hostname.includes('supabase') && url.pathname.includes('/rest/');
+  
+  if (isSupabaseApiCall) {
+    // Let Supabase requests bypass service worker completely
+    return;
+  }
+  
   const isApiCall = 
-    url.hostname.includes('supabase') && url.pathname.includes('/rest/') ||
     url.hostname.includes('api.') ||
     url.pathname.includes('/api/');
 
