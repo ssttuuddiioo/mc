@@ -221,7 +221,7 @@ const CACHE_KEYS = {
 
 const CACHE_CONFIG = {
   MAX_AGE: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
-  CURRENT_VERSION: '1.0.6',
+  CURRENT_VERSION: '1.0.7',
   SYNC_INTERVAL: 5 * 60 * 1000 // 5 minutes for background sync
 };
 
@@ -1408,9 +1408,12 @@ map.on('load', async () => {
     // Setup side panel close functionality
     setupSidePanel();
     
-    // Hide all labels by default
-    if (!labelsVisible) {
-        hideAllLabels();
+    // Force show all labels by default
+    if (labelsVisible) {
+        showAllLabels();
+        // Set button to active state
+        const toggleBtn = document.getElementById('toggle-labels');
+        if (toggleBtn) toggleBtn.style.opacity = '1';
     }
 
     // Building highlighting removed as requested
@@ -5395,7 +5398,7 @@ function scheduleOrbitResume() {
 // });
 
 // --- Label Control State ---
-let labelsVisible = false;
+let labelsVisible = true; // Force labels visible by default
 let hiddenLayers = [];
 
 // SVG Polygon state is now managed in svgEditorState
