@@ -150,7 +150,7 @@
     "lat": 42.33166825,
     "lng": -83.07332221,
     "color": "#5DADE2",
-    "image": "public/marker-images/Edge-Server-Platform.jpg",
+    "image": "public/marker-images/Edge-Server.jpg",
     "height": 30
   },
   {
@@ -227,7 +227,7 @@
     "lat": 42.32782854,
     "lng": -83.07533369,
     "color": "#27AE60",
-    "image": "public/marker-images/BVLOS.JPG",
+    "image": "public/marker-images/1.png",
     "height": 25
   },
   {
