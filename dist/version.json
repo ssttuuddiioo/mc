@@ -1,5 +1,5 @@
 {
-  "version": "100",
+  "version": "101",
   "timestamp": 1727657400000,
   "notes": "Fixed service worker blocking Supabase API calls"
 }

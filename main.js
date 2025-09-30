@@ -5585,14 +5585,24 @@ function hideAllLabels() {
 }
 
 function showAllLabels() {
-  // Show map label layers
-  hiddenLayers.forEach(layerId => {
-    try {
-      map.setLayoutProperty(layerId, 'visibility', 'visible');
-    } catch (e) {
-      console.warn('Could not show layer:', layerId, e);
-    }
-  });
+  const style = map.getStyle();
+  let shownCount = 0;
+  
+  // Show ALL map label layers (symbol layers with text)
+  if (style && style.layers) {
+    style.layers.forEach(layer => {
+      if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
+        try {
+          map.setLayoutProperty(layer.id, 'visibility', 'visible');
+          shownCount++;
+        } catch (e) {
+          console.warn('Could not show layer:', layer.id, e);
+        }
+      }
+    });
+  }
+  
+  // Clear hidden layers array
   hiddenLayers = [];
   
   // Show all marker elements
@@ -5601,7 +5611,7 @@ function showAllLabels() {
     marker.style.display = 'block';
   });
   
-  console.log(`🏷️ Restored visibility for map labels and ${markerElements.length} marker elements`);
+  console.log(`🏷️ Forced ${shownCount} map label layers visible and ${markerElements.length} marker elements`);
 }
 
 // --- Zoom Controls ---
