@@ -2510,7 +2510,7 @@ function setupLocationButtons() {
       console.log(`🔘 Location button clicked: ${locationId}`);
       
       // Open side panel with the location data
-      openSidePanel(locationId);
+      openSidePanel(resolvePanelKey(locationId));
       
       // Fly to a position that gives a good view of the area
       // Using a generic position for all buttons since they're conceptual locations
@@ -2525,6 +2525,18 @@ function setupLocationButtons() {
   });
   
   console.log('✅ Location buttons initialized');
+}
+
+// Map legacy button keys to marker IDs
+function resolvePanelKey(key) {
+  // Buttons use these values in index.html
+  // 13 → Transportation Innovation Zone (we created marker id 33 for this panel)
+  // 14 → Advanced Aerial Innovation (we created marker id 22 for this panel)
+  // newlab-manufacturing → use id 13 (The 23rd) per user instruction
+  if (key === '14') return 22;
+  if (key === '13') return 33;
+  if (key === 'newlab-manufacturing') return 13;
+  return key;
 }
 
 // --- MICHIGAN CENTRAL SVG LOADER ---

@@ -1,5 +1,27 @@
 [
   {
+    "id": 22,
+    "title": "Advanced Aerial Innovation Region (AAIR)",
+    "description": "A first-of-its-kind urban drone testing zone where companies can safely fly and test drones in a busy city environment. Michigan Central partnered with the State of Michigan to create this area, which spans a 3-mile radius surrounding The Station. It's equipped with data, operations, and digital mapping systems supported by Airspace Link. Working directly with the Federal Aviation Administration, they help members and partners get the guidance they need to safely test, monitor, and accelerate development of drones and uncrewed aircraft systems under 55 pounds, all in a real urban setting.",
+    "keyFeatures": "- 3-mile radius testing zone around The Station\n- Federal Aviation Administration partnership\n- For drones under 55 pounds and commercial aircraft",
+    "lat": 42.3283,
+    "lng": -83.0756,
+    "color": "#27AE60",
+    "image": "public/marker-images/AdvanceAerialInnovation.png",
+    "height": 25
+  },
+  {
+    "id": 33,
+    "title": "Transportation Innovation Zone",
+    "description": "A special four-square-mile area in Detroit where companies can test solutions. Created in partnership with the City of Detroit, the Transportation Innovation Zone creates a pathway between mobility innovation and regulatory compliance, cutting the permitting process from months to weeks, letting companies efficiently pilot their solutions in a real-world environment.",
+    "keyFeatures": "- 4 square miles with City of Detroit partnership\n- Fast-tracked permitting cuts approval from months to weeks",
+    "lat": 42.3290,
+    "lng": -83.0760,
+    "color": "#9B59B6",
+    "image": "public/marker-images/TransportationInnovationZone.png",
+    "height": 25
+  },
+  {
     "id": 1,
     "title": "The Station",
     "description": "This beautifully restored, historic 18-story train station is now the heart of the Michigan Central innovation hub. After Ford's six-year restoration, this once-abandoned Detroit landmark now holds innovation studios, flexible workspace for established and growing companies, convening areas, community programs, and hospitality. From Ford teams working on electric vehicles and software-driven services to computer science education for students, The Station is where the next generation of innovation happens.",
