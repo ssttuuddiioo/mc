@@ -484,28 +484,19 @@ function addMarkersToMap(markers, source = 'hardcoded') {
   let validMarkersCount = 0;
   
   markers.forEach(markerData => {
-    // Check for empty labels in Supabase markers
-    if (source === 'supabase') {
-      // Check all possible label fields
-      const hasLabel = !!(markerData.Label || 
-                         markerData.label || 
-                         markerData.name || 
-                         markerData.title || 
-                         markerData.facility_name || 
-                         markerData.location_name ||
-                         markerData.text);
+    // Check for title (required in new schema)
+    const hasTitle = !!(markerData.title);
       
-      if (!hasLabel) {
-        console.warn(`⚠️ Skipping marker with empty label:`, markerData);
-        return; // Skip this marker
-      }
+    if (!hasTitle) {
+      console.warn(`⚠️ Skipping marker with empty title:`, markerData);
+      return; // Skip this marker
     }
     
-    // Validate coordinates before creating marker
+    // Validate coordinates
     const lat = parseFloat(markerData.lat);
     const lng = parseFloat(markerData.lng);
     
-    if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
+    if (isNaN(lat) || isNaN(lng)) {
       console.warn(`⚠️ Skipping marker with invalid coordinates:`, markerData);
       return; // Skip this marker
     }

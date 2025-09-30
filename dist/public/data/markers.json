@@ -18,7 +18,7 @@
     "lat": 42.32592547,
     "lng": -83.07333415,
     "color": "#4A90E2",
-    "image": "public/marker-images/Newlab at MC.jpg",
+    "image": "public/marker-images/Newlab-at-MC.jpg",
     "height": 30
   },
   {
@@ -40,7 +40,7 @@
     "lat": 42.32839326,
     "lng": -83.07595378,
     "color": "#E74C3C",
-    "image": "public/marker-images/Digital Fabrication Shop.jpg",
+    "image": "public/marker-images/Digital-Fabrication-Shop.jpg",
     "height": 20
   },
   {
@@ -51,7 +51,7 @@
     "lat": 42.32795938,
     "lng": -83.07483233,
     "color": "#E74C3C",
-    "image": "public/marker-images/Newlab at MC.jpg",
+    "image": "public/marker-images/Newlab-at-MC.jpg",
     "height": 20
   },
   {
@@ -62,7 +62,7 @@
     "lat": 42.32815463,
     "lng": -83.07535834,
     "color": "#E74C3C",
-    "image": "public/marker-images/Metal Shop.jpg",
+    "image": "public/marker-images/Metal-Shop.jpg",
     "height": 20
   },
   {
@@ -73,7 +73,7 @@
     "lat": 42.32774007,
     "lng": -83.07573575,
     "color": "#E74C3C",
-    "image": "public/marker-images/Electronic Lab.jpg",
+    "image": "public/marker-images/Electronic-Lab.jpg",
     "height": 20
   },
   {
@@ -95,7 +95,7 @@
     "lat": 42.32815463,
     "lng": -83.07535834,
     "color": "#E74C3C",
-    "image": "public/marker-images/Physical Metrology Shop.webp",
+    "image": "public/marker-images/Physical-Metrology-Shop.webp",
     "height": 20
   },
   {
@@ -106,7 +106,7 @@
     "lat": 42.32815463,
     "lng": -83.07535834,
     "color": "#E74C3C",
-    "image": "public/marker-images/Casting and Finishing Shop.jpg",
+    "image": "public/marker-images/Casting-and-Finishing-Shop.jpg",
     "height": 20
   },
   {
@@ -117,7 +117,7 @@
     "lat": 42.32815463,
     "lng": -83.07535834,
     "color": "#E74C3C",
-    "image": "public/marker-images/Grounded Manufacturing Space.jpg",
+    "image": "public/marker-images/Grounded-Manufacturing-Space.jpg",
     "height": 20
   },
   {
@@ -128,7 +128,7 @@
     "lat": 42.3265207,
     "lng": -83.08061254,
     "color": "#000000",
-    "image": "public/marker-images/Grounded Manufacturing Space.jpg",
+    "image": "public/marker-images/Grounded-Manufacturing-Space.jpg",
     "height": 30
   },
   {
@@ -139,7 +139,7 @@
     "lat": 42.3282866,
     "lng": -83.07553895,
     "color": "#F39C12",
-    "image": "public/marker-images/The 23rd.JPG",
+    "image": "public/marker-images/The-23rd.JPG",
     "height": 25
   },
   {
@@ -150,7 +150,7 @@
     "lat": 42.33166825,
     "lng": -83.07332221,
     "color": "#5DADE2",
-    "image": "public/marker-images/Edge Server Platform.jpg",
+    "image": "public/marker-images/Edge-Server-Platform.jpg",
     "height": 30
   },
   {
@@ -158,10 +158,10 @@
     "title": "Port of Monroe",
     "description": "A unique testing ground for supply chain innovation 35 miles from Michigan Central. As the country's first state-owned container port and Michigan's only port on Lake Erie, the Port of Monroe offers an unprecedented opportunity to test freight and logistics solutions where water, rail, and road transportation converge. Through a partnership with Newlab and the State of Michigan, companies can pilot everything from autonomous boats to battery-powered rail cars in a real working port environment.",
     "keyFeatures": "- Country's first state-owned container port, 35 miles away\n- Access to Lake Erie, Detroit River, and Atlantic Ocean",
-    "lat": 0,
-    "lng": 0,
+    "lat": 41.9165,
+    "lng": -83.3971,
     "color": "#43825A",
-    "image": "public/marker-images/Port of Monroe.png",
+    "image": "public/marker-images/Port-of-Monroe.png",
     "height": 25
   },
   {
@@ -183,7 +183,7 @@
     "lat": 42.32992106,
     "lng": -83.07398549,
     "color": "#9B59B6",
-    "image": "public/marker-images/America_s First Electrified Road.jpg",
+    "image": "public/marker-images/America_s-First-Electrified-Road.jpg",
     "height": 25
   },
   {
@@ -194,7 +194,7 @@
     "lat": 42.32738629,
     "lng": -83.0772868,
     "color": "#9B59B6",
-    "image": "public/marker-images/Aerial Ops.jpg",
+    "image": "public/marker-images/Aerial-Ops.jpg",
     "height": 25
   },
   {
@@ -205,7 +205,7 @@
     "lat": 42.32872407,
     "lng": -83.0822833,
     "color": "#000000",
-    "image": "public/marker-images/Scaled launch facility.jpeg",
+    "image": "public/marker-images/Scaled-launch-facility.jpeg",
     "height": 25
   },
   {
@@ -238,7 +238,7 @@
     "lat": 42.32462487,
     "lng": -83.06946665,
     "color": "#5DADE2",
-    "image": "public/marker-images/light post.jpeg",
+    "image": "public/marker-images/light-post.jpeg",
     "height": 25
   },
   {
@@ -249,7 +249,7 @@
     "lat": 42.32698034,
     "lng": -83.06843792,
     "color": "#4C7B3B",
-    "image": "public/marker-images/Urban Location.png",
+    "image": "public/marker-images/Urban-Location.png",
     "height": 25
   },
   {
@@ -282,7 +282,7 @@
     "lat": 42.31799036,
     "lng": -83.06186521,
     "color": "#4C7B3B",
-    "image": "public/marker-images/Canada border.png",
+    "image": "public/marker-images/Canada-border.png",
     "height": 25
   },
   {
@@ -293,7 +293,7 @@
     "lat": 42.33037661,
     "lng": -83.07715093,
     "color": "#4C7B3B",
-    "image": "public/marker-images/Roosevelt Park.JPG",
+    "image": "public/marker-images/Roosevelt-Park.JPG",
     "height": 25
   },
   {
