@@ -4,12 +4,14 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Safe Supabase client creation - handle offline case
 let supabaseClient = null;
+let FIREWALL_DETECTED = false; // Once firewall is detected, never call Supabase again
 try {
   if (typeof supabase !== 'undefined') {
     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 } catch (error) {
   // Silent fallback to offline mode
+  FIREWALL_DETECTED = true;
 }
 
 // --- Idle Mode Variables --- (REMOVED)
@@ -350,11 +352,24 @@ const FALLBACK_MARKERS = [
 
 // --- Supabase Functions ---
 async function fetchMarkersFromSupabase() {
+  // If firewall already detected, skip Supabase entirely
+  if (FIREWALL_DETECTED) {
+    console.log('🚫 Firewall detected - skipping Supabase, using fallback only');
+    return [];
+  }
+  
   if (!supabaseClient) return [];
   
   try {
     const { data, error } = await supabaseClient.from('markers').select('*');
     if (error) throw error;
+    
+    // Check if data contains blocked Supabase URLs (firewall blocking storage)
+    if (data && data.some(m => m.image && m.image.includes('supabase.co/storage'))) {
+      console.log('🚫 Firewall detected - Supabase URLs would be blocked');
+      FIREWALL_DETECTED = true;
+      return [];
+    }
     
     // Debug: Log all markers from Supabase
     console.log('📊 All Supabase markers:', data);
@@ -368,6 +383,7 @@ async function fetchMarkersFromSupabase() {
     return data;
   } catch (error) {
     console.error('❌ Supabase fetch error:', error);
+    FIREWALL_DETECTED = true; // Mark firewall as detected on any error
     return []; // Return empty array on error
   }
 }
@@ -460,6 +476,13 @@ async function loadMarkersWithCache() {
 }
 
 async function fetchFromSupabaseWithFallback() {
+  // If firewall detected, skip Supabase completely and use fallback
+  if (FIREWALL_DETECTED) {
+    console.log("🔄 Firewall mode: Using fallback marker data exclusively");
+    console.log("📷 Sample fallback image path:", FALLBACK_MARKERS[0]?.image);
+    return FALLBACK_MARKERS;
+  }
+  
   try {
     const supabaseMarkers = await fetchMarkersFromSupabase();
     if (supabaseMarkers.length > 0) {
@@ -469,30 +492,27 @@ async function fetchFromSupabaseWithFallback() {
     }
   } catch (error) {
     console.log("⚠️ Supabase failed to load markers:", error);
+    FIREWALL_DETECTED = true;
   }
   
   // Fallback to local markers when Supabase is blocked (e.g., by Cisco Umbrella firewall)
   console.log("🔄 Using fallback marker data (Supabase may be blocked by network firewall)");
   console.log("📷 Sample fallback image path:", FALLBACK_MARKERS[0]?.image);
+  FIREWALL_DETECTED = true; // Prevent future Supabase calls
   return FALLBACK_MARKERS;
 }
 
 async function backgroundSyncMarkers() {
+  // If firewall detected, never sync from Supabase
+  if (FIREWALL_DETECTED) {
+    console.log("🚫 Firewall mode active - background sync disabled");
+    return;
+  }
+  
   console.log("🔄 Background sync starting...");
   try {
     const freshMarkers = await fetchMarkersFromSupabase();
     if (freshMarkers.length > 0) {
-      // Check if markers have Supabase URLs (would be blocked by firewall)
-      const hasSupabaseUrls = freshMarkers.some(m => m.image && m.image.includes('supabase.co'));
-      
-      // If we're using fallback markers (local paths), don't overwrite with Supabase URLs
-      const usingFallback = allSupabaseMarkers.some(m => m.image && m.image.startsWith('public/'));
-      
-      if (hasSupabaseUrls && usingFallback) {
-        console.log("⚠️ Skipping sync: Supabase URLs would be blocked, keeping fallback data");
-        return;
-      }
-      
       cacheManager.cacheMarkers(freshMarkers);
       
       // Check if data changed, if so, update display
@@ -504,6 +524,7 @@ async function backgroundSyncMarkers() {
     }
   } catch (error) {
     console.log("⚠️ Background sync failed:", error.message);
+    FIREWALL_DETECTED = true; // Set flag on sync failure too
   }
 }
 
@@ -550,7 +571,7 @@ const CACHE_KEYS = {
 
 const CACHE_CONFIG = {
   MAX_AGE: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
-  CURRENT_VERSION: '1.1.1',
+  CURRENT_VERSION: '1.2.0',
   SYNC_INTERVAL: 5 * 60 * 1000 // 5 minutes for background sync
 };
 
