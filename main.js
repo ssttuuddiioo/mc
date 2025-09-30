@@ -6346,44 +6346,55 @@ async function openSidePanel(labelId, displayText) {
     panel.style.background = 'white';
     panel.style.color = 'black';
     
-    // Home button is now always visible, no need to show it here
-    
-    // Only use data from Supabase - no fallback
-    console.log(`📋 Opening side panel for: ${labelId}`);
-    
-    // Try to get data from Supabase
-    let data = await getMarkerDataFromSupabase(labelId);
-    
-    // If we couldn't find data in Supabase but we have it in ENHANCED_MARKER_DATA, use that temporarily
-    if (!data && ENHANCED_MARKER_DATA[labelId]) {
-        console.log(`⚠️ No Supabase data found for ${labelId}, using hardcoded data temporarily`);
-        data = ENHANCED_MARKER_DATA[labelId];
-    } else if (!data) {
-        console.log(`⚠️ No data found for marker ID: ${labelId} in Supabase or hardcoded data`);
-        // Create minimal default data
-        data = {
-            title: displayText || `Location ${labelId}`,
-            description: "No information available for this location.",
-            features: []
-        };
-    } else {
-        console.log(`✅ Found data in Supabase for ${labelId}:`, data);
-    }
-    
-    // Update panel content with enhanced data (without category)
-    document.getElementById('location-title').textContent = data.title || data.name || 'Unknown Facility';
-    document.getElementById('location-description').textContent = data.description || 'No description available';
+    // Resolve marker strictly from local JSON (single source of truth)
+    const findMarkerByKey = (key) => {
+        if (!Array.isArray(allMarkers) || allMarkers.length === 0) return null;
+        // numeric id match
+        const numeric = Number(key);
+        let m = !isNaN(numeric) ? allMarkers.find(x => x.id == numeric) : null;
+        if (m) return m;
+        // title match (case-insensitive)
+        if (typeof key === 'string') {
+            const lower = key.toLowerCase();
+            m = allMarkers.find(x => (x.title || '').toLowerCase() === lower);
+            if (m) return m;
+        }
+        return null;
+    };
 
-    // Prefer image from Supabase row matching title/label when available
-    const resolvedImage = getMarkerImageByTitle(data.title || data.name);
-    if (resolvedImage) {
-        data.image = resolvedImage;
+    let marker = findMarkerByKey(labelId) || (displayText ? findMarkerByKey(displayText) : null);
+
+    // If markers haven't loaded yet, load and retry once
+    if (!marker && (!allMarkers || allMarkers.length === 0)) {
+        try {
+            allMarkers = await loadMarkersFromJSON();
+            marker = findMarkerByKey(labelId) || (displayText ? findMarkerByKey(displayText) : null);
+        } catch (e) {
+            // ignore
+        }
     }
+
+    // Fallback minimal data if still not found
+    const data = marker ? {
+        title: marker.title,
+        description: marker.description || 'No description available',
+        image: marker.image,
+        keyFeatures: marker.keyFeatures || ''
+    } : {
+        title: displayText || `Location ${labelId}`,
+        description: 'No information available for this location.',
+        image: '',
+        keyFeatures: ''
+    };
+
+    // Update panel content
+    document.getElementById('location-title').textContent = data.title || 'Unknown Facility';
+    document.getElementById('location-description').textContent = data.description || 'No description available';
     
     // Clean styling to match Figma design - no additional styling needed
     // CSS handles all the styling now
     
-    // Update features with bullet points
+    // Update features with bullet points (from keyFeatures string or array)
     const featuresContainer = document.getElementById('location-features');
     featuresContainer.innerHTML = '';
     
@@ -6402,6 +6413,9 @@ async function openSidePanel(labelId, displayText) {
             // Add each part to our collection
             allBulletPoints.push(...textParts);
         });
+    } else if (data.keyFeatures && typeof data.keyFeatures === 'string') {
+        const lines = data.keyFeatures.split('\n').map(s => s.trim()).filter(Boolean);
+        allBulletPoints.push(...lines);
     }
     
     // Process description for additional bullet points if it contains semicolons
@@ -6453,7 +6467,7 @@ async function openSidePanel(labelId, displayText) {
         }
     }
     
-    // Update image
+    // Update image (always from local JSON)
     const imgElement = document.getElementById('location-photo');
     const placeholder = document.querySelector('.image-placeholder');
     if (data.image) {
