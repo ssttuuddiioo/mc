@@ -200,21 +200,15 @@ function displayMarkers(markers) {
     }
   });
   
-  // Add new markers
+  // Add new markers from Supabase
   addMarkersToMap(markers, 'supabase');
-  
-  // Also add hardcoded markers if configured
-  const filteredHardcodedMarkers = filterHardcodedMarkers(newMarkers);
-  if (filteredHardcodedMarkers.length > 0) {
-    addMarkersToMap(filteredHardcodedMarkers, 'hardcoded');
-  }
   
   // Cache images in background (force download for offline use)
   if (markers.length > 0) {
     cacheManager.cacheAllImages(markers);
   }
   
-  console.log(`✅ ${markers.length} markers loaded`);
+  console.log(`✅ ${markers.length} markers loaded from Supabase`);
 }
 
 // --- Cache Management System ---
@@ -227,7 +221,7 @@ const CACHE_KEYS = {
 
 const CACHE_CONFIG = {
   MAX_AGE: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
-  CURRENT_VERSION: '1.0.5',
+  CURRENT_VERSION: '1.0.6',
   SYNC_INTERVAL: 5 * 60 * 1000 // 5 minutes for background sync
 };
 
