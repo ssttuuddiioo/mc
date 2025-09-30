@@ -2532,8 +2532,10 @@ function resolvePanelKey(key) {
   // Buttons use these values in index.html
   // 13 → Transportation Innovation Zone (we created marker id 33 for this panel)
   // 14 → Advanced Aerial Innovation (we created marker id 22 for this panel)
+  // 22 → Edge Server Platform button should open marker id 14
   // newlab-manufacturing → use id 13 (The 23rd) per user instruction
   if (key === '14') return 22;
+  if (key === '22') return 14;
   if (key === '13') return 33;
   if (key === 'newlab-manufacturing') return 13;
   return key;
