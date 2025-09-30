@@ -482,8 +482,9 @@ function createMarkerElement(markerData, source = 'hardcoded') {
 
 // IDs we want to hide (no markers rendered)
 // 4-11, 20 = Newlab sub-facilities (only show in Newlab dropdown)
+// 13, 21, 22, 33 = Left list only (The 23rd, BVLOS, AAIR, TIZ)
 // 29-32 = placeholder markers
-const HIDDEN_MARKER_IDS = new Set([4, 5, 6, 7, 8, 9, 10, 11, 20, 29, 30, 31, 32]);
+const HIDDEN_MARKER_IDS = new Set([4, 5, 6, 7, 8, 9, 10, 11, 13, 20, 21, 22, 29, 30, 31, 32, 33]);
 
 function addMarkersToMap(markers, source = 'hardcoded') {
   let validMarkersCount = 0;
