@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Cache</title>
+</head>
+<body>
+    <h1>Clearing all caches...</h1>
+    <div id="status"></div>
+    <script>
+        const status = document.getElementById('status');
+        
+        async function clearEverything() {
+            // 1. Unregister all service workers
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (let registration of registrations) {
+                await registration.unregister();
+                status.innerHTML += '<p>✓ Unregistered service worker</p>';
+            }
+            
+            // 2. Clear all caches
+            const cacheNames = await caches.keys();
+            for (let cacheName of cacheNames) {
+                await caches.delete(cacheName);
+                status.innerHTML += `<p>✓ Deleted cache: ${cacheName}</p>`;
+            }
+            
+            // 3. Clear localStorage
+            localStorage.clear();
+            status.innerHTML += '<p>✓ Cleared localStorage</p>';
+            
+            // 4. Clear sessionStorage
+            sessionStorage.clear();
+            status.innerHTML += '<p>✓ Cleared sessionStorage</p>';
+            
+            status.innerHTML += '<h2 style="color: green;">✅ All caches cleared!</h2>';
+            status.innerHTML += '<p><a href="/">Go to homepage</a></p>';
+        }
+        
+        clearEverything().catch(err => {
+            status.innerHTML += `<p style="color: red;">Error: ${err.message}</p>`;
+        });
+    </script>
+</body>
+</html>
