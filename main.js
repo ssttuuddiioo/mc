@@ -227,7 +227,7 @@ const CACHE_KEYS = {
 
 const CACHE_CONFIG = {
   MAX_AGE: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
-  CURRENT_VERSION: '1.0.0',
+  CURRENT_VERSION: '1.0.5',
   SYNC_INTERVAL: 5 * 60 * 1000 // 5 minutes for background sync
 };
 
@@ -497,6 +497,15 @@ const cacheManager = new CacheManager();
 let allSupabaseMarkers = [];
 
 // --- Marker Data Access Functions ---
+function getMarkerImageByTitle(title) {
+  if (!title || !Array.isArray(allSupabaseMarkers)) return null;
+  const lower = title.toLowerCase();
+  const match = allSupabaseMarkers.find(m =>
+    (m["Facility Name"] && String(m["Facility Name"]).toLowerCase() === lower) ||
+    (m.label && String(m.label).toLowerCase() === lower)
+  );
+  return match && match.image ? match.image : null;
+}
 async function getMarkerDataFromSupabase(labelId) {
   console.log(`🔍 Looking for marker with ID: ${labelId}`);
   
@@ -623,12 +632,13 @@ function createMarkerElement(markerData, source = 'hardcoded') {
   const el = document.createElement('div');
   el.className = 'custom-marker';
   
-  // Apply marker color only for specific markers (Roosevelt Park, Port of Monroe)
-  // IDs 28 and 15 (Port of Monroe) are the ones that should be dark green
-  if (markerData.color && (markerData.id == 28 || markerData.id == 15 || markerData.id == "15")) {
-    el.style.backgroundColor = '#1b4332'; // Dark green color
+  // Apply custom colors for specific labels/ids
+  // Make these labels green: Urban Location (24), Railroad (25), Detroit River (26), US-Canada Border (27), Roosevelt Park (28)
+  const greenIds = new Set([24, 25, 26, 27, 28]);
+  if (greenIds.has(Number(markerData.id))) {
+    el.style.backgroundColor = '#4C7B3B';
   } else {
-    // All other markers remain black
+    // Default to black for all others
     el.style.backgroundColor = '#000000';
   }
   
@@ -1058,7 +1068,18 @@ const map = new mapboxgl.Map({
   pitch: HOME_POSITION.pitch,
   bearing: HOME_POSITION.bearing,
   antialias: true,
-  dragPan: false // Disable free roaming/dragging
+  dragPan: false, // Disable free roaming/dragging
+  minZoom: 15, // Prevent zooming out too far (~1 mile view)
+  maxZoom: 20, // Allow close inspection
+  maxBounds: [
+    [-83.12, 42.29], // Southwest corner (wider bounds around Michigan Central)
+    [-83.02, 42.37]  // Northeast corner
+  ],
+  // Touchscreen-optimized zoom controls
+  scrollZoom: { around: 'center' }, // Smooth scroll zoom
+  touchZoomRotate: { around: 'center' }, // Pinch zoom from center
+  touchPitch: false, // Disable pitch gestures for simpler UX
+  doubleClickZoom: true // Allow double-tap to zoom
 });
 
 let orbitAnimation; // To hold the animation frame ID
@@ -1128,7 +1149,7 @@ const newMarkers = [
     { id: 18, lat: 42.32846502089401, lng: -83.0778396126792, color: '#9B59B6' },
     { id: 19, lat: 42.32872406892148, lng: -83.08228330495663, color: '#1b4332' }, // Changed to dark green
     { id: 20, lat: 42.32828839662688, lng: -83.07564165737065, color: '#9B59B6' },
-    { id: 22, lat: 42.32706378807067, lng: -83.06791695933897, color: '#9B59B6' },
+    // { id: 22, lat: 42.32706378807067, lng: -83.06791695933897, color: '#9B59B6' }, // removed per request
     { id: 23, lat: 42.3263690476279, lng: -83.07403300892324, color: '#9B59B6' },
     { id: 28, text: "28", lat: 42.32904224480186, lng: -83.08086956713913, color: '#1b4332' },
     { id: 28, text: "28", lat: 42.33016060731937, lng: -83.07923878407165, color: '#1b4332' },
@@ -1159,7 +1180,7 @@ const ENHANCED_MARKER_DATA = {
             "Dedicated space for hardware startups to scale production",
             "Flexible manufacturing layouts to accommodate diverse production needs"
         ],
-        image: "public/about/slide2.jpg"
+        image: "https://hzzcioecccskyywnvvbn.supabase.co/storage/v1/object/public/marker-images/The%2023rd.jpg"
     },
     
     "tiz": {
@@ -1305,17 +1326,25 @@ const ENHANCED_MARKER_DATA = {
         title: "Newlab at Michigan Central", 
         description: "Newlab at Michigan Central is a collaborative workspace and platform for technology development, focusing on connected and autonomous vehicles, smart cities, and advanced manufacturing.",
         features: [
-            {icon: "🔬", text: "Digital Fabrication Lab"},
+            {icon: "🔬", text: "Digital Fabrication Shop"},
             {icon: "🪚", text: "Wood Shop"},
+            {icon: "🔩", text: "Metal Shop"},
             {icon: "⚡", text: "Electronics Lab"},
-            {icon: "🏭", text: "Transitional Manufacturing Space"},
+            {icon: "🛠️", text: "Machine Shop"},
+            {icon: "📏", text: "Physical Metrology Shop"},
+            {icon: "🎨", text: "Casting and Finishing Shop"},
+            {icon: "🏭", text: "Manufacturing Space"},
             {icon: "🚀", text: "The Launchpad"}
         ],
         subFacilities: [
-            {id: "newlab-fab", title: "Digital Fabrication Lab", description: "Our Digital Fabrication Lab features the latest in 3D printing, CNC machining, and digital design tools, enabling rapid prototyping and small-batch production."},
+            {id: "newlab-fab", title: "Digital Fabrication Shop", description: "Our Digital Fabrication Shop features the latest in 3D printing, CNC machining, and digital design tools, enabling rapid prototyping and small-batch production."},
             {id: "newlab-wood", title: "Wood Shop", description: "A fully equipped woodworking shop combining traditional craftsmanship with modern CNC capabilities for furniture, prototypes, and architectural elements."},
+            {id: "newlab-metal", title: "Metal Shop", description: "Cutting, welding, bending and forming metal parts with fiber laser, press brake, welders, tube roller and more for professional-grade fabrication."},
             {id: "newlab-electronics", title: "Electronics Lab", description: "State-of-the-art electronics lab for circuit design, microcontroller programming, and IoT device development."},
-            {id: "newlab-manufacturing", title: "Transitional Manufacturing Space", description: "Flexible manufacturing space designed for scaling production from prototype to small batch manufacturing."},
+            {id: "newlab-machine", title: "Machine Shop", description: "CNC mills and lathes including a 5-axis mill, precision machining equipment and tools for prototype and production-ready components."},
+            {id: "newlab-metrology", title: "Physical Metrology Shop", description: "Measurement and inspection with a coordinate measuring arm, 3D scanner, universal testing machine and precision gauges."},
+            {id: "newlab-casting", title: "Casting and Finishing Shop", description: "Walk-in spray booth, powder coating, injection molding, vacuum forming and finishing tools to prepare products for market."},
+            {id: "newlab-manufacturing", title: "Manufacturing Space", description: "Flexible manufacturing space designed for scaling production from prototype to small batch manufacturing."},
             {id: "newlab-launchpad", title: "The Launchpad", description: "Dedicated space for startups and entrepreneurs to develop and launch mobility innovations."}
         ],
         size: "30,000 sq ft",
@@ -2441,7 +2470,17 @@ map.on('load', async () => {
         closeSidePanel();
       } else {
         // If panel is closed, open the info panel
-        openSidePanel('info');
+        // Open a generic About panel using Station image
+        const panel = document.getElementById('label-info-panel');
+        panel.style.background = 'white';
+        panel.style.color = 'black';
+        document.getElementById('location-title').textContent = 'About Michigan Central';
+        document.getElementById('location-description').textContent = "Michigan Central’s 30-acre hub in Detroit provides a unique mix of infrastructure that doesn’t exist anywhere else to develop products and solutions from sketch to scale. On this map, you can learn more about each part of Michigan Central’s campus – from workspaces to labs, testing zones, and the surrounding strategic geographic advantages.";
+        const featuresContainer = document.getElementById('location-features');
+        featuresContainer.innerHTML = '';
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        if (fullscreenImage) fullscreenImage.src = 'https://hzzcioecccskyywnvvbn.supabase.co/storage/v1/object/public/marker-images/1.png';
+        panel.classList.add('panel-open');
       }
     });
   } else {
@@ -2656,8 +2695,58 @@ function ensureBuildingsOnTop() {
     });
     
     console.log('✅ Layer reordering complete');
+    
+    // Color The Factory building blue
+    colorFactoryBlue();
   } catch (error) {
     console.error('❌ Error ensuring buildings on top:', error);
+  }
+}
+
+// Color The Factory building blue
+function colorFactoryBlue() {
+  try {
+    // Find building layer
+    const layers = map.getStyle().layers;
+    const buildingLayer = layers.find(l => 
+      l.type === 'fill-extrusion' && 
+      (l.id.includes('building') || l.source === 'composite')
+    );
+    
+    if (buildingLayer) {
+      console.log(`🏭 Found building layer: ${buildingLayer.id}`);
+      
+      // Update paint property to color buildings blue based on feature state
+      map.setPaintProperty(buildingLayer.id, 'fill-extrusion-color', [
+        'case',
+        ['boolean', ['feature-state', 'customColor'], false],
+        ['feature-state', 'customColor'],
+        ['get', 'color'] || '#aaa' // fallback to original color
+      ]);
+      
+      // The Factory coordinates
+      const factoryLng = -83.07221479556428;
+      const factoryLat = 42.331049686201276;
+      
+      // Query buildings near The Factory
+      const point = map.project([factoryLng, factoryLat]);
+      const features = map.queryRenderedFeatures(point, {
+        layers: [buildingLayer.id]
+      });
+      
+      if (features.length > 0) {
+        console.log(`🏭 Found ${features.length} building features near The Factory`);
+        // Set blue color for the first building found
+        const building = features[0];
+        map.setFeatureState(
+          { source: building.source, sourceLayer: building.sourceLayer, id: building.id },
+          { customColor: '#4A90E2' }
+        );
+        console.log('✅ The Factory colored blue');
+      }
+    }
+  } catch (error) {
+    console.log('⚠️ Could not color Factory building:', error.message);
   }
 }
 
@@ -5601,7 +5690,7 @@ function testAllMarkers() {
     { name: "Newlab", id: "2" },
     { name: "Smart Light Posts", id: "23" },
     { name: "Bagley Mobility Hub", id: "16" },
-    { name: "Edge Server Platform", id: "22" },
+    // { name: "Edge Server Platform", id: "22" },
     { name: "Transportation Innovation Zone (TIZ)", id: "13" },
     { name: "Advanced Aerial Innovation Region (AAIR)", id: "14" },
     { name: "Port of Monroe", id: "15" },
@@ -5639,8 +5728,7 @@ function testAllMarkers() {
   console.log('\nChecking "Bagley Mobility Hub" (ID: 16):');
   verifyLocation(16, "Bagley Mobility Hub");
   
-  console.log('\nChecking "Edge Server Platform" (ID: 22):');
-  verifyLocation(22, "Edge Server Platform");
+  // Removed Edge Server Platform pin verification per request
   
   console.log('\nChecking "The Factory" (ID: 3):');
   verifyLocation(3, "The Factory");
@@ -6473,6 +6561,26 @@ async function openSubFacilityPanel(facilityId, facilityTitle) {
         }
     }
     
+    // Load image from Supabase based on sub-facility title
+    const resolvedImage = getMarkerImageByTitle(subFacilityData.title);
+    const imgElement = document.getElementById('location-photo');
+    const placeholder = document.querySelector('.image-placeholder');
+    
+    if (resolvedImage) {
+        imgElement.src = resolvedImage;
+        imgElement.style.display = 'block';
+        placeholder.style.display = 'none';
+        imgElement.onerror = () => {
+            imgElement.style.display = 'none';
+            placeholder.style.display = 'flex';
+            placeholder.textContent = '📷 Image not available';
+        };
+    } else {
+        imgElement.style.display = 'none';
+        placeholder.style.display = 'flex';
+        placeholder.textContent = '📷 No photo available';
+    }
+    
     // Show panel with correct class
     panel.classList.add('panel-open');
     
@@ -6520,6 +6628,12 @@ async function openSidePanel(labelId, displayText) {
     // Update panel content with enhanced data (without category)
     document.getElementById('location-title').textContent = data.title || data.name || 'Unknown Facility';
     document.getElementById('location-description').textContent = data.description || 'No description available';
+
+    // Prefer image from Supabase row matching title/label when available
+    const resolvedImage = getMarkerImageByTitle(data.title || data.name);
+    if (resolvedImage) {
+        data.image = resolvedImage;
+    }
     
     // Clean styling to match Figma design - no additional styling needed
     // CSS handles all the styling now

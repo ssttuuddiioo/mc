@@ -1,6 +1,6 @@
 {
-  "version": "001",
-  "timestamp": 1727211600000,
-  "notes": "Initial version"
+  "version": "002",
+  "timestamp": 1727657400000,
+  "notes": "Updated marker data from CSV - cache cleared"
 }
 

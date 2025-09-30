@@ -466,6 +466,13 @@ Feature 3"></textarea>
   <!-- Info button -->
   <button id="info-button" class="info-button">INFO</button>
   
+  <!-- Touch to Explore banner -->
+  <div id="touch-banner" style="position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 1200; pointer-events: none;">
+    <div style="background: rgba(0,0,0,0.85); color: white; font-family: MichiganCentralMonumentGrotesk-Bold, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; font-weight: 700; letter-spacing: 0.12em; padding: 18px 32px; border-radius: 999px; box-shadow: 0 8px 28px rgba(0,0,0,0.35); text-transform: uppercase; font-size: 24px;">
+      TOUCH TO EXPLORE
+    </div>
+  </div>
+  
   <!-- Fullscreen Image Viewer Overlay -->
   <div id="fullscreen-viewer" class="fullscreen-viewer">
     <button id="exit-fullscreen" class="exit-fullscreen-btn">×</button>
@@ -480,6 +487,8 @@ Feature 3"></textarea>
       <button class="location-button" data-location="14">Advanced Aerial Innovation</button>
       <button class="location-button" data-location="15">Port of Monroe</button>
       <button class="location-button" data-location="newlab-manufacturing">The 23rd</button>
+      <button class="location-button" data-location="22">Edge Server Platform</button>
+      <button class="location-button" data-location="21">Beyond Visual Line of Sight Systems</button>
     </div>
   </div>
 
@@ -487,12 +496,12 @@ Feature 3"></textarea>
   <script src="version-check.js"></script>
   
   <!-- Main application script -->
-  <script src="main.js?v=001"></script>
+  <script src="main.js?v=006"></script>
   
   <!-- Service worker registration and cache management -->
   <script>
     // Current app version - must match version.json
-    const APP_VERSION = '001';
+    const APP_VERSION = '006';
     
     // Register service worker
     if ('serviceWorker' in navigator) {

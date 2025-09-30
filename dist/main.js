@@ -583,7 +583,7 @@ const CACHE_KEYS = {
 
 const CACHE_CONFIG = {
   MAX_AGE: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
-  CURRENT_VERSION: '1.0.0',
+  CURRENT_VERSION: '1.0.3',
   SYNC_INTERVAL: 5 * 60 * 1000 // 5 minutes for background sync
 };
 

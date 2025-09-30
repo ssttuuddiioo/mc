@@ -1,5 +1,5 @@
 // Enhanced Service Worker for Complete Offline Support
-const CACHE_VERSION = '001'; // Match with version.json
+const CACHE_VERSION = '002'; // Match with version.json
 const STATIC_CACHE = `orbit-static-v${CACHE_VERSION}`;
 const MAPBOX_CACHE = `mapbox-v${CACHE_VERSION}`;
 const API_CACHE = `api-v${CACHE_VERSION}`;
