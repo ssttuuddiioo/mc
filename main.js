@@ -2205,16 +2205,27 @@ map.on('load', async () => {
         closeSidePanel();
       } else {
         // If panel is closed, open the info panel
-        // Open a generic About panel using Station image
+        // Open a generic About panel using 1.png
         const panel = document.getElementById('label-info-panel');
         panel.style.background = 'white';
         panel.style.color = 'black';
         document.getElementById('location-title').textContent = 'About Michigan Central';
-        document.getElementById('location-description').textContent = "Michigan Central’s 30-acre hub in Detroit provides a unique mix of infrastructure that doesn’t exist anywhere else to develop products and solutions from sketch to scale. On this map, you can learn more about each part of Michigan Central’s campus – from workspaces to labs, testing zones, and the surrounding strategic geographic advantages.";
+        document.getElementById('location-description').textContent = "Michigan Central's 30-acre hub in Detroit provides a unique mix of infrastructure that doesn't exist anywhere else to develop products and solutions from sketch to scale. On this map, you can learn more about each part of Michigan Central's campus – from workspaces to labs, testing zones, and the surrounding strategic geographic advantages.";
         const featuresContainer = document.getElementById('location-features');
         featuresContainer.innerHTML = '';
+        
+        // Set both fullscreen and panel images to 1.png
         const fullscreenImage = document.getElementById('fullscreen-image');
+        const locationPhoto = document.getElementById('location-photo');
+        const placeholder = document.querySelector('.image-placeholder');
+        
         if (fullscreenImage) fullscreenImage.src = 'public/marker-images/1.png';
+        if (locationPhoto) {
+          locationPhoto.src = 'public/marker-images/1.png';
+          locationPhoto.style.display = 'block';
+          if (placeholder) placeholder.style.display = 'none';
+        }
+        
         panel.classList.add('panel-open');
       }
     });
@@ -6359,6 +6370,31 @@ async function openSidePanel(labelId, displayText) {
     // Clean white theme styling to match Figma
     panel.style.background = 'white';
     panel.style.color = 'black';
+    
+    // Special case: 'info' key opens About Michigan Central panel
+    if (labelId === 'info') {
+        const data = {
+            title: 'About Michigan Central',
+            description: "Michigan Central's 30-acre hub in Detroit provides a unique mix of infrastructure that doesn't exist anywhere else to develop products and solutions from sketch to scale. On this map, you can learn more about each part of Michigan Central's campus – from workspaces to labs, testing zones, and the surrounding strategic geographic advantages.",
+            image: 'public/marker-images/1.png',
+            keyFeatures: ''
+        };
+        
+        // Update panel content
+        document.getElementById('location-title').textContent = data.title;
+        document.getElementById('location-description').textContent = data.description;
+        document.getElementById('location-features').innerHTML = '';
+        
+        const imgElement = document.getElementById('location-photo');
+        const placeholder = document.querySelector('.image-placeholder');
+        imgElement.src = data.image;
+        imgElement.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
+        
+        panel.classList.add('panel-open');
+        startSidePanelAutoClose();
+        return;
+    }
     
     // Resolve marker strictly from local JSON (single source of truth)
     const findMarkerByKey = (key) => {
