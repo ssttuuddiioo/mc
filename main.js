@@ -480,10 +480,17 @@ function createMarkerElement(markerData, source = 'hardcoded') {
   return el;
 }
 
+// IDs we want to hide (no markers rendered)
+const HIDDEN_MARKER_IDS = new Set([29, 30, 31, 32]);
+
 function addMarkersToMap(markers, source = 'hardcoded') {
   let validMarkersCount = 0;
   
   markers.forEach(markerData => {
+    // Skip hidden IDs
+    if (HIDDEN_MARKER_IDS.has(Number(markerData.id))) {
+      return;
+    }
     // Check for title (required in new schema)
     const hasTitle = !!(markerData.title);
       
