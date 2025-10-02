@@ -482,9 +482,9 @@ function createMarkerElement(markerData, source = 'hardcoded') {
 
 // IDs we want to hide (no markers rendered)
 // 4-11, 20 = Newlab sub-facilities (only show in Newlab dropdown)
-// 13, 21, 22, 33 = Left list only (The 23rd, BVLOS, AAIR, TIZ)
+// 13, 22, 33 = Left list only (The 23rd, AAIR, TIZ)
 // 29-32 = placeholder markers
-const HIDDEN_MARKER_IDS = new Set([4, 5, 6, 7, 8, 9, 10, 11, 13, 20, 21, 22, 29, 30, 31, 32, 33]);
+const HIDDEN_MARKER_IDS = new Set([4, 5, 6, 7, 8, 9, 10, 11, 13, 20, 22, 29, 30, 31, 32, 33]);
 
 function addMarkersToMap(markers, source = 'hardcoded') {
   let validMarkersCount = 0;
@@ -594,7 +594,7 @@ function addElevatedSymbolLayer() {
     map.removeLayer('elevated-labels');
   }
   
-  // Add the symbol layer with z-elevate
+  // Add the symbol layer with z-elevate (hidden by default)
   map.addLayer({
     id: 'elevated-labels',
     type: 'symbol',
@@ -607,7 +607,8 @@ function addElevatedSymbolLayer() {
       'symbol-placement': 'point',
       'symbol-z-elevate': true, // This is the key property for elevation
       'text-allow-overlap': true,
-      'text-ignore-placement': true
+      'text-ignore-placement': true,
+      'visibility': 'none' // Hide the labels by default
     },
     paint: {
       'text-color': ['get', 'color'],
@@ -5453,7 +5454,7 @@ function testAllMarkers() {
     { name: "Newlab", id: "2" },
     { name: "Smart Light Posts", id: "23" },
     { name: "Bagley Mobility Hub", id: "16" },
-    // { name: "Edge Server Platform", id: "22" },
+    { name: "Edge Server Platform", id: "22" },
     { name: "Transportation Innovation Zone (TIZ)", id: "13" },
     { name: "Advanced Aerial Innovation Region (AAIR)", id: "14" },
     { name: "Port of Monroe", id: "15" },
@@ -5558,10 +5559,10 @@ function hideAllLabels() {
   hiddenLayers = [];
   const style = map.getStyle();
   
-  // Hide map labels (symbol layers with text)
+  // Hide map labels (symbol layers with text) - except elevated-labels which should stay hidden
   if (style && style.layers) {
     style.layers.forEach(layer => {
-      if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
+      if (layer.type === 'symbol' && layer.layout && layer.layout['text-field'] && layer.id !== 'elevated-labels') {
         try {
           map.setLayoutProperty(layer.id, 'visibility', 'none');
           hiddenLayers.push(layer.id);
@@ -5585,10 +5586,10 @@ function showAllLabels() {
   const style = map.getStyle();
   let shownCount = 0;
   
-  // Show ALL map label layers (symbol layers with text)
+  // Show ALL map label layers (symbol layers with text) - except elevated-labels which should stay hidden
   if (style && style.layers) {
     style.layers.forEach(layer => {
-      if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
+      if (layer.type === 'symbol' && layer.layout && layer.layout['text-field'] && layer.id !== 'elevated-labels') {
         try {
           map.setLayoutProperty(layer.id, 'visibility', 'visible');
           shownCount++;
@@ -5793,9 +5794,9 @@ function startSidePanelAutoClose() {
     clearTimeout(sidePanelAutoCloseTimer);
   }
   
-  // Set new timer for 10 seconds
+  // Set new timer for 30 seconds
   sidePanelAutoCloseTimer = setTimeout(() => {
-    console.log('⏰ Auto-closing side panel after 10 seconds of inactivity');
+    console.log('⏰ Auto-closing side panel after 30 seconds of inactivity');
     
     // Return camera to home position
     if (map) {
@@ -5815,7 +5816,7 @@ function startSidePanelAutoClose() {
     }
     
     closeSidePanel();
-  }, 10000); // 10 seconds
+  }, 30000); // 30 seconds
 }
 
 // Function to reset auto-close timer (call on any interaction)
@@ -5833,13 +5834,24 @@ function startFullscreenViewerAutoClose() {
     clearTimeout(fullscreenViewerAutoCloseTimer);
   }
   
-  // Set new timer for 10 seconds (same as side panel)
+  // Set new timer for 15 seconds
   fullscreenViewerAutoCloseTimer = setTimeout(() => {
-    console.log('⏰ Auto-closing fullscreen viewer after 10 seconds of inactivity');
+    console.log('⏰ Auto-closing fullscreen viewer after 15 seconds of inactivity');
     
     // Close the fullscreen viewer
     closeFullscreenViewer();
-  }, 10000); // 10 seconds - same as side panel timer
+    
+    // Return to home position
+    if (map) {
+      map.flyTo({
+        center: HOME_POSITION.center,
+        zoom: HOME_POSITION.zoom,
+        pitch: HOME_POSITION.pitch,
+        bearing: HOME_POSITION.bearing,
+        duration: 2000
+      });
+    }
+  }, 15000); // 15 seconds
 }
 
 // Function to reset fullscreen viewer auto-close timer (call on any interaction)
@@ -6340,7 +6352,7 @@ async function openSubFacilityPanel(facilityId, facilityTitle) {
     const placeholder = document.querySelector('.image-placeholder');
     
     if (resolvedImage) {
-        imgElement.src = resolvedImage;
+        imgElement.src = resolvedImage + '?t=' + Date.now();
         imgElement.style.display = 'block';
         placeholder.style.display = 'none';
         imgElement.onerror = () => {
@@ -6390,7 +6402,7 @@ async function openSidePanel(labelId, displayText) {
         
         const imgElement = document.getElementById('location-photo');
         const placeholder = document.querySelector('.image-placeholder');
-        imgElement.src = data.image;
+        imgElement.src = data.image + '?t=' + Date.now();
         imgElement.style.display = 'block';
         if (placeholder) placeholder.style.display = 'none';
         
@@ -6524,7 +6536,7 @@ async function openSidePanel(labelId, displayText) {
     const imgElement = document.getElementById('location-photo');
     const placeholder = document.querySelector('.image-placeholder');
     if (data.image) {
-        imgElement.src = data.image;
+        imgElement.src = data.image + '?t=' + Date.now();
         imgElement.style.display = 'block';
         placeholder.style.display = 'none';
         imgElement.onerror = () => {
