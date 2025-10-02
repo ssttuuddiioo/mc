@@ -73,7 +73,7 @@
     "lat": 42.32795938,
     "lng": -83.07593233,
     "color": "#E74C3C",
-    "image": "public/marker-images/Newlab-at-MC.jpg",
+    "image": "public/marker-images/woodshop.png",
     "height": 20
   },
   {
@@ -139,7 +139,7 @@
     "lat": 42.32815463,
     "lng": -83.07645834,
     "color": "#E74C3C",
-    "image": "public/marker-images/Grounded-Manufacturing-Space.jpg",
+    "image": "public/marker-images/Manufacturing-Space.png",
     "height": 20
   },
   {
@@ -161,7 +161,7 @@
     "lat": 42.3282866,
     "lng": -83.07663895,
     "color": "#F39C12",
-    "image": "public/marker-images/The-23rd.JPG",
+    "image": "public/marker-images/23.png",
     "height": 25
   },
   {
@@ -246,10 +246,10 @@
     "title": "Beyond Visual Line of Sight Systems",
     "description": "This system provides operators with digital eyes in the sky and monitoring of low-altitude airspace, allowing for real-time aircraft detection and monitoring as well as command and control of unmanned flights. By removing the need for operators to directly see the drone at all times, these operations unlock the ability for drones to operate at longer distances and over larger areas. This enables more efficient, scalable drone use that can help companies move from small tests to commercial deployment.",
     "keyFeatures": "- 2 X-band radar units and 3 networked ADS-B receivers\n- 9 ground radio stations for extended communication",
-    "lat": 42.32782854,
-    "lng": -83.07643369,
+    "lat": 42.32863951882778,
+    "lng": -83.08021577443292,
     "color": "#27AE60",
-    "image": "public/marker-images/1.png",
+    "image": "public/marker-images/BeyondVisualLineofSightSystems.png",
     "height": 25
   },
   {

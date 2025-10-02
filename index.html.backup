@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Orbit Demo - SVG Placement Tool</title>
+  <link rel="stylesheet" href="style.css?v=2024092301">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css" rel="stylesheet">
+  
+  <!-- Custom Font -->
+  <style>
+    @font-face {
+      font-family: 'MichiganCentralMonumentGrotesk-Bold';
+      src: url('public/fonts/MichiganCentralMonumentGrotesk-Bold.woff2') format('woff2'),
+           url('public/fonts/MichiganCentralMonumentGrotesk-Bold.woff') format('woff'),
+           url('public/fonts/MichiganCentralMonumentGrotesk-Bold.ttf') format('truetype');
+      font-weight: bold;
+      font-display: swap;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  
+  <!-- TEST BUTTON FOR ADMIN PANEL (HIDDEN) -->
+  <button id="test-admin-button" style="display: none;">
+    🛠️ OPEN ADMIN PANEL (TEST)
+  </button>
+  
+  <script>
+    // Register Service Worker for offline functionality
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('✅ Service Worker registered:', registration.scope);
+          })
+          .catch(error => {
+            console.log('❌ Service Worker registration failed:', error);
+          });
+      });
+    }
+
+    // Simple direct function to open admin panel
+    function openAdminPanelTest() {
+      console.log('🛠️ DIRECT TEST BUTTON CLICKED!');
+      const panel = document.getElementById('admin-panel');
+      console.log('🔍 Panel found:', !!panel);
+      
+      if (panel) {
+        panel.classList.remove('editor-hidden');
+        panel.style.display = 'block';
+        panel.style.visibility = 'visible';
+        panel.style.opacity = '1';
+        panel.style.transform = 'translateX(0)';
+        panel.style.right = '0';
+        console.log('✅ Panel should be visible now');
+      } else {
+        console.error('❌ Panel not found');
+      }
+    }
+    
+    // Test function for Add New Marker
+    function testAddNewMarker() {
+      console.log('➕ ADD NEW MARKER CLICKED!');
+      
+      // Clear dropdown and set to "new" mode
+      const select = document.getElementById('admin-marker-select');
+      if (select) {
+        select.innerHTML = '<option value="new">➕ Creating New Marker...</option>';
+        select.value = 'new';
+        console.log('✅ Dropdown set to new mode');
+      }
+      
+      // Show the edit section
+      const editSection = document.getElementById('admin-edit-section');
+      if (editSection) {
+        editSection.style.display = 'block';
+        console.log('✅ Edit section shown');
+      }
+      
+      // Clear form fields
+      const fields = [
+        'admin-marker-name', 'admin-marker-lat', 'admin-marker-lng', 
+        'admin-marker-color', 'admin-marker-short-desc', 'admin-marker-description',
+        'admin-marker-size', 'admin-marker-address', 'admin-marker-image', 'admin-marker-features'
+      ];
+      
+      fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+          field.value = '';
+        }
+      });
+      
+      // Set default color
+      const colorField = document.getElementById('admin-marker-color');
+      if (colorField) {
+        colorField.value = '#4A90E2';
+      }
+      
+      console.log('✅ Form cleared and ready for new marker');
+    }
+  </script>
+  
+  <!-- PRECISION CROSSHAIR OVERLAY -->
+  <div id="precision-crosshair" style="display: none;">
+    <div class="crosshair-h"></div>
+    <div class="crosshair-v"></div>
+    <div class="precision-coords">
+      <span id="live-coords">0.000000, 0.000000</span>
+      <span id="precision-mode">NORMAL</span>
+    </div>
+  </div>
+
+  <!-- Style Controls in Top-Left (HIDDEN) -->
+  <div id="style-controls" style="display: none;">
+    <button data-style="mapbox://styles/mapbox/light-v11" title="Light Mode">☀️</button>
+    <button data-style="mapbox://styles/mapbox/standard" title="Standard Mode">🗺️</button>
+    <button id="svg-editor-toggle" title="SVG Placement Tool">⚙️</button>
+    <button id="admin-panel-toggle" title="Admin Panel">🛠️</button>
+  </div>
+  
+  <!-- Precision Mode Status -->
+  <div id="precision-status" style="position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 12px; z-index: 1000; display: none;">
+    <div id="mode-indicator">NORMAL MODE</div>
+    <div id="controls-hint" style="font-size: 10px; opacity: 0.7; margin-top: 4px;">Press C for crosshair, Ctrl+P for help</div>
+  </div>
+
+  <!-- Online/Offline Status Indicator (simplified to a small circle) -->
+  <div id="connection-status" style="position: fixed; top: 20px; right: 20px; width: 10px; height: 10px; border-radius: 50%; z-index: 1001; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>
+
+  <!-- Legend Toggle Button (HIDDEN) -->
+  <button id="legend-toggle" style="display: none;">📍</button>
+
+  <!-- Legend Panel -->
+  <div id="legend" class="legend-hidden">
+    <div class="legend-header">
+      <h3>Locations</h3>
+      <button id="close-legend-btn">✕</button>
+    </div>
+    <div class="legend-content">
+      <button class="legend-item" data-location="rooseveltPark">Roosevelt Park</button>
+      <button class="legend-item" data-location="michiganCentral">Michigan Central</button>
+      <button class="legend-item" data-location="campusMartius">Campus Martius</button>
+      <button class="legend-item" data-location="newlab">The Factory</button>
+    </div>
+  </div>
+
+
+  <!-- SVG Editor Panel - Redesigned for Logical Workflow -->
+  <div id="svg-editor" class="editor-hidden">
+    <div class="editor-header">
+      <h3>SVG Placement Tool</h3>
+      <div id="edit-mode-indicator">
+        <span id="current-svg-indicator">No SVG Selected</span>
+      </div>
+      <button id="close-editor-btn">✕</button>
+    </div>
+    <div class="editor-content">
+      
+      <!-- Step 1: File Selection -->
+      <div class="workflow-step">
+        <div class="step-header">
+          <span class="step-number">1</span>
+          <h4>Select SVG File</h4>
+        </div>
+        <div class="file-grid">
+          <select id="svg-file-select" class="file-selector">
+            <option value="">Loading SVG files...</option>
+          </select>
+          <button id="load-svg-btn" class="primary-btn" disabled>Load SVG</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Position & Transform -->
+      <div class="workflow-step" id="placement-step" style="display: none;">
+        <div class="step-header">
+          <span class="step-number">2</span>
+          <h4>Position & Transform</h4>
+        </div>
+        
+        <!-- Quick Coordinate Input -->
+        <div class="quick-coords">
+          <label>Quick Coordinates (Google Maps format):</label>
+          <div class="coord-input-row">
+            <input type="text" id="google-coords" placeholder="42.3289, -83.0776">
+            <button id="apply-coords-btn" class="secondary-btn">Apply</button>
+          </div>
+        </div>
+
+        <!-- Precise Controls -->
+        <div class="control-group">
+          <div class="control-row">
+            <label>Latitude <span id="lat-value" class="value-display">42.3289</span></label>
+            <div class="input-group">
+              <input type="number" id="lat-input" step="0.0000001" class="coord-input" value="42.3289" placeholder="42.3289">
+              <input type="range" id="lat-slider" min="42.25" max="42.45" step="0.0000001" value="42.3289" class="coord-slider">
+            </div>
+          </div>
+          
+          <div class="control-row">
+            <label>Longitude <span id="lng-value" class="value-display">-83.0776</span></label>
+            <div class="input-group">
+              <input type="number" id="lng-input" step="0.0000001" class="coord-input" value="-83.0776" placeholder="-83.0776">
+              <input type="range" id="lng-slider" min="-83.15" max="-83.00" step="0.0000001" value="-83.0776" class="coord-slider">
+            </div>
+          </div>
+          
+          <div class="control-row">
+            <label>Scale <span id="scale-value" class="value-display">1.0</span></label>
+            <div class="input-group">
+              <input type="number" id="scale-input" step="0.00001" min="0.00001" max="10" class="coord-input" value="1.0" placeholder="1.0">
+              <input type="range" id="scale-slider" min="0.00001" max="10" step="0.00001" value="1.0" class="coord-slider">
+            </div>
+          </div>
+          
+          <div class="control-row">
+            <label>Rotation <span id="rotation-value" class="value-display">0°</span></label>
+            <div class="input-group">
+              <input type="number" id="rotation-input" step="0.00001" min="0" max="360" class="coord-input" value="0" placeholder="0">
+              <input type="range" id="rotation-slider" min="0" max="360" step="0.00001" value="0" class="coord-slider">
+            </div>
+          </div>
+        </div>
+
+        <!-- Visual Controls -->
+        <div class="visual-controls">
+          <div class="control-row">
+            <label>Color</label>
+            <div class="input-group">
+              <input type="color" id="color-input" class="color-picker-modern">
+            </div>
+          </div>
+          <div class="control-row">
+            <label>Opacity <span id="opacity-value" class="value-display">0.8</span></label>
+            <div class="input-group">
+              <input type="number" id="opacity-input" step="0.1" min="0" max="1" class="coord-input" value="0.8" placeholder="0.8">
+              <input type="range" id="opacity-slider" min="0" max="1" step="0.1" value="0.8" class="coord-slider">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Save & Continue -->
+      <div class="workflow-step save-section" id="save-step" style="display: none;">
+        <div class="step-header save-header">
+          <span class="step-number">💾</span>
+          <div class="header-text">
+            <h4>Save & Continue</h4>
+            <p class="step-description">Finalize your SVG placement or continue with another</p>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button id="save-svg-btn" class="success-btn">
+            <span class="btn-icon">💾</span>
+            <span class="btn-text">Save This SVG</span>
+          </button>
+          <button id="make-permanent-btn" class="permanent-btn">
+            <span class="btn-icon">🌐</span>
+            <span class="btn-text">Make Permanent</span>
+          </button>
+          <button id="save-and-next-btn" class="primary-btn">
+            <span class="btn-icon">💾➡️</span>
+            <span class="btn-text">Save & Add Next</span>
+          </button>
+          <button id="discard-btn" class="danger-btn">
+            <span class="btn-icon">🗑️</span>
+            <span class="btn-text">Discard Changes</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Placed SVGs List -->
+      <div class="workflow-step">
+        <div class="step-header">
+          <span class="step-number">📋</span>
+          <h4>Placed SVGs (<span id="svg-count">0</span>)</h4>
+        </div>
+        <div id="placed-svgs-list" class="svg-list">
+          <div class="no-svgs-message">No SVGs placed yet</div>
+        </div>
+        <button id="clear-all-svgs" class="danger-btn">Clear All SVGs</button>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Admin Panel for Marker Management -->
+  <div id="admin-panel" class="editor-hidden">
+    <div class="editor-header">
+      <h3>Admin Panel - Marker Management</h3>
+      <div id="admin-mode-indicator">🛠️ Admin Mode</div>
+      <button id="close-admin-panel-btn">✕</button>
+    </div>
+    <div class="editor-content">
+      
+      <!-- Marker Selection -->
+      <div class="workflow-step">
+        <div class="step-header">
+          <span class="step-number">📍</span>
+          <h4>Select Marker to Edit</h4>
+        </div>
+        <div class="editor-section">
+          <label>Marker ID:</label>
+          <select id="admin-marker-select">
+            <option value="">Select a marker...</option>
+          </select>
+          <button id="admin-add-new-marker" class="primary-btn" style="margin-left: 10px;" onclick="testAddNewMarker()">➕ Add New Marker</button>
+        </div>
+      </div>
+
+      <!-- Marker Information Editor -->
+      <div class="workflow-step" id="admin-edit-section" style="display: none;">
+        <div class="step-header">
+          <span class="step-number">✏️</span>
+          <h4>Edit Marker Information</h4>
+        </div>
+        
+        <div class="editor-section">
+          <label>Name:</label>
+          <input type="text" id="admin-marker-name" placeholder="Marker name">
+        </div>
+        
+        <div class="editor-section">
+          <label>Category:</label>
+          <select id="admin-marker-category">
+            <option value="transportation">🚂 Transportation/Logistics</option>
+            <option value="manufacturing">🏭 Manufacturing/Workshop</option>
+            <option value="innovation">🚀 Innovation/Technology</option>
+            <option value="infrastructure">🏗️ Infrastructure/Transportation</option>
+            <option value="future">🔮 Future Development</option>
+          </select>
+        </div>
+        
+        <div class="editor-section">
+          <label>Short Description:</label>
+          <input type="text" id="admin-marker-short-desc" placeholder="Brief description">
+        </div>
+        
+        <div class="editor-section">
+          <label>Full Description:</label>
+          <textarea id="admin-marker-description" rows="4" placeholder="Detailed description"></textarea>
+        </div>
+        
+        <div class="editor-section">
+          <label>Size:</label>
+          <input type="text" id="admin-marker-size" placeholder="e.g. 10,000 sq ft">
+        </div>
+        
+        <div class="editor-section">
+          <label>Address:</label>
+          <input type="text" id="admin-marker-address" placeholder="Full address">
+        </div>
+        
+        <div class="editor-section">
+          <label>Latitude:</label>
+          <input type="number" id="admin-marker-lat" step="0.0000001" placeholder="42.3289">
+        </div>
+        
+        <div class="editor-section">
+          <label>Longitude:</label>
+          <input type="number" id="admin-marker-lng" step="0.0000001" placeholder="-83.0776">
+        </div>
+        
+        <div class="editor-section">
+          <label>Color:</label>
+          <input type="color" id="admin-marker-color" value="#4A90E2">
+        </div>
+        
+        <div class="editor-section">
+          <label>Image Path:</label>
+          <input type="text" id="admin-marker-image" placeholder="public/about/image.jpg">
+        </div>
+        
+        <div class="editor-section">
+          <label>Features (one per line):</label>
+          <textarea id="admin-marker-features" rows="5" placeholder="Feature 1
+Feature 2
+Feature 3"></textarea>
+        </div>
+        
+        <div class="editor-section">
+          <div id="admin-status-indicator" style="padding: 10px; margin: 10px 0; border-radius: 5px; display: none;">
+            <span id="admin-status-text">Ready</span>
+          </div>
+        </div>
+        
+        <div class="editor-actions">
+          <button id="admin-save-marker" class="success-btn">💾 Save to Database</button>
+          <button id="admin-delete-marker" class="danger-btn" style="display: none;">🗑️ Delete Marker</button>
+          <button id="admin-reset-marker" class="secondary-btn">Reset</button>
+          <button id="admin-export-data" class="primary-btn">Export All Data</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Side Panel for Label Information -->
+  <div id="label-info-panel" class="side-panel">
+    <button id="close-panel" class="close-btn-overlay">→</button>
+    
+    <!-- Close Panel Button moved to middle-left edge -->
+    
+    <!-- Panel Content Container -->
+    <div class="panel-container">
+      
+      <!-- Hero Image with Overlaid Title -->
+      <div class="panel-hero" id="location-image">
+        <img id="location-photo" src="" alt="" style="display: none;">
+        <div class="image-placeholder"></div>
+        <!-- Overlaid Title -->
+        <div class="panel-title-overlay">
+          <h1 class="panel-title" id="location-title">Loading Location...</h1>
+        </div>
+      </div>
+      
+      <!-- Category Info removed as requested -->
+      
+      <!-- Description Section (title removed) -->
+      <div class="panel-section">
+        <div class="description-content">
+          <p id="location-description">Loading description...</p>
+        </div>
+      </div>
+      
+      <!-- Key Features Section -->
+      <div class="panel-section">
+        <h2 class="section-title">Key Features</h2>
+        <div class="features-grid" id="location-features">
+          <div class="feature-item">
+            <span class="feature-text">Loading features...</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Marker Navigation Section -->
+      <div class="panel-section">
+        <h2 class="section-title">Explore Locations</h2>
+        <div class="marker-navigation-grid" id="marker-navigation">
+          <!-- Markers will be populated by JavaScript -->
+        </div>
+      </div>
+      
+      <!-- Bottom Button removed as requested -->
+    </div>
+  </div>
+
+  <!-- Home button -->
+  <button id="home-button" class="map-control-button">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+    </svg>
+  </button>
+  
+  <!-- Full Map button -->
+  <button id="full-map-button" class="full-map-button">FULL MAP</button>
+  
+  <!-- Info button -->
+  <button id="info-button" class="info-button">INFO</button>
+  
+  <!-- Touch to Explore banner -->
+  <div id="touch-banner" style="position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 1200; pointer-events: none;">
+    <div style="background: rgba(0,0,0,0.85); color: white; font-family: MichiganCentralMonumentGrotesk-Bold, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; font-weight: 700; letter-spacing: 0.12em; padding: 18px 32px; border-radius: 999px; box-shadow: 0 8px 28px rgba(0,0,0,0.35); text-transform: uppercase; font-size: 24px;">
+      TOUCH TO EXPLORE
+    </div>
+  </div>
+  
+  <!-- Fullscreen Image Viewer Overlay -->
+  <div id="fullscreen-viewer" class="fullscreen-viewer">
+    <button id="exit-fullscreen" class="exit-fullscreen-btn">×</button>
+    <img id="fullscreen-image" src="" alt="Fullscreen Map">
+    <button id="back-button" class="back-button">BACK</button>
+  </div>
+  
+  <!-- Location Buttons (vertical layout on bottom left) -->
+  <div class="top-buttons">
+    <div class="button-row">
+      <button class="location-button" data-location="13">Transportation Innovation Zone</button>
+      <button class="location-button" data-location="14">Advanced Aerial Innovation</button>
+      <button class="location-button" data-location="15">Port of Monroe</button>
+      <button class="location-button" data-location="newlab-manufacturing">The 23rd</button>
+      <button class="location-button" data-location="22">Edge Server Platform</button>
+      <button class="location-button" data-location="21">Beyond Visual Line of Sight Systems</button>
+    </div>
+  </div>
+
+  <!-- Version check script -->
+  <script src="version-check.js"></script>
+  
+  <!-- Main application script -->
+  <script src="main.js?v=102"></script>
+  
+  <!-- Service worker registration and cache management -->
+  <script>
+    // Current app version - must match version.json
+    const APP_VERSION = '102';
+    
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('🚀 Service Worker registered with scope:', registration.scope);
+            
+            // Check if there's an update available
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              console.log('🔄 New service worker installing...');
+              
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('🔔 New service worker installed and waiting to activate');
+                  showUpdateNotification();
+                }
+              });
+            });
+          })
+          .catch(error => {
+            console.error('❌ Service Worker registration failed:', error);
+          });
+          
+        // Listen for controller change events
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          console.log('🔄 Service Worker controller changed');
+        });
+      });
+    }
+    
+    // Function to clear all caches and reload
+    window.clearAllCaches = async function() {
+      console.log('🧹 Clearing all caches...');
+      
+      // Clear service worker caches
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(
+          cacheNames.map(cacheName => {
+            console.log('🗑️ Deleting cache:', cacheName);
+            return caches.delete(cacheName);
+          })
+        );
+      }
+      
+      // Send message to service worker to clear caches
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'CLEAR_CACHES'
+        });
+      }
+      
+      // Unregister service worker
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(
+          registrations.map(registration => {
+            console.log('🔄 Unregistering service worker');
+            return registration.unregister();
+          })
+        );
+      }
+      
+      // Clear local storage version data
+      localStorage.removeItem('app_version');
+      localStorage.removeItem('version_last_checked');
+      
+      console.log('✅ All caches cleared! Reloading...');
+      window.location.reload(true);
+    };
+    
+    // Function to show update notification
+    function showUpdateNotification() {
+      const updateNotification = document.createElement('div');
+      updateNotification.className = 'update-notification';
+      updateNotification.innerHTML = `
+        <div class="update-content">
+          <p>A new version is available!</p>
+          <button id="update-now">Update Now</button>
+        </div>
+      `;
+      document.body.appendChild(updateNotification);
+      
+      // Add styles
+      const style = document.createElement('style');
+      style.textContent = `
+        .update-notification {
+          position: fixed;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 15px 20px;
+          border-radius: 8px;
+          z-index: 10000;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .update-content {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+        }
+        .update-content p {
+          margin: 0;
+        }
+        #update-now {
+          background: #4A90E2;
+          border: none;
+          color: white;
+          padding: 8px 15px;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // Add click handler
+      document.getElementById('update-now').addEventListener('click', () => {
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'SKIP_WAITING'
+          });
+        }
+        window.location.reload(true);
+      });
+    }
+    
+    // Auto-clear cache if we detect old version or if requested
+    if (window.location.search.includes('clearcache')) {
+      clearAllCaches();
+    }
+    
+    // Listen for messages from service worker
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data && event.data.type === 'CACHES_CLEARED') {
+        console.log('✅ Service worker cleared caches at:', new Date(event.data.timestamp));
+      }
+    });
+    
+    // Preload key resources for offline use
+    function preloadResources() {
+      const resources = [
+        '/public/map.png',
+        '/public/v1.svg',
+        '/public/about/team1.jpg',
+        '/public/about/team2.jpg'
+      ];
+      
+      resources.forEach(url => {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = url;
+        document.head.appendChild(link);
+      });
+    }
+    
+    // Run preload after page load
+    window.addEventListener('load', () => {
+      setTimeout(preloadResources, 2000); // Wait 2 seconds after load to preload
+    });
+  </script>
+</body>
+</html>
