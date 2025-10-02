@@ -40,8 +40,8 @@ async function loadMarkersFromJSON() {
     
     // Store globally
     allMarkers = markers;
-    
-    return markers;
+  
+  return markers;
   } catch (error) {
     console.error('❌ Failed to load markers:', error);
     // Minimal fallback for critical presentation
@@ -374,8 +374,8 @@ async function getMarkerDataFromSupabase(labelId) {
       marker = allMarkers.find(m => 
         (m.title && m.title.toLowerCase().includes(normalizedLabelId))
       );
-          
-      if (marker) {
+  
+  if (marker) {
         console.log(`✅ Found marker by name match: ${marker.id} - ${marker.title}`);
       }
     }
@@ -499,7 +499,7 @@ function addMarkersToMap(markers, source = 'hardcoded') {
       
     if (!hasTitle) {
       console.warn(`⚠️ Skipping marker with empty title:`, markerData);
-      return; // Skip this marker
+        return; // Skip this marker
     }
     
     // Validate coordinates
@@ -5593,11 +5593,11 @@ function showAllLabels() {
         try {
           map.setLayoutProperty(layer.id, 'visibility', 'visible');
           shownCount++;
-        } catch (e) {
+    } catch (e) {
           console.warn('Could not show layer:', layer.id, e);
         }
-      }
-    });
+    }
+  });
   }
   
   // Clear hidden layers array
@@ -5693,6 +5693,45 @@ function navigateToLocation(key) {
   // Keep orbit animation running - no pausing
   // pauseOrbitAnimation();
 
+  // Check if this is a Newlab sub-facility
+  const newlabSubFacilities = ['2', '11', '12', '16', '17', '18', '19', '20', '23'];
+  if (newlabSubFacilities.includes(key.toString())) {
+    console.log('🏢 Newlab sub-facility clicked - using Newlab camera movement');
+    
+    // Use the same camera movement as Newlab (ID 2)
+    const markerData = newMarkers.find(m => m.id == 2);
+    
+    if (markerData && map) {
+      // Calculate final position with 50m offset to the left (0.00045 degrees)
+      const offsetLng = markerData.lng - 0.00045; // ~50m to the left
+      const finalCenter = [offsetLng, markerData.lat];
+      
+      // Update orbit center to match the final camera position (no jump)
+      updateOrbitCenter(offsetLng, markerData.lat);
+      
+      // Get current zoom level and increase it by 1.1x (with min and max limits)
+      const currentZoom = map.getZoom();
+      const targetZoom = Math.min(Math.max(currentZoom * 1.05, 17), 20); // Zoom in by 1.1x, but between 17 and 20
+      
+      console.log('🔍 Zooming from', currentZoom, 'to', targetZoom);
+      
+      // Move camera directly to the final offset position with zoom transition
+      map.easeTo({
+        center: finalCenter,
+        zoom: targetZoom, // Zoom in by 1.1x
+        pitch: 75, // Maintain the cinematic angle
+        duration: 1500 // Smooth 1.5-second transition
+      });
+      
+      // Orbit continues running - no need to resume
+      console.log('🎯 Camera moving to Newlab marker:', key, 'orbit continues running');
+    }
+    
+    // Open the side panel for the specific sub-facility
+    openSidePanel(key);
+    return;
+  }
+  
   // Special handling for Roosevelt Park (ID 28)
   if (key == 28) {
     console.log('🏞️ Roosevelt Park (ID 28) clicked - special camera handling');
@@ -5794,9 +5833,9 @@ function startSidePanelAutoClose() {
     clearTimeout(sidePanelAutoCloseTimer);
   }
   
-  // Set new timer for 30 seconds
+  // Set new timer for 15 seconds
   sidePanelAutoCloseTimer = setTimeout(() => {
-    console.log('⏰ Auto-closing side panel after 30 seconds of inactivity');
+    console.log('⏰ Auto-closing side panel after 15 seconds of inactivity');
     
     // Return camera to home position
     if (map) {
@@ -5816,7 +5855,7 @@ function startSidePanelAutoClose() {
     }
     
     closeSidePanel();
-  }, 30000); // 30 seconds
+  }, 15000); // 15 seconds
 }
 
 // Function to reset auto-close timer (call on any interaction)
@@ -5834,9 +5873,9 @@ function startFullscreenViewerAutoClose() {
     clearTimeout(fullscreenViewerAutoCloseTimer);
   }
   
-  // Set new timer for 15 seconds
+  // Set new timer for 30 seconds
   fullscreenViewerAutoCloseTimer = setTimeout(() => {
-    console.log('⏰ Auto-closing fullscreen viewer after 15 seconds of inactivity');
+    console.log('⏰ Auto-closing fullscreen viewer after 30 seconds of inactivity');
     
     // Close the fullscreen viewer
     closeFullscreenViewer();
@@ -5851,7 +5890,7 @@ function startFullscreenViewerAutoClose() {
         duration: 2000
       });
     }
-  }, 15000); // 15 seconds
+  }, 30000); // 30 seconds
 }
 
 // Function to reset fullscreen viewer auto-close timer (call on any interaction)
@@ -5924,13 +5963,13 @@ document.getElementById('legend').addEventListener('click', (e) => {
           });
         } else {
           // Standard handling for other locations
-          map.flyTo({
-            center: [location.lng, location.lat],
-            zoom: 18,
-            pitch: 60,
-            bearing: 150,
-            duration: 1500
-          });
+        map.flyTo({
+          center: [location.lng, location.lat],
+          zoom: 18,
+          pitch: 60,
+          bearing: 150,
+          duration: 1500
+        });
         }
         
         // Open side panel with the location data

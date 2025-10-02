@@ -1,6 +1,17 @@
 [
   {
     "id": 22,
+    "title": "Edge Server Platform",
+    "description": "A powerful computing platform that processes data locally at Michigan Central, reducing latency and improving performance for connected vehicles and smart infrastructure.",
+    "keyFeatures": "- Local data processing\n- Reduced latency\n- Enhanced security",
+    "lat": 42.3317,
+    "lng": -83.0733,
+    "color": "#27AE60",
+    "image": "public/marker-images/Edge-Server.jpg",
+    "height": 25
+  },
+  {
+    "id": 14,
     "title": "Advanced Aerial Innovation Region (AAIR)",
     "description": "A first-of-its-kind urban drone testing zone where companies can safely fly and test drones in a busy city environment. Michigan Central partnered with the State of Michigan to create this area, which spans a 3-mile radius surrounding The Station. It's equipped with data, operations, and digital mapping systems supported by Airspace Link. Working directly with the Federal Aviation Administration, they help members and partners get the guidance they need to safely test, monitor, and accelerate development of drones and uncrewed aircraft systems under 55 pounds, all in a real urban setting.",
     "keyFeatures": "- 3-mile radius testing zone around The Station\n- Federal Aviation Administration partnership\n- For drones under 55 pounds and commercial aircraft",
@@ -73,7 +84,7 @@
     "lat": 42.32795938,
     "lng": -83.07593233,
     "color": "#E74C3C",
-    "image": "public/marker-images/Newlab-at-MC.jpg",
+    "image": "public/marker-images/woodshop.png",
     "height": 20
   },
   {
@@ -139,7 +150,7 @@
     "lat": 42.32815463,
     "lng": -83.07645834,
     "color": "#E74C3C",
-    "image": "public/marker-images/Grounded-Manufacturing-Space.jpg",
+    "image": "public/marker-images/Manufacturing-Space.png",
     "height": 20
   },
   {
@@ -161,19 +172,11 @@
     "lat": 42.3282866,
     "lng": -83.07663895,
     "color": "#F39C12",
-    "image": "public/marker-images/The-23rd.JPG",
+    "image": "public/marker-images/23.png",
     "height": 25
   },
   {
-    "id": 14,
-    "title": "Edge Server Platform",
-    "description": "This data center consists of 19 server racks so that data processing can happen closer to its source to reduce latency and improve efficiency. The data processing that can happen at the data center, located in Downtown Detroit, includes creating digital mapping using multiple data sources to assist drone operators in understanding ground and airspace risks in real-time.",
-    "keyFeatures": "- 19 server racks processing data locally to reduce delays\n- Creates real-time digital maps from multiple data sources",
-    "lat": 42.33166825,
-    "lng": -83.07442221,
-    "color": "#5DADE2",
-    "image": "public/marker-images/Edge-Server.jpg",
-    "height": 30
+   
   },
   {
     "id": 15,
@@ -246,10 +249,10 @@
     "title": "Beyond Visual Line of Sight Systems",
     "description": "This system provides operators with digital eyes in the sky and monitoring of low-altitude airspace, allowing for real-time aircraft detection and monitoring as well as command and control of unmanned flights. By removing the need for operators to directly see the drone at all times, these operations unlock the ability for drones to operate at longer distances and over larger areas. This enables more efficient, scalable drone use that can help companies move from small tests to commercial deployment.",
     "keyFeatures": "- 2 X-band radar units and 3 networked ADS-B receivers\n- 9 ground radio stations for extended communication",
-    "lat": 42.32782854,
-    "lng": -83.07643369,
+    "lat": 42.32863951882778,
+    "lng": -83.08021577443292,
     "color": "#27AE60",
-    "image": "public/marker-images/1.png",
+    "image": "public/marker-images/BeyondVisualLineofSightSystems.png",
     "height": 25
   },
   {
