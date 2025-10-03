@@ -780,7 +780,7 @@ function filterHardcodedMarkers(hardcodedMarkers) {
 mapboxgl.accessToken = 'pk.eyJ1Ijoic3N0dHV1ZGRpaW9vIiwiYSI6ImNtZHhveWU4bDI5djIyam9kY2I3M3pwbHcifQ.ck8h3apHSNVAmTwjz-Oc7w';
 
 const LOCATIONS = {
-  rooseveltPark:    {lng: -83.07715093189609, lat: 42.330376609412085, label: 'Roosevelt Park'},
+  rooseveltPark:    {lng: -83.07701171539, lat: 42.33041304580484, label: 'Roosevelt Park'},
   michiganCentral:  {lng: -83.0776, lat: 42.3289, label: 'Michigan Central'},
   campusMartius:    {lng: -83.0466, lat: 42.3317, label: 'Campus Martius'},
   newlab:           {lng: -83.07242451005243, lat: 42.33118076021261, label: 'The Factory'},
@@ -886,11 +886,7 @@ const newMarkers = [
     { id: 20, lat: 42.32828839662688, lng: -83.07564165737065, color: '#9B59B6' },
     // { id: 22, lat: 42.32706378807067, lng: -83.06791695933897, color: '#9B59B6' }, // removed per request
     { id: 23, lat: 42.3263690476279, lng: -83.07403300892324, color: '#9B59B6' },
-    { id: 28, text: "28", lat: 42.32904224480186, lng: -83.08086956713913, color: '#1b4332' },
-    { id: 28, text: "28", lat: 42.33016060731937, lng: -83.07923878407165, color: '#1b4332' },
-    { id: 28, text: "28", lat: 42.331914452617156, lng: -83.0736844064228, color: '#1b4332' },
-    { id: 28, text: "28", lat: 42.330176499429875, lng: -83.07198087929577, color: '#1b4332' },
-    { id: 28, text: "28", lat: 42.33030901969737, lng: -83.0707049920504, color: '#1b4332' }
+    { id: 28, lat: 42.33041304580484, lng: -83.07701171539, color: '#4C7B3B', height: 25 } // Roosevelt Park - CORRECT COORDINATES
 ];
 
 // ENHANCED MARKER DATA - Admin Configurable Information
@@ -5092,7 +5088,8 @@ function updateCamera() {
     }
   }
   */
-  requestAnimationFrame(updateCamera);
+  // Disabled to allow flyTo animations to work
+  // requestAnimationFrame(updateCamera);
 }
 
 // Legacy orbit function - now handled by updateCamera
@@ -5100,7 +5097,7 @@ function orbit() {
   // Deprecated - keeping for compatibility
 }
 
-updateCamera();
+// updateCamera(); // Disabled - was preventing flyTo animations
 
 // --- Interactive Orbit Override ---
 // Old interaction detection code removed to prevent orbit interference
@@ -5693,134 +5690,39 @@ function getCurrentKey(title) {
 
 // --- STANDARDIZED NAVIGATION CONTROLLER ---
 function navigateToLocation(key) {
-  dbg("NAV_CLICK", {key: key});
-  console.log('🎯 Navigating to marker:', key, 'orbitAnimation before:', orbitAnimation);
+  console.log('🎯 Navigating to marker:', key);
 
   // Clear any existing popups
   closeActivePopup();
 
-  // Keep orbit animation running - no pausing
-  // pauseOrbitAnimation();
-
-  // Check if this is a Newlab sub-facility
-  const newlabSubFacilities = ['2', '11', '12', '16', '17', '18', '19', '20', '23'];
-  if (newlabSubFacilities.includes(key.toString())) {
-    console.log('🏢 Newlab sub-facility clicked - using Newlab camera movement');
-    
-    // Use the same camera movement as Newlab (ID 2)
-    const markerData = newMarkers.find(m => m.id == 2);
-    
-    if (markerData && map) {
-      // Calculate final position with 50m offset to the left (0.00045 degrees)
-      const offsetLng = markerData.lng - 0.00045; // ~50m to the left
-      const finalCenter = [offsetLng, markerData.lat];
-      
-      // Update orbit center to match the final camera position (no jump)
-      updateOrbitCenter(offsetLng, markerData.lat);
-      
-      // Get current zoom level and increase it by 1.1x (with min and max limits)
-      const currentZoom = map.getZoom();
-      const targetZoom = Math.min(Math.max(currentZoom * 1.05, 17), 20); // Zoom in by 1.1x, but between 17 and 20
-      
-      console.log('🔍 Zooming from', currentZoom, 'to', targetZoom);
-      
-      // Move camera directly to the final offset position with zoom transition
-      map.easeTo({
-        center: finalCenter,
-        zoom: targetZoom, // Zoom in by 1.1x
-        pitch: 75, // Maintain the cinematic angle
-        duration: 1500 // Smooth 1.5-second transition
-      });
-      
-      // Orbit continues running - no need to resume
-      console.log('🎯 Camera moving to Newlab marker:', key, 'orbit continues running');
-    }
-    
-    // Open the side panel for the specific sub-facility
-    openSidePanel(key);
-    return;
-  }
-  
-  // Special handling for Roosevelt Park (ID 28)
-  if (key == 28) {
-    console.log('🏞️ Roosevelt Park (ID 28) clicked - special camera handling');
-    
-    // Check if we're already at home position
-    const currentCenter = map.getCenter();
-    const currentBearing = map.getBearing();
-    const currentPitch = map.getPitch();
-    const currentZoom = map.getZoom();
-    
-    const isAtHomePosition = (
-      Math.abs(currentCenter.lng - HOME_POSITION.center[0]) < 0.0001 &&
-      Math.abs(currentCenter.lat - HOME_POSITION.center[1]) < 0.0001 &&
-      Math.abs(currentBearing - HOME_POSITION.bearing) < 5 &&
-      Math.abs(currentPitch - HOME_POSITION.pitch) < 5 &&
-      Math.abs(currentZoom - HOME_POSITION.zoom) < 0.5
-    );
-    
-    if (isAtHomePosition) {
-      // If already at home position, zoom in by 0.5
-      console.log('🔍 Already at home position, zooming in by 0.5');
-      map.easeTo({
-        zoom: currentZoom + 0.5,
-        duration: 1000
-      });
-    } else {
-      // Otherwise, go to home position with 50m offset to the right and 5m lower to the ground
-      console.log('🏠 Moving to home position with offset');
-      
-      // Calculate 50m offset to the right (approx. 0.00045 degrees longitude)
-      const offsetLng = HOME_POSITION.center[0] + 0.00045;
-      
-      // Adjust pitch to be 5m closer to ground (approx. 5 degrees less pitch)
-      const lowerPitch = Math.max(HOME_POSITION.pitch - 5, 0);
-      
-      map.flyTo({
-        center: [offsetLng, HOME_POSITION.center[1]],
-        zoom: HOME_POSITION.zoom,
-        pitch: lowerPitch,
-        bearing: HOME_POSITION.bearing,
-        duration: 1500
-      });
-    }
-    
-    // Open the side panel
-    openSidePanel(key);
-    return;
-  }
-
-  // Standard handling for other markers
+  // Get the marker data for this key
   const markerData = newMarkers.find(m => m.id == key);
   console.log('🔍 Marker lookup for key:', key, 'found:', !!markerData, 'data:', markerData);
   
-  // Additional debug info to verify marker IDs
-  console.log('📍 All markers with ID ' + key + ':', newMarkers.filter(m => m.id == key));
-  
   if (markerData && map) {
-    // Calculate final position with 50m offset to the left (0.00045 degrees)
-    const offsetLng = markerData.lng - 0.00045; // ~50m to the left
+    // Calculate final position with subtle offset
+    const offsetLng = markerData.lng - 0.0002; // ~22m to the left
     const finalCenter = [offsetLng, markerData.lat];
     
-    // Update orbit center to match the final camera position (no jump)
-    updateOrbitCenter(offsetLng, markerData.lat);
-    
-    // Get current zoom level and increase it by 1.1x (with min and max limits)
+    // Get current zoom and increase noticeably
     const currentZoom = map.getZoom();
-    const targetZoom = Math.min(Math.max(currentZoom * 1.05, 17), 20); // Zoom in by 1.1x, but between 17 and 20
+    const targetZoom = Math.min(Math.max(currentZoom + 1.0, 17.8), 19.5); // Add 1.0 zoom level
     
-    console.log('🔍 Zooming from', currentZoom, 'to', targetZoom);
+    console.log('🔍 Zooming from', currentZoom, 'to', targetZoom, 'for marker:', markerData.title);
+    console.log('📍 Flying to coordinates:', finalCenter);
     
-    // Move camera directly to the final offset position with zoom transition
-    map.easeTo({
+    // Move camera with smooth flyTo animation - SAME FOR ALL MARKERS
+    map.flyTo({
       center: finalCenter,
-      zoom: targetZoom, // Zoom in by 1.1x
-      pitch: 75, // Maintain the cinematic angle
-      duration: 1500 // Smooth 1.5-second transition
+      zoom: targetZoom,
+      pitch: 68, // Good tilt angle for viewing
+      duration: 2200, // 2.2-second smooth transition
+      essential: true
     });
     
-    // Orbit continues running - no need to resume
-    console.log('🎯 Camera moving to marker:', key, 'orbit continues running');
+    console.log('✈️ Camera flying to marker:', key, '-', markerData.title);
+  } else {
+    console.error('❌ Marker not found for key:', key);
   }
 
   // Open the main side panel with full details
@@ -5947,13 +5849,8 @@ document.getElementById('legend').addEventListener('click', (e) => {
       // If it's a location button with data-location attribute
       console.log(`🔘 Legend location clicked: ${locationId}`);
       
-      if (locationId === 'rooseveltPark') {
-        // For Roosevelt Park, only open the side panel without moving the camera
-        console.log('🏞️ Roosevelt Park clicked - opening panel without camera movement');
-        openSidePanel(locationId);
-      } else {
-        // For other locations, fly to the location
-        const location = LOCATIONS[locationId];
+      // Standard handling for all locations
+      const location = LOCATIONS[locationId];
         
         // Special handling for Michigan Central with offset
         if (locationId === 'michiganCentral') {
@@ -5984,7 +5881,6 @@ document.getElementById('legend').addEventListener('click', (e) => {
         
         // Open side panel with the location data
         openSidePanel(locationId);
-      }
     } 
     else if (key) {
       // Handle regular marker navigation
@@ -5997,42 +5893,7 @@ document.getElementById('legend').addEventListener('click', (e) => {
 // resume orbit on map click (outside popup) - drag is now disabled
 let isDragging = false;
 
-// Set up Roosevelt Park special handling
-document.addEventListener('DOMContentLoaded', () => {
-  // Set up click handler specifically for Roosevelt Park
-  const rooseveltParkButton = document.querySelector('.legend-item[data-location="rooseveltPark"]');
-  if (rooseveltParkButton) {
-    // Remove any existing event listeners (just to be safe)
-    rooseveltParkButton.replaceWith(rooseveltParkButton.cloneNode(true));
-    
-    // Get the fresh reference after replacement
-    const freshRooseveltParkButton = document.querySelector('.legend-item[data-location="rooseveltPark"]');
-    
-    // Make Roosevelt Park unclickable by preventing all click actions
-    freshRooseveltParkButton.addEventListener('click', (e) => {
-      e.stopPropagation(); // Prevent event bubbling
-      e.preventDefault(); // Prevent default action
-      console.log('🏞️ Roosevelt Park click prevented - button is now unclickable');
-      // No action performed - the button is now unclickable
-    });
-    
-    // Apply the styling directly to make it look unclickable but still visible
-    freshRooseveltParkButton.style.backgroundColor = '#2E8B57'; // Green background
-    freshRooseveltParkButton.style.color = 'white'; // White text
-    freshRooseveltParkButton.style.fontWeight = '600'; // Slightly bolder
-    freshRooseveltParkButton.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'; // Subtle shadow
-    freshRooseveltParkButton.style.opacity = '0.85'; // Slightly dimmed to indicate it's not clickable
-    freshRooseveltParkButton.style.cursor = 'default'; // Default cursor instead of pointer
-    
-    // Remove hover effects since it's not clickable
-    // Add a tooltip to explain why it's not clickable
-    freshRooseveltParkButton.title = "Roosevelt Park - Information label only";
-    
-    console.log('✅ Roosevelt Park button styling and click handler set up successfully');
-  } else {
-    console.error('❌ Roosevelt Park button not found in the DOM');
-  }
-});
+// Roosevelt Park special handling removed - now uses standard navigation like all other markers
 
 // Drag handlers removed as dragging is disabled
 // map.on('dragstart', () => {

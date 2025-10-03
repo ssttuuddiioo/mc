@@ -241,8 +241,8 @@
     "title": "Beyond Visual Line of Sight Systems",
     "description": "This system provides operators with digital eyes in the sky and monitoring of low-altitude airspace, allowing for real-time aircraft detection and monitoring as well as command and control of unmanned flights. By removing the need for operators to directly see the drone at all times, these operations unlock the ability for drones to operate at longer distances and over larger areas. This enables more efficient, scalable drone use that can help companies move from small tests to commercial deployment.",
     "keyFeatures": "- 2 X-band radar units and 3 networked ADS-B receivers\n- 9 ground radio stations for extended communication",
-    "lat": 42.32863951882778,
-    "lng": -83.08021577443292,
+    "lat": 42.32881675267922,
+    "lng": -83.08089691414098,
     "color": "#27AE60",
     "image": "public/marker-images/BeyondVisualLineofSightSystems.png",
     "height": 25
@@ -307,8 +307,8 @@
     "title": "Roosevelt Park",
     "description": "Located in Michigan Ave, most people probably think of Roosevelt Park as the front lawn of Michigan Central Station. Indeed, it is it's own City of Detroit park. Nestled between two of Detroit's most vibrant neighborhoods.",
     "keyFeatures": "Roosevelt Park brings southwest Detroit community together through collaboration",
-    "lat": 42.33037661,
-    "lng": -83.07825093,
+    "lat": 42.33041304580484,
+    "lng": -83.07701171539,
     "color": "#4C7B3B",
     "image": "public/marker-images/Roosevelt-Park.JPG",
     "height": 25
