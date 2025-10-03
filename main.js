@@ -2172,6 +2172,15 @@ map.on('load', async () => {
   // Set up top right location buttons
   setupLocationButtons();
   
+  // Show touch banner after 60 seconds on initial load
+  touchBannerTimer = setTimeout(() => {
+    const touchBanner = document.getElementById('touch-banner');
+    if (touchBanner) {
+      touchBanner.style.display = 'block';
+      console.log('👆 Touch banner shown after 60 seconds (initial load)');
+    }
+  }, 60000); // 60 seconds
+  
   // Create elevated labels using symbol-z-elevate
   createElevatedLabels();
   
@@ -5825,6 +5834,7 @@ let activeMarkerPopup = null;
 // Auto-close timers
 let sidePanelAutoCloseTimer = null;
 let fullscreenViewerAutoCloseTimer = null;
+let touchBannerTimer = null;
 
 // Function to start auto-close timer for side panel
 function startSidePanelAutoClose() {
@@ -6263,6 +6273,15 @@ function setupSidePanel() {
             returnToHomePosition();
         });
     }
+
+    // Back to Map button
+    const backToMapBtn = document.getElementById('back-to-map-button');
+    if (backToMapBtn) {
+        backToMapBtn.addEventListener('click', () => {
+            closeSidePanel();
+            returnToHomePosition();
+        });
+    }
     
     // CLOSE PANEL button removed as requested
     // const closePanelBtn = document.getElementById('close-panel-button');
@@ -6291,6 +6310,27 @@ function returnToHomePosition() {
     // Close the side panel if it's open
     closeSidePanel();
     
+    // Clear any existing touch banner timer
+    if (touchBannerTimer) {
+        clearTimeout(touchBannerTimer);
+        touchBannerTimer = null;
+    }
+    
+    // Hide touch banner initially
+    const touchBanner = document.getElementById('touch-banner');
+    if (touchBanner) {
+        touchBanner.style.display = 'none';
+    }
+    
+    // Show touch banner after 60 seconds
+    touchBannerTimer = setTimeout(() => {
+        const touchBanner = document.getElementById('touch-banner');
+        if (touchBanner) {
+            touchBanner.style.display = 'block';
+            console.log('👆 Touch banner shown after 60 seconds');
+        }
+    }, 60000); // 60 seconds
+    
     // Fly to the home position
     map.flyTo({
         center: HOME_POSITION.center,
@@ -6305,6 +6345,16 @@ function returnToHomePosition() {
 // Function to handle clicks on sub-facilities in the consolidated Newlab card
 async function openSubFacilityPanel(facilityId, facilityTitle) {
     const panel = document.getElementById('label-info-panel');
+    
+    // Hide touch banner on any interaction and clear timer
+    const touchBanner = document.getElementById('touch-banner');
+    if (touchBanner) {
+        touchBanner.style.display = 'none';
+    }
+    if (touchBannerTimer) {
+        clearTimeout(touchBannerTimer);
+        touchBannerTimer = null;
+    }
     
     // Clean white theme styling to match Figma
     panel.style.background = 'white';
@@ -6328,6 +6378,12 @@ async function openSubFacilityPanel(facilityId, facilityTitle) {
     // Update panel content with sub-facility data (without category)
     document.getElementById('location-title').textContent = subFacilityData.title;
     document.getElementById('location-description').textContent = subFacilityData.description || 'No description available';
+    
+    // Show Key Features section for sub-facilities (it's hidden for About Michigan Central)
+    const keyFeaturesSectionElement = document.getElementById('key-features-section');
+    if (keyFeaturesSectionElement) {
+        keyFeaturesSectionElement.style.display = 'block';
+    }
     
     // Update features with bullet points (if any)
     const featuresContainer = document.getElementById('location-features');
@@ -6415,6 +6471,16 @@ async function openSubFacilityPanel(facilityId, facilityTitle) {
 async function openSidePanel(labelId, displayText) {
     const panel = document.getElementById('label-info-panel');
     
+    // Hide touch banner on any interaction and clear timer
+    const touchBanner = document.getElementById('touch-banner');
+    if (touchBanner) {
+        touchBanner.style.display = 'none';
+    }
+    if (touchBannerTimer) {
+        clearTimeout(touchBannerTimer);
+        touchBannerTimer = null;
+    }
+    
     // Update INFO button text to CLOSE INFO when panel is open
     const infoButton = document.getElementById('info-button');
     if (infoButton) {
@@ -6438,6 +6504,12 @@ async function openSidePanel(labelId, displayText) {
         document.getElementById('location-title').textContent = data.title;
         document.getElementById('location-description').textContent = data.description;
         document.getElementById('location-features').innerHTML = '';
+        
+        // Hide Key Features section for About Michigan Central
+        const keyFeaturesSection = document.getElementById('key-features-section');
+        if (keyFeaturesSection) {
+            keyFeaturesSection.style.display = 'none';
+        }
         
         const imgElement = document.getElementById('location-photo');
         const placeholder = document.querySelector('.image-placeholder');
@@ -6494,6 +6566,12 @@ async function openSidePanel(labelId, displayText) {
     // Update panel content
     document.getElementById('location-title').textContent = data.title || 'Unknown Facility';
     document.getElementById('location-description').textContent = data.description || 'No description available';
+    
+    // Show Key Features section for regular markers (it's hidden for About Michigan Central)
+    const keyFeaturesSectionElement = document.getElementById('key-features-section');
+    if (keyFeaturesSectionElement) {
+        keyFeaturesSectionElement.style.display = 'block';
+    }
     
     // Clean styling to match Figma design - no additional styling needed
     // CSS handles all the styling now

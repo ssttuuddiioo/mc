@@ -36,7 +36,7 @@
     // Register Service Worker for offline functionality
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        // navigator.serviceWorker.register('/sw.js')
+        // // navigator.serviceWorker.register('/sw.js')
           .then(registration => {
             console.log('✅ Service Worker registered:', registration.scope);
           })
@@ -404,10 +404,6 @@ Feature 3"></textarea>
 
   <!-- Side Panel for Label Information -->
   <div id="label-info-panel" class="side-panel">
-    <button id="close-panel" class="close-btn-overlay">→</button>
-    
-    <!-- Close Panel Button moved to middle-left edge -->
-    
     <!-- Panel Content Container -->
     <div class="panel-container">
       
@@ -431,7 +427,7 @@ Feature 3"></textarea>
       </div>
       
       <!-- Key Features Section -->
-      <div class="panel-section">
+      <div class="panel-section" id="key-features-section">
         <h2 class="section-title">Key Features</h2>
         <div class="features-grid" id="location-features">
           <div class="feature-item">
@@ -440,12 +436,9 @@ Feature 3"></textarea>
         </div>
       </div>
       
-      <!-- Marker Navigation Section -->
-      <div class="panel-section">
-        <h2 class="section-title">Explore Locations</h2>
-        <div class="marker-navigation-grid" id="marker-navigation">
-          <!-- Markers will be populated by JavaScript -->
-        </div>
+      <!-- Back to Map Button -->
+      <div class="panel-section" style="text-align: left; padding: 24px 0;">
+        <button id="back-to-map-button" class="back-to-map-button">BACK TO MAP</button>
       </div>
       
       <!-- Bottom Button removed as requested -->
@@ -467,7 +460,7 @@ Feature 3"></textarea>
   <button id="info-button" class="info-button">INFO</button>
   
   <!-- Touch to Explore banner -->
-  <div id="touch-banner" style="position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 1200; pointer-events: none;">
+  <div id="touch-banner" style="position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 1200; pointer-events: none; display: none;">
     <div style="background: rgba(0,0,0,0.85); color: white; font-family: MichiganCentralMonumentGrotesk-Bold, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; font-weight: 700; letter-spacing: 0.12em; padding: 40px 72px; border-radius: 999px; box-shadow: 0 8px 28px rgba(0,0,0,0.35); text-transform: uppercase; font-size: 54px;">
       TOUCH TO EXPLORE
     </div>
@@ -505,7 +498,7 @@ Feature 3"></textarea>
     // Register service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        // navigator.serviceWorker.register('/sw.js')
+        // // navigator.serviceWorker.register('/sw.js')
           .then(registration => {
             console.log('🚀 Service Worker registered with scope:', registration.scope);
             

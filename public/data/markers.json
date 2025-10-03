@@ -1,14 +1,6 @@
 [
   {
-    "id": 14,
-    "title": "Edge Server Platform",
-    "description": "A powerful computing platform that processes data locally at Michigan Central, reducing latency and improving performance for connected vehicles and smart infrastructure.",
-    "keyFeatures": "- Local data processing\n- Reduced latency\n- Enhanced security",
-    "lat": 42.3317,
-    "lng": -83.0733,
-    "color": "#27AE60",
-    "image": "public/marker-images/Edge-Server.jpg",
-    "height": 25
+  
   },
   {
     "id": 22,
@@ -161,7 +153,7 @@
     "lat": 42.3265207,
     "lng": -83.08171254,
     "color": "#000000",
-    "image": "public/marker-images/Grounded-Manufacturing-Space.jpg",
+    "image": "public/marker-images/Grounded-Manufacturing-Space.png",
     "height": 30
   },
   {
