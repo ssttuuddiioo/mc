@@ -3,6 +3,17 @@
   
   },
   {
+    "id": 14,
+    "title": "Edge Server Platform",
+    "description": "Distributed computing infrastructure supporting real-time data processing for mobility applications. This platform enables low-latency computing and real-time data analytics for connected vehicles, autonomous systems, and smart city applications across the Michigan Central campus.",
+    "keyFeatures": "- Low-latency edge computing\n- Real-time data analytics\n- Secure distributed infrastructure\n- Support for mobility applications",
+    "lat": 42.3285,
+    "lng": -83.0770,
+    "color": "#3498DB",
+    "image": "public/marker-images/Edge-Server.jpg",
+    "height": 25
+  },
+  {
     "id": 22,
     "title": "Advanced Aerial Innovation Region (AAIR)",
     "description": "A first-of-its-kind urban drone testing zone where companies can safely fly and test drones in a busy city environment. Michigan Central partnered with the State of Michigan to create this area, which spans a 3-mile radius surrounding The Station. It's equipped with data, operations, and digital mapping systems supported by Airspace Link. Working directly with the Federal Aviation Administration, they help members and partners get the guidance they need to safely test, monitor, and accelerate development of drones and uncrewed aircraft systems under 55 pounds, all in a real urban setting.",
