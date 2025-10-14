@@ -790,7 +790,7 @@ const LOCATIONS = {
 // Define home position for reference - set to specific coordinates for optimal view
 const HOME_POSITION = {
   center: [-83.076549, 42.329612],
-  zoom: 17.19,
+  zoom: 16.85,
   pitch: 65.50,
   bearing: 154.60
 };
