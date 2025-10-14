@@ -5,8 +5,8 @@
   {
     "id": 14,
     "title": "Edge Server Platform",
-    "description": "Distributed computing infrastructure supporting real-time data processing for mobility applications. This platform enables low-latency computing and real-time data analytics for connected vehicles, autonomous systems, and smart city applications across the Michigan Central campus.",
-    "keyFeatures": "- Low-latency edge computing\n- Real-time data analytics\n- Secure distributed infrastructure\n- Support for mobility applications",
+    "description": "This data center consists of 19 server racks in so that data processing can happen closer to its source to reduce latency and improve efficiency. The data processing that can happen at the data center, located in Downtown Detroit, includes creating digital mapping using multiple data sources to assist drone operators in understanding ground and airspace risks in real-time.",
+    "keyFeatures": "- 19 server racks processing data locally to reduce delays\n- Creates real-time digital maps from multiple data source",
     "lat": 42.3285,
     "lng": -83.0770,
     "color": "#3498DB",
@@ -169,9 +169,9 @@
   },
   {
     "id": 13,
-    "title": "The 23rd",
-    "description": "A space for entrepreneurs, non-profits, and community organizations to connect, collaborate, and develop solutions that address the needs of Detroit's Southwest communities. The ground floor offers access to workspace, meeting rooms, and an event space, promoting local innovation and community-driven projects. Here, local founders can find the resources they need to turn ideas into reality while ensuring that Detroit residents benefit directly from the neighborhood's transformation.",
-    "keyFeatures": "- Community workspace with flexible meeting rooms\n- Ground floor access for neighborhood collaboration\n- Hosts local innovation projects and community events",
+    "title": "The 23rd Newlab Manufacturing Space",
+    "description": "Newlab is now occupying space adjacent to Michigan Central's 30 acres for founders in the ecosystem to scale operations. With flexible lease footprints starting at 500 square feet and industrial infrastructure including cranes, reinforced floors, truck docks, and rail access, The 23rd gives startups the space, tools, and supply chain access needed to grow product development and manufacturing.",
+    "keyFeatures": "",
     "lat": 42.3282866,
     "lng": -83.07663895,
     "color": "#F39C12",
@@ -205,7 +205,7 @@
   },
   {
     "id": 17,
-    "title": "America's First Electrified Public Road",
+    "title": "America's First Electrified Road",
     "description": "The nation's first public road that can charge electric vehicles while they drive using wireless technology built into the pavement. In addition to the road - built in partnership with the state of Michigan, City of Detroit, and wireless charging company Electreon -- they also have parking spots nearby that charge cars wirelessly, no plugging in required.",
     "keyFeatures": "- Built with Michigan DOT and Electreon technology\n- 2 nearby parking spots with wireless charging",
     "lat": 42.32992106,
@@ -272,7 +272,7 @@
   {
     "id": 25,
     "title": "Railroad",
-    "description": "Located in the heart of Detroit, providing the perfect real-world testing environment with real traffic, pedestrians, and urban challenges that companies need to solve.",
+    "description": "Direct access to freight rail lines opens up possibilities for developing and testing ways to improve how goods move by train and how multimodal supply chains can be improved.",
     "keyFeatures": "",
     "lat": 42.32787627,
     "lng": -83.08108979,
@@ -305,8 +305,8 @@
   {
     "id": 28,
     "title": "Roosevelt Park",
-    "description": "Located in Michigan Ave, most people probably think of Roosevelt Park as the front lawn of Michigan Central Station. Indeed, it is it's own City of Detroit park. Nestled between two of Detroit's most vibrant neighborhoods.",
-    "keyFeatures": "Roosevelt Park brings southwest Detroit community together through collaboration",
+    "description": "A City of Detroit Park, Roosevelt Park serves as the front lawn of The Station. The City of Detroit renovated the park in 2023 based on community input, creating a unified space by rerouting Vernor Highway and restoring this historic gathering place.",
+    "keyFeatures": "",
     "lat": 42.33041304580484,
     "lng": -83.07701171539,
     "color": "#4C7B3B",
