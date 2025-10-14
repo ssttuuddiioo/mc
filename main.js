@@ -1067,16 +1067,17 @@ const ENHANCED_MARKER_DATA = {
             {icon: "🏭", text: "Manufacturing Space"},
             {icon: "🚀", text: "The Launchpad"}
         ],
+        // Sub-facilities now load data from markers.json via marker IDs
         subFacilities: [
-            {id: "newlab-fab", title: "Digital Fabrication Shop", description: "Our Digital Fabrication Shop features the latest in 3D printing, CNC machining, and digital design tools, enabling rapid prototyping and small-batch production."},
-            {id: "newlab-wood", title: "Wood Shop", description: "A fully equipped woodworking shop combining traditional craftsmanship with modern CNC capabilities for furniture, prototypes, and architectural elements."},
-            {id: "newlab-metal", title: "Metal Shop", description: "Cutting, welding, bending and forming metal parts with fiber laser, press brake, welders, tube roller and more for professional-grade fabrication."},
-            {id: "newlab-electronics", title: "Electronics Lab", description: "State-of-the-art electronics lab for circuit design, microcontroller programming, and IoT device development."},
-            {id: "newlab-machine", title: "Machine Shop", description: "CNC mills and lathes including a 5-axis mill, precision machining equipment and tools for prototype and production-ready components."},
-            {id: "newlab-metrology", title: "Physical Metrology Shop", description: "Measurement and inspection with a coordinate measuring arm, 3D scanner, universal testing machine and precision gauges."},
-            {id: "newlab-casting", title: "Casting and Finishing Shop", description: "Walk-in spray booth, powder coating, injection molding, vacuum forming and finishing tools to prepare products for market."},
-            {id: "newlab-manufacturing", title: "Manufacturing Space", description: "Flexible manufacturing space designed for scaling production from prototype to small batch manufacturing."},
-            {id: "newlab-launchpad", title: "The Launchpad", description: "Dedicated space for startups and entrepreneurs to develop and launch mobility innovations."}
+            {id: "newlab-fab", markerId: 4, title: "Digital Fabrication Shop"},
+            {id: "newlab-wood", markerId: 5, title: "Wood Shop"},
+            {id: "newlab-metal", markerId: 6, title: "Metal Shop"},
+            {id: "newlab-electronics", markerId: 7, title: "Electronics Lab"},
+            {id: "newlab-machine", markerId: 8, title: "Machine Shop"},
+            {id: "newlab-metrology", markerId: 9, title: "Physical Metrology Shop"},
+            {id: "newlab-casting", markerId: 10, title: "Casting and Finishing Shop"},
+            {id: "newlab-manufacturing", markerId: 11, title: "Manufacturing Space"},
+            {id: "newlab-launchpad", markerId: 20, title: "The Launchpad"}
         ],
         size: "30,000 sq ft",
         address: "2001 15th St, Detroit, MI 48216",
@@ -6223,22 +6224,30 @@ async function openSubFacilityPanel(facilityId, facilityTitle) {
     
     // Home button is now always visible, no need to show it here
     
-    // Find the sub-facility data from the Newlab enhanced data
+    // Find the sub-facility mapping from the Newlab enhanced data
     const newlabData = ENHANCED_MARKER_DATA[2];
-    let subFacilityData = null;
+    let subFacilityMapping = null;
     
     if (newlabData && newlabData.subFacilities) {
-        subFacilityData = newlabData.subFacilities.find(facility => facility.id === facilityId);
+        subFacilityMapping = newlabData.subFacilities.find(facility => facility.id === facilityId);
     }
     
-    if (!subFacilityData) {
-        console.error(`Sub-facility data not found for ID: ${facilityId}`);
+    if (!subFacilityMapping) {
+        console.error(`Sub-facility mapping not found for ID: ${facilityId}`);
         return;
     }
     
-    // Update panel content with sub-facility data (without category)
-    document.getElementById('location-title').textContent = subFacilityData.title;
-    document.getElementById('location-description').textContent = subFacilityData.description || 'No description available';
+    // Fetch the actual data from markers.json using the markerId
+    const markerData = allMarkers.find(marker => marker.id === subFacilityMapping.markerId);
+    
+    if (!markerData) {
+        console.error(`Marker data not found for marker ID: ${subFacilityMapping.markerId}`);
+        return;
+    }
+    
+    // Update panel content with data from markers.json
+    document.getElementById('location-title').textContent = markerData.title;
+    document.getElementById('location-description').textContent = markerData.description || 'No description available';
     
     // Show Key Features section for sub-facilities (it's hidden for About Michigan Central)
     const keyFeaturesSectionElement = document.getElementById('key-features-section');
@@ -6246,7 +6255,7 @@ async function openSubFacilityPanel(facilityId, facilityTitle) {
         keyFeaturesSectionElement.style.display = 'block';
     }
     
-    // Update features with bullet points (if any)
+    // Update features with bullet points from markers.json
     const featuresContainer = document.getElementById('location-features');
     featuresContainer.innerHTML = '';
     
@@ -6254,22 +6263,19 @@ async function openSubFacilityPanel(facilityId, facilityTitle) {
     const keyFeaturesTitle = document.querySelector('.panel-section h2.section-title');
     const keyFeaturesSection = keyFeaturesTitle ? keyFeaturesTitle.parentElement : null;
     
-    // Check if we have bullet points to display
+    // Check if we have bullet points to display from keyFeatures field
     let hasBulletPoints = false;
     let allBulletPoints = [];
     
-    if (subFacilityData.description) {
-        // Create bullet points from semicolon-separated text in description
-        const textParts = subFacilityData.description.split(';').map(part => part.trim()).filter(part => part);
+    if (markerData.keyFeatures) {
+        // Split keyFeatures by newlines to get individual bullet points
+        allBulletPoints = markerData.keyFeatures
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line && line.startsWith('-'))
+            .map(line => line.substring(1).trim()); // Remove the leading dash
         
-        if (textParts.length > 1) {
-            // First part is the main description, rest are features
-            document.getElementById('location-description').textContent = textParts[0];
-            
-            // Add the rest to bullet points
-            allBulletPoints = textParts.slice(1);
-            hasBulletPoints = allBulletPoints.length > 0;
-        }
+        hasBulletPoints = allBulletPoints.length > 0;
     }
     
     if (hasBulletPoints) {
@@ -6302,13 +6308,12 @@ async function openSubFacilityPanel(facilityId, facilityTitle) {
         }
     }
     
-    // Load image from Supabase based on sub-facility title
-    const resolvedImage = getMarkerImageByTitle(subFacilityData.title);
+    // Load image from markers.json
     const imgElement = document.getElementById('location-photo');
     const placeholder = document.querySelector('.image-placeholder');
     
-    if (resolvedImage) {
-        imgElement.src = resolvedImage + '?t=' + Date.now();
+    if (markerData.image) {
+        imgElement.src = markerData.image + '?t=' + Date.now();
         imgElement.style.display = 'block';
         placeholder.style.display = 'none';
         imgElement.onerror = () => {
