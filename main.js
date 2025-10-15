@@ -886,7 +886,9 @@ const newMarkers = [
     { id: 20, lat: 42.32828839662688, lng: -83.07564165737065, color: '#9B59B6' },
     // { id: 22, lat: 42.32706378807067, lng: -83.06791695933897, color: '#9B59B6' }, // removed per request
     { id: 23, lat: 42.3263690476279, lng: -83.07403300892324, color: '#9B59B6' },
-    { id: 28, lat: 42.33041304580484, lng: -83.07701171539, color: '#4C7B3B', height: 25 } // Roosevelt Park - CORRECT COORDINATES
+    { id: 25, lat: 42.32787627, lng: -83.08108979, color: '#4C7B3B', height: 25 }, // Railroad
+    { id: 28, lat: 42.33041304580484, lng: -83.07701171539, color: '#4C7B3B', height: 25 }, // Roosevelt Park - CORRECT COORDINATES
+    { id: 34, lat: 42.329055802984605, lng: -83.07996866657024, color: '#000000', height: 30 } // Future Michigan Central Multimodal Facility
 ];
 
 // ENHANCED MARKER DATA - Admin Configurable Information
