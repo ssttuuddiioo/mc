@@ -248,6 +248,17 @@
     "height": 25
   },
   {
+    "id": 21,
+    "title": "Beyond Visual Line of Sight Systems",
+    "description": "This system provides operators with digital eyes in the sky and monitoring of low-altitude airspace, allowing for real-time aircraft detection and monitoring as well as command and control of unmanned flights. By removing the need for operators to directly see the drone at all times, these operations unlock the ability for drones to operate at longer distances and over larger areas. This enables more efficient, scalable drone use that can help companies move from small tests to commercial deployment.",
+    "keyFeatures": "- 2 X-band radar units and 3 networked ADS-B receivers\n- 9 ground radio stations for extended communication",
+    "lat": null,
+    "lng": null,
+    "color": "#27AE60",
+    "image": "public/marker-images/BeyondVisualLineofSightSystems.png",
+    "height": 0
+  },
+  {
     "id": 23,
     "title": "Smart Light Posts",
     "description": "Smart street lights throughout the campus equipped with power and internet connections that companies can use to test urban technologies. Teams can install sensors and other equipment on the posts, as well, in order to conduct more tailored pilots that help them improve their new technologies and solutions.",
