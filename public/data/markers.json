@@ -230,8 +230,8 @@
     "title": "Scaled Launch Facility",
     "description": "A half-acre outdoor testing ground next to The Station for drone operations and other technology testing. This flexible space offers rentable areas with industrial power, fiber internet, and adaptable infrastructure, all coordinated with the 12th-floor operations center for safe, controlled testing of aerial mobility and other innovations.",
     "keyFeatures": "- Half-acre outdoor space with up to 480-volt power\n- Fiber internet and adaptable power tray system",
-    "lat": 42.32872407,
-    "lng": -83.0833833,
+    "lat": 42.3286828507239153,
+    "lng": -83.08216260838421,
     "color": "#000000",
     "image": "public/marker-images/Scaled-launch-facility.jpeg",
     "height": 25
