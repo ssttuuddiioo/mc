@@ -367,5 +367,16 @@
     "color": "#4A90E2",
     "image": "public/marker-images/32.png",
     "height": 25
+  },
+  {
+    "id": 34,
+    "title": "Future Michigan Central\nMultimodal Facility",
+    "description": "",
+    "keyFeatures": "",
+    "lat": 42.329055802984605,
+    "lng": -83.07996866657024,
+    "color": "#000000",
+    "image": "public/marker-images/Future-MC-Multimodal.jpg",
+    "height": 30
   }
 ]
