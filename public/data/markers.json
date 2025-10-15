@@ -7,11 +7,11 @@
     "title": "Edge Server Platform",
     "description": "This data center consists of 19 server racks in so that data processing can happen closer to its source to reduce latency and improve efficiency. The data processing that can happen at the data center, located in Downtown Detroit, includes creating digital mapping using multiple data sources to assist drone operators in understanding ground and airspace risks in real-time.",
     "keyFeatures": "- 19 server racks processing data locally to reduce delays\n- Creates real-time digital maps from multiple data source",
-    "lat": 42.3285,
-    "lng": -83.0770,
+    "lat": null,
+    "lng": null,
     "color": "#3498DB",
     "image": "public/marker-images/Edge-Server.jpg",
-    "height": 25
+    "height": 0
   },
   {
     "id": 22,
